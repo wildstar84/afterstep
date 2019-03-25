@@ -2243,6 +2243,8 @@ Bool activate_aswindow (ASWindow * asw, Bool force, Bool deiconify)
 			Scr.Windows->active = asw;	/* must do that prior to UngrabEm, so that window gets focused */
 		}
 		UngrabEm ();
+		if (get_flags (Scr.Feel.flags, ClickToFocus) && ASWIN_HFLAGS (asw, AS_FocusOnMap)) /* JWT:TEST ADDED 20190311. */
+			res = focus_active_window ();  /* JWT:ADDED 20180321 TO GET FIRST WINDOW OPENED TO ACCEPT FOCUS! */
 	} else {
 		if (ASWIN_GET_FLAGS (asw, AS_Iconic)) {
 			LOCAL_DEBUG_OUT ("Window is iconic - pending implementation%s", "");
