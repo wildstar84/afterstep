@@ -1055,7 +1055,7 @@ void update_pager_shape ()
 }
 
 
-inline unsigned int calculate_desk_width (ASPagerDesk * d)
+static inline unsigned int calculate_desk_width (ASPagerDesk * d)
 {
 	unsigned int width = PagerState.desk_width;
 
@@ -1094,7 +1094,7 @@ void place_desk (ASPagerDesk * d, int x, int y, unsigned int width,
 		moveresize_canvas (d->desk_canvas, x, y, width, height);
 }
 
-inline ASPagerDesk *get_pager_desk (INT32 desk)
+static inline ASPagerDesk *get_pager_desk (INT32 desk)
 {
 	if (IsValidDesk (desk)) {
 		register INT32 pager_desk = desk - PagerState.start_desk;

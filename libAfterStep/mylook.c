@@ -788,7 +788,8 @@ void check_mybacks_list (MyLook * look)
 	}
 }
 
-inline MyBackground *add_myback_to_list (ASHashTable * list,
+/* JWT:CHGD TO NEXT 20180405 (COMPILER ERROR W/"march=native"): inline MyBackground *add_myback_to_list (ASHashTable * list, */
+static inline MyBackground *add_myback_to_list (ASHashTable * list,
 																				 MyBackground * back,
 																				 ASImageManager * imman)
 {

@@ -129,7 +129,7 @@ int compare_color_lightness (ARGB32 c1, ARGB32 c2)
 			ASCS_BLACK_O_WHITE_CRITERIA16_VAL (red2, green2, blue2);
 }
 
-inline void
+static inline void
 make_grad_argb (ASColorScheme * cs, int id, ARGB32 base_alpha16,
 								int hue360, int sat100, int val100, Bool base)
 {
@@ -186,7 +186,7 @@ make_mono_grad_argb (ARGB32 * grad, ARGB32 base_alpha16, int shade100,
 	}
 }
 
-inline int offset_shade (int shade, int offset, Bool rollover)
+static inline int offset_shade (int shade, int offset, Bool rollover)
 {
 	shade += offset;
 	if (shade > 100) {
