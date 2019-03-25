@@ -253,7 +253,9 @@ void load_user_database ()
 	if (XResourceManagerString (dpy) == NULL) {
 		char *xdefaults_file = put_file_home ("~/.Xdefaults");
 
-		if (!CheckFile (xdefaults_file)) {
+		/* JWT:CHGD. TO NEXT 20180326 TO FIX BOGUS ERROR MSGS: if (!CheckFile (xdefaults_file)) { */
+		/* JWT:NOTE: CheckFile () RETURNS 0 IF FILE THERE+READABLE, -1 IF NOT THERE (THEY HAD THIS REVERSED!) */
+		if (CheckFile (xdefaults_file)) {
 			char *xenv = getenv ("XENVIRONMENT");
 
 			show_warning ("Can't locate X resources database in \"%s\".",
@@ -262,7 +264,8 @@ void load_user_database ()
 			if (xenv == NULL)
 				return;
 			xdefaults_file = put_file_home (xenv);
-			if (!CheckFile (xdefaults_file)) {
+			/* JWT:CHGD. TO NEXT 20180326 TO FIX BOGUS ERROR MSGS: if (!CheckFile (xdefaults_file)) { */
+			if (CheckFile (xdefaults_file)) {
 				show_warning ("Can't locate X resources database in \"%s\".",
 											xdefaults_file);
 				free (xdefaults_file);
