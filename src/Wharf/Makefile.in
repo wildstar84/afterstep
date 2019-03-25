@@ -1,0 +1,26 @@
+EXTRA_INCLUDES	= -I.
+
+EXTRA_DEFINES	= -DENABLE_DND -DENABLE_SOUND
+
+OBJS            = Wharf.o
+
+PROG		= Wharf
+
+LIBS_PRIVATE      = $(LIB_AFTERCONF) $(LIB_AFTERSTEP) \
+					$(LIB_AFTERIMAGE) $(LIB_AFTERBASE) $(LIBS_AFTERIMAGE)
+LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) \
+				  $(LIB_AFTERCONF)
+
+@MAKEFILECOMMON@
+
+$(PROG):        $(OBJS) $(LIBS_DEPEND)
+		$(CC) $(OBJS) $(LIBS_ALL) -o $(@)
+
+module.clean:
+		
+install:	install.bin
+		@if ! [ -f $(AFTER_BIN_DIR)/MonitorWharf ] ; then \
+			ln -s $(PROG) $(AFTER_BIN_DIR)/MonitorWharf ;\
+		fi
+
+uninstall:	uninstall.bin

@@ -1,0 +1,9 @@
+<varlistentry id="options.NoPPosition">
+	<term>NoPPosition</term>
+	<listitem>
+		<para>Species that afterstep should ignore the  PPosition  field  for
+		the specified window, in other words, the window can't choose where
+		to place  itself.   Adherence  to  the  PPosition  field  is
+		required for some applications.</para>
+	</listitem>
+</varlistentry>

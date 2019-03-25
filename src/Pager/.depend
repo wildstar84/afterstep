@@ -1,0 +1,19 @@
+./Pager.h:
+
+./Pager.o: \
+		../../configure.h \
+		../../libAfterStep/asapp.h \
+		../../libAfterStep/afterstep.h \
+		../../libAfterStep/screen.h \
+		../../libAfterStep/module.h \
+		../../libAfterStep/parser.h \
+		../../libAfterStep/mystyle.h \
+		../../libAfterStep/mystyle_property.h \
+		../../libAfterStep/balloon.h \
+		../../libAfterStep/aswindata.h \
+		../../libAfterStep/decor.h \
+		../../libAfterStep/event.h \
+		../../libAfterStep/wmprops.h \
+		../../libAfterStep/moveresize.h \
+		../../libAfterStep/shape.h \
+		../../libAfterConf/afterconf.h

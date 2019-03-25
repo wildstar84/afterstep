@@ -1,0 +1,41 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: 22 ascompose man
+
+Fix ascompose man page.
+---
+ libAfterImage/apps/ascompose.man | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/libAfterImage/apps/ascompose.man b/libAfterImage/apps/ascompose.man
+index 1838894..b17b493 100644
+--- a/libAfterImage/apps/ascompose.man
++++ b/libAfterImage/apps/ascompose.man
+@@ -9,10 +9,7 @@
+ .SH NAME 
+ \fBascompose\fP \- tool to compose image(s) and display/\fBsave\fP it based on supplied XML input file\.
+ 
+-\fP 
+-.fi
+ .SH SYNOPSIS 
+-.nf
+  \fBascompose\fP \-f file|\-s string [\-o file] [\-t type] [\-V]"
+  \fBascompose\fP \-f file|\-s string [\-o file] [\-t type] [\-V]"
+  \fBascompose\fP \-f file|\-s string [\-o file] [\-t type] [\-V] [\-n]"
+@@ -21,7 +18,6 @@
+  \fBascompose\fP [\-v]
+ 
+ 
+-.fi
+ .SH DESCRIPTION 
+ .nf
+  \fBascompose\fP reads supplied XML data, and manipulates image accordingly\.
+@@ -116,7 +112,7 @@
+ .fi
+ 
+ .PP
+-.SH libAfterImage/ascompose/sample
++
+ .SH EXAMPLE 
+ .nf
+  Here is the default script that gets executed by \fBascompose\fP, if no

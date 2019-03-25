@@ -1,0 +1,47 @@
+From: Robert Luberda <robert@debian.org>
+Date: Thu, 30 Aug 2018 00:14:39 +0200
+Subject: Fix autotools pkg-config for cross compiling
+
+Use AC_PATH_TOOL instead of AC_PATH_PROG for PKG_CONFIG
+to fix `autotools-pkg-config-macro-not-cross-compilation-safe'
+lintian's warning.
+---
+ autoconf/configure.in      | 4 ++--
+ libAfterImage/configure.in | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/autoconf/configure.in b/autoconf/configure.in
+index 37e67ab..68870cb 100644
+--- a/autoconf/configure.in
++++ b/autoconf/configure.in
+@@ -423,7 +423,7 @@ if test "$with_readline" != no; then
+ fi
+ 
+ if test -z "$PKG_CONFIG"; then
+-   		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
++   		AC_PATH_TOOL(PKG_CONFIG, pkg-config,no)
+ fi
+ 
+ have_gnome_session=
+@@ -740,7 +740,7 @@ if test "x$enable_ascp" = "xyes"; then
+   		fi;
+ 	fi;
+ 	if test -z "$PKG_CONFIG"; then
+-    		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
++    		AC_PATH_TOOL(PKG_CONFIG, pkg-config,no)
+ 	fi
+ 	if test "x$have_gtk" = "xyes" ; then
+ 		ASCP_GTK=ascp_gtk
+diff --git a/libAfterImage/configure.in b/libAfterImage/configure.in
+index 72121ce..63de31e 100644
+--- a/libAfterImage/configure.in
++++ b/libAfterImage/configure.in
+@@ -522,7 +522,7 @@ if test "$with_svg" = no; then
+ 	have_svg=disabled
+ else
+ 	if test -z "$PKG_CONFIG"; then
+-    		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
++    		AC_PATH_TOOL(PKG_CONFIG, pkg-config,no)
+ 	fi
+ 	if test "$PKG_CONFIG" = "no" ; then
+ 		AC_MSG_CHECKING(if librsvg 2.0 is available)

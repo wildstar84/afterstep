@@ -1,0 +1,319 @@
+./asapp.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		screen.h \
+		functions.h \
+		session.h \
+		balloon.h \
+		mystyle.h \
+		mylook.h \
+		wmprops.h \
+		desktop_category.h \
+		../libAfterImage/asimage.h \
+		../libAfterImage/xpm.h \
+		../libAfterImage/char2uni.h
+
+./ascommand.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		afterstep.h \
+		screen.h \
+		module.h \
+		mystyle.h \
+		mystyle_property.h \
+		parser.h \
+		clientprops.h \
+		wmprops.h \
+		decor.h \
+		aswindata.h \
+		balloon.h \
+		event.h \
+		shape.h \
+		../libAfterBase/aslist.h \
+		../libAfterBase/ashash.h \
+		ascommand.h \
+		operations.h
+
+./asdatabase.o : \
+		../configure.h \
+		asapp.h \
+		asdatabase.h
+
+./asfeel.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		screen.h \
+		asfeel.h \
+		event.h
+
+./aswindata.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		screen.h \
+		module.h \
+		mystyle.h \
+		clientprops.h \
+		wmprops.h \
+		aswindata.h \
+		decor.h
+
+./balloon.o : \
+		../configure.h \
+		asapp.h \
+		mystyle.h \
+		event.h \
+		screen.h \
+		decor.h \
+		balloon.h
+
+./canvas.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		screen.h \
+		shape.h \
+		canvas.h
+
+./clientprops.o : \
+		../configure.h \
+		asapp.h \
+		screen.h \
+		clientprops.h \
+		hints.h
+
+./colorscheme.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		../libAfterImage/afterimage.h \
+		colorscheme.h
+
+./decor.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		mystyle.h \
+		screen.h \
+		../libAfterImage/afterimage.h \
+		myicon.h \
+		canvas.h \
+		decor.h \
+		event.h \
+		balloon.h \
+		shape.h
+
+./desktop_category.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		desktop_category.h
+
+./event.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		afterstep.h \
+		screen.h \
+		event.h
+
+./freestor.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		screen.h \
+		freestor.h \
+		functions.h \
+		../libAfterImage/asimagexml.h
+
+./functions.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		screen.h \
+		parser.h \
+		functions.h \
+		freestor.h \
+		../libAfterImage/afterimage.h
+
+./font.o : \
+		../configure.h \
+		asapp.h \
+		screen.h \
+		../libAfterImage/afterimage.h
+
+./hints.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		asdatabase.h \
+		screen.h \
+		functions.h \
+		clientprops.h \
+		hints.h \
+		desktop_category.h \
+		freestor.h \
+		../libAfterImage/afterimage.h
+
+./kde.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterBase/xml.h \
+		afterstep.h \
+		wmprops.h \
+		desktop_category.h \
+		kde.h
+
+./module.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		screen.h \
+		module.h \
+		wmprops.h \
+		session.h \
+		colorscheme.h \
+		myicon.h
+
+./moveresize.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		afterstep.h \
+		event.h \
+		mystyle.h \
+		screen.h \
+		hints.h \
+		decor.h \
+		canvas.h \
+		moveresize.h
+
+./myicon.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		../libAfterImage/afterimage.h \
+		screen.h \
+		event.h
+
+./mylook.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		mystyle.h \
+		screen.h \
+		balloon.h \
+		event.h \
+		wmprops.h \
+		../libAfterImage/afterimage.h
+
+./mystyle.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		mystyle.h \
+		screen.h \
+		../libAfterImage/afterimage.h
+
+./mystyle_property.o : \
+		../configure.h \
+		asapp.h \
+		screen.h \
+		mystyle.h \
+		mystyle_property.h \
+		wmprops.h
+
+./outline.o : \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		afterstep.h \
+		screen.h \
+		decor.h \
+		moveresize.h
+
+./operations.o : \
+		operations.h \
+		../configure.h \
+		asapp.h \
+		../libAfterImage/afterimage.h \
+		afterstep.h \
+		screen.h \
+		module.h \
+		mystyle.h \
+		mystyle_property.h \
+		parser.h \
+		clientprops.h \
+		wmprops.h \
+		decor.h \
+		aswindata.h \
+		balloon.h \
+		event.h \
+		shape.h \
+		../libAfterBase/aslist.h \
+		../libAfterBase/ashash.h \
+		ascommand.h
+
+./parser.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		freestor.h \
+		functions.h \
+		../libAfterBase/xml.h
+
+./parser_fs.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		parser.h \
+		freestor.h \
+		functions.h \
+		../libAfterConf/afterconf.h
+
+./parser_xml.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		functions.h \
+		parser.h \
+		../libAfterBase/xml.h \
+		../libAfterConf/afterconf.h
+
+./screen.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		mystyle.h \
+		screen.h \
+		module.h \
+		wmprops.h \
+		../libAfterImage/afterimage.h
+
+./session.o : \
+		../configure.h \
+		asapp.h \
+		afterstep.h \
+		screen.h \
+		functions.h \
+		session.h
+
+./shape.o : \
+		../configure.h \
+		asapp.h \
+		shape.h
+
+./wmprops.o : \
+		../configure.h \
+		asapp.h \
+		screen.h \
+		clientprops.h \
+		wmprops.h

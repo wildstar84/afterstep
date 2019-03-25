@@ -1,0 +1,821 @@
+From: Robert Luberda <robert@debian.org>
+Date: Thu, 19 Jan 2017 00:50:37 +0100
+Subject: Spelling typos
+
+Fix various spelling errors found by lintian.
+---
+ ChangeLog                                 |  2 +-
+ NEW                                       | 18 +++++++++---------
+ afterstep/looks/look.Abi                  |  4 ++--
+ afterstep/looks/look.DEFAULT              |  4 ++--
+ afterstep/looks/look.Smooth               |  4 ++--
+ afterstep/winlist                         |  2 +-
+ doc/Pager.xml                             |  2 +-
+ doc/afterstep.xml                         |  2 +-
+ doc/code/config_issues.html               |  2 +-
+ libASGTK/asgtkai.h                        |  2 +-
+ libASGTK/asgtkxmleditor.c                 |  6 +++---
+ libAfterBase/layout.h                     |  4 ++--
+ libAfterConf/Wharf.c                      |  6 +++---
+ libAfterConf/afterconf.h                  |  4 ++--
+ libAfterImage/ChangeLog                   |  2 +-
+ libAfterImage/afterimage.h                |  4 ++--
+ libAfterImage/apps/astext.c               |  2 +-
+ libAfterImage/apps/astile.c               |  2 +-
+ libAfterImage/asfont.h                    |  6 +++---
+ libAfterImage/asimagexml.c                |  8 ++++----
+ libAfterImage/asstorage.c                 |  8 ++++----
+ libAfterImage/blender.c                   |  2 +-
+ libAfterImage/import.h                    |  2 +-
+ libAfterImage/transform.h                 |  2 +-
+ libAfterImage/ximage.h                    | 10 +++++-----
+ libAfterStep/desktop_category.h           |  2 +-
+ libAfterStep/event.h                      |  2 +-
+ libAfterStep/screen.h                     |  2 +-
+ libAfterStep/shape.c                      |  2 +-
+ src/ASDocGen/ASDocGen.c                   |  2 +-
+ src/ASDocGen/source/Look/MenuSubItemStyle |  4 ++--
+ src/ASDocGen/source/MyFrame/_overview     |  8 ++++----
+ src/ASDocGen/source/Pager/_overview       |  2 +-
+ src/ASDocGen/source/Wharf/ShapeToContents |  2 +-
+ src/Audio/Audio.man                       |  2 +-
+ src/Pager/Pager.man                       |  2 +-
+ src/Wharf/Wharf.c                         |  2 +-
+ src/afterstep/asinternals.h               |  2 +-
+ src/afterstep/misc.c                      |  2 +-
+ 39 files changed, 73 insertions(+), 73 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index a333052..8932da0 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -6948,7 +6948,7 @@ CHANGELOG
+  * Fixed grammatical & punctuation errors.
+ 
+ [2001-12-31: sashav]
+- * Fixed HSV and HLS colorspaces to correctly assign meaningfull HUE values
++ * Fixed HSV and HLS colorspaces to correctly assign meaningful HUE values
+    with straight mapping onto 360 degree colorcircle with red being 0, green
+    120 and blue 240 degrees. Fixed adjust_asimage_hsv to correctly translate
+    degrees. debugged <hsv> tag in ascompose. Added ARGB32_RED16 macro and the
+diff --git a/NEW b/NEW
+index 038bde0..37d2afa 100644
+--- a/NEW
++++ b/NEW
+@@ -84,7 +84,7 @@ version 2.2.5 release
+ 	  These cause WinList to auto magically adjust it's size to avoid covering 
+ 	  windows matching patterns in NoCollides. AllowCollides ovverrides NoCollides.
+ 	  NoCollidesSpacing determines amount of free space to leave between WinList and 
+-	  NoCollides windows. Note that this works only in one dimention - if RowsFirst 
++	  NoCollides windows. Note that this works only in one dimension - if RowsFirst
+ 	  then in horizontal, otherwise in vertical.
+ 	* added menus for different layouts of Wharf, WinList and Pager.
+ 	* cleanups in Desktop/Pictures menu.
+@@ -378,7 +378,7 @@ version 2.0 beta1
+                    TitleButtonOrder setting ( see below ).
+                 2) 4 frame sides. Each of this have wixed width that is
+                    determined by SideSize setting  or image size if SideSize is
+-                   ommited. Second dimension of the TBar changes to match the
++                   omitted. Second dimension of the TBar changes to match the
+                    size of the window.
+                 3) 4 frame corners. Each of this have both fixed width and
+                    height, as determined by CornerSize setting or image size.
+@@ -406,10 +406,10 @@ version 2.0 beta1
+                       [SouthEast   <pixmap>]
+                       [SouthWest   <pixmap>]
+                   #alternative form :
+-                      [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is ommited -
++                      [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is omitted -
+                                                                            empty bevel will be drawn
+                       [NoSide      North|South|East|West|Any]
+-                      [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is ommited -
++                      [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is omitted -
+                                                                                            empty bevel will be drawn
+                       [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+                   #new settings :
+@@ -464,7 +464,7 @@ version 2.0 beta1
+              *******************************************************************
+ 
+                    MyFrame allows different MyStyles to be used for titlebar and
+-                frame decorations. If any of those are ommited - default
++                frame decorations. If any of those are omitted - default
+                 setting from FWindowStyle/UWindowStyle/SWindowStyle will be
+                 used.
+ 
+@@ -554,7 +554,7 @@ version 2.0 beta1
+                    Specifies what to  use  as  the  root  background. Possible
+                 type values are :
+                      0: load image from the file. In that case "data" should
+-                        specify filename. If "data" is ommited the AfterStep
++                        specify filename. If "data" is omitted the AfterStep
+                         will use default background image file for that desktop
+                         ( typically ~/G/L/A/non-configurable/#desk_background )
+                      1: Use MyStyle definition to fill root. In that case "data"
+@@ -726,7 +726,7 @@ version 2.0 beta1
+                 Application item with some offset.
+ 
+                 It looks much better when this subitems are shown with
+-                different (smaller ) font. To achive that - specify MyStyle
++                different (smaller ) font. To achieve that - specify MyStyle
+                 with smaller font using MenuSubItemStyle option in your look
+                 file.
+ 
+@@ -864,7 +864,7 @@ version 2.0 beta1
+          - ThenTry  - backup strategy to use when there is no suitable empty
+         space.
+          - VerticalPriority, ReverseOrder alter behaviour of some strategies  -
+-        Tile and Cascade, from what I remeber.
++        Tile and Cascade, from what I remember.
+          - Desk - limits effects of this WindowBox to specific desk.
+          - MinLayer,MaxLayer - limits effects of the WindowBox to windows with
+         layer value that falls in range.
+@@ -1105,7 +1105,7 @@ version 2.0 beta1
+         ************************************************************************
+         ShapeToContents
+         ************************************************************************
+-        Will cause Wharf to use X Shaped extentions and have a window of
++        Will cause Wharf to use X Shaped extensions and have a window of
+         non-rectangular shape. Shape is composed from the overall geometry of
+         buttons ( see FitContents ), shape of the MyStyle used to draw Wharf
+         background ( if BackPixmap 126 or 125 is used ), contents of each
+diff --git a/afterstep/looks/look.Abi b/afterstep/looks/look.Abi
+index 96fe77d..11aac36 100644
+--- a/afterstep/looks/look.Abi
++++ b/afterstep/looks/look.Abi
+@@ -464,10 +464,10 @@ MArrowPixmap		arrow-dots.xpm
+ #     [SouthEast   <pixmap>]
+ #     [SouthWest   <pixmap>]
+ #alternative form :
+-#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is ommited -
++#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is omitted -
+ #                                                          empty bevel will be drawn
+ #     [NoSide      North|South|East|West|Any]
+-#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is ommited -
++#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is omitted -
+ #                                                                          empty bevel will be drawn
+ #     [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+ #new settings :
+diff --git a/afterstep/looks/look.DEFAULT b/afterstep/looks/look.DEFAULT
+index c81b8d8..795cc4f 100644
+--- a/afterstep/looks/look.DEFAULT
++++ b/afterstep/looks/look.DEFAULT
+@@ -390,10 +390,10 @@ MArrowPixmap		arrow-dots.xpm
+ #     [SouthEast   <pixmap>]
+ #     [SouthWest   <pixmap>]
+ #alternative form :
+-#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is ommited -
++#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is omitted -
+ #                                                          empty bevel will be drawn
+ #     [NoSide      North|South|East|West|Any]
+-#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is ommited -
++#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is omitted -
+ #                                                                          empty bevel will be drawn
+ #     [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+ #new settings :
+diff --git a/afterstep/looks/look.Smooth b/afterstep/looks/look.Smooth
+index cd64647..80f05f9 100644
+--- a/afterstep/looks/look.Smooth
++++ b/afterstep/looks/look.Smooth
+@@ -503,10 +503,10 @@ MArrowPixmap		arrow-dots.xpm
+ #     [SouthEast   <pixmap>]
+ #     [SouthWest   <pixmap>]
+ #alternative form :
+-#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is ommited -
++#     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is omitted -
+ #                                                          empty bevel will be drawn
+ #     [NoSide      North|South|East|West|Any]
+-#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is ommited -
++#     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is omitted -
+ #                                                                          empty bevel will be drawn
+ #     [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+ #new settings :
+diff --git a/afterstep/winlist b/afterstep/winlist
+index dc8152d..2770e55 100644
+--- a/afterstep/winlist
++++ b/afterstep/winlist
+@@ -54,7 +54,7 @@
+ # then keys 1 to 9 will represent icon's position, while 0 is the default.
+ #*WinListIconLocation 0
+ *WinListIconSize   16x16
+-# This is another flag for convinience - it is always overriden by IconSize
++# This is another flag for convenience - it is always overridden by IconSize
+ # note that its On by default.
+ #*WinListScaleIconToTextHeight 
+ 
+diff --git a/doc/Pager.xml b/doc/Pager.xml
+index 77e6d55..022f074 100644
+--- a/doc/Pager.xml
++++ b/doc/Pager.xml
+@@ -40,7 +40,7 @@ manner:</para>
+ <para>In case you use Pager to switch your root backgrounds 
+ <emphasis remap='I'>Wait</emphasis> can be used as shown above.  This will insure that the 
+ <command>Pager</command> has set the root background before you start
+-any furthur apps (like transparent aterms and Eterms).</para>
++any further apps (like transparent aterms and Eterms).</para>
+ 
+ <para>or from within an afterstep menu file by 'Pager':</para>
+ <literallayout remap='.nf'>
+diff --git a/doc/afterstep.xml b/doc/afterstep.xml
+index ee16f9c..42679e2 100644
+--- a/doc/afterstep.xml
++++ b/doc/afterstep.xml
+@@ -599,7 +599,7 @@ similar to NoIcon.</para>
+ <para>Specifies initial placement for the given window, to be used in absense of
+ USPosition geometry (command line specified one). Default behaviour is to
+ either do Random or Smart placement or let user drag window around.
+-Any of the geometry values can be ommited, and either of position values
++Any of the geometry values can be omitted, and either of position values
+ could be negative, in which case it will be added to screen size, effectively
+ allowing placement relative to right/bottom edge. Just like standard X
+ geometry.</para>
+diff --git a/doc/code/config_issues.html b/doc/code/config_issues.html
+index 6cf8d47..93188ca 100644
+--- a/doc/code/config_issues.html
++++ b/doc/code/config_issues.html
+@@ -9,7 +9,7 @@
+ Many ,  many years ago, in the dark ages of Personal Computers and windowing
+ interfaces there was AfterStep the Window Manager.<br>
+ (joke)<br>
+-In order to achive world dominance and ease of use goals Afterstep will need
++In order to achieve world dominance and ease of use goals Afterstep will need
+ the following configuration related features :
+ <ol>
+ <li>GUI configuration tool (ASCP);
+diff --git a/libASGTK/asgtkai.h b/libASGTK/asgtkai.h
+index 7fb0f95..cb35172 100644
+--- a/libASGTK/asgtkai.h
++++ b/libASGTK/asgtkai.h
+@@ -1,7 +1,7 @@
+ #ifndef ASGTKAI_H_HEADER_INCLUDED
+ #define ASGTKAI_H_HEADER_INCLUDED
+ 
+-/* convinience functions to integrate libAfterImage with gtk apps : */
++/* convenience functions to integrate libAfterImage with gtk apps : */
+ 
+ GdkPixbuf *ASImage2GdkPixbuf( struct ASImage *im ); 
+ GdkPixbuf *solid_color2GdkPixbuf( ARGB32 argb, int width, int height );
+diff --git a/libASGTK/asgtkxmleditor.c b/libASGTK/asgtkxmleditor.c
+index efd10a1..ef1f557 100644
+--- a/libASGTK/asgtkxmleditor.c
++++ b/libASGTK/asgtkxmleditor.c
+@@ -499,7 +499,7 @@ static void check_save_changes (ASGtkXMLView * xe)
+ 
+ static char *ASXMLScriptTagsHelp[MAX_ASXML_SCRIPT_TAG] = {
+ 	"renders text string into new image, using specific font, size and texture.",
+-	"superimposes arbitrary number of images on top of each other. Compositing \"op\" could be one of the follwoing : \n"
++	"superimposes arbitrary number of images on top of each other. Compositing \"op\" could be one of the following : \n"
+ 			"add, alphablend, allanon, colorize, darken, diff, dissipate, hue, lighten, overlay, saturate, screen, sub, tint, value.\n"
+ 			"All tags surrounded by this tag may have some of the common attributes in addition to their normal ones : \n"
+ 			"crefid=\"ref_id\" (If set, percentages in \"x\" and \"y\" will be "
+@@ -530,13 +530,13 @@ static char *ASXMLScriptTagsHelp[MAX_ASXML_SCRIPT_TAG] = {
+ 	"creates new image as mirror copy of an old one.",
+ 	"rotates an image in 90 degree increments (flip).",
+ 	"scales image to arbitrary size. \n"
+-			"If you want to keep image proportions while scaling - use \"proportional\" instead of specific size for particular dimention.",
++			"If you want to keep image proportions while scaling - use \"proportional\" instead of specific size for particular dimension.",
+ 	"slices image to arbitrary size leaving corners unchanged.\n"
+ 			"Contents of the image between x_start and x_end will be tiled horizontally. "
+ 			"Contents of the image between y_start and y_end will be tiled vertically. "
+ 			"This is useful to get background images to fit the size of the text or a widget, while preserving its borders undistorted, "
+ 			"which is the usuall result of simple scaling.\n"
+-			"If you want to keep image proportions while resizing-use \"proportional\" instead of specific size for particular dimention.",
++			"If you want to keep image proportions while resizing-use \"proportional\" instead of specific size for particular dimension.",
+ 	"crops image to arbitrary area within it, optionally tinting it to specific color.",
+ 	"tiles an image to specified area, optionally tinting it to specific color.",
+ 	"adjusts Hue, Saturation and/or Value of an image and optionally tile an image to arbitrary area.\n"
+diff --git a/libAfterBase/layout.h b/libAfterBase/layout.h
+index b25244a..ea5ee74 100644
+--- a/libAfterBase/layout.h
++++ b/libAfterBase/layout.h
+@@ -14,7 +14,7 @@ extern "C" {
+  * to place multiple elements within the window, with different
+  * characteristics, like fixed width/height, overlapping elements, etc.
+  *
+- * We define layout (MyLayout) as a two-dimentional grid of rows and
++ * We define layout (MyLayout) as a two-dimensional grid of rows and
+  * columns, on the crossing points of which layout elements (MyLayoutElem)
+  * are located. Some of the crossings may be empty, some elements may
+  * span several rows and/or columns. Some elements may have fixed size,
+@@ -75,7 +75,7 @@ typedef struct ASLayout
+                                          /* should be ample for anything  */
+     unsigned short dim_x, dim_y, count ;
+ 
+-    ASLayoutElem **rows, **cols;         /* 2 dimentional array of pointers */
++    ASLayoutElem **rows, **cols;         /* 2 dimensional array of pointers */
+ 	ASLayoutElem *disabled ;             /* elements that has been
+ 										  * temporarily taken out of
+ 										  * the circulation */
+diff --git a/libAfterConf/Wharf.c b/libAfterConf/Wharf.c
+index 8536134..9a1c33e 100644
+--- a/libAfterConf/Wharf.c
++++ b/libAfterConf/Wharf.c
+@@ -434,7 +434,7 @@ unsigned long WharfSpecialFunc (ConfigDef * config)
+ 	if ((pterm = FindStatementTerm (config->tdata, &WharfSyntax)) == NULL)
+ 		if (mystrncasecmp (config->tdata, "~Folders", 7) == 0) {
+ 			show_error
+-					(" config line %d: ~Folders keyword is no longer supported. \nPlease Update your configuration to use ~Folder instead!\n Please Accept our apologies for any inconvinience.",
++					(" config line %d: ~Folders keyword is no longer supported. \nPlease Update your configuration to use ~Folder instead!\n Please Accept our apologies for any inconvenience.",
+ 					 config->line_count);
+ 			pterm = FindStatementTerm (WHARF_FOLDER_END, &WharfSyntax);
+ 		}
+@@ -476,7 +476,7 @@ unsigned long WharfSpecialFunc (ConfigDef * config)
+ 		if ((pterm = FindStatementTerm (config->tline, config->syntax)) == NULL) {	/* courtesy check for mistyped Folder keyword : */
+ 			if (mystrncasecmp (config->tline, "Folders", 7) == 0) {
+ 				show_error
+-						(" config line %d: Folders keyword is no longer supported. \nPlease Update your configuration to use Folder instead!\n Please Accept our apologies for any inconvinience.",
++						(" config line %d: Folders keyword is no longer supported. \nPlease Update your configuration to use Folder instead!\n Please Accept our apologies for any inconvenience.",
+ 						 config->line_count);
+ 				pterm = FindStatementTerm ("Folder", config->syntax);
+ 			}
+@@ -511,7 +511,7 @@ unsigned long WharfSpecialFunc (ConfigDef * config)
+ 		show_error
+ 				(" config line %d: Function is not defined for the button. Use Nop if no action is desired..",
+ 				 config->line_count);
+-		/* function is ommited ! */
++		/* function is omitted ! */
+ 		PopSyntax (config);
+ 		PopStorage (config);
+ 	}
+diff --git a/libAfterConf/afterconf.h b/libAfterConf/afterconf.h
+index 3fabfd2..c0531a0 100644
+--- a/libAfterConf/afterconf.h
++++ b/libAfterConf/afterconf.h
+@@ -695,10 +695,10 @@ struct FreeStorageElem *MyStyleSpecialTerms2FreeStorage (MyStyleDefinition *msd,
+  *     [SouthEast   <pixmap>]
+  *     [SouthWest   <pixmap>]
+  * #alternative form :
+- *     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is ommited -
++ *     [Side        North|South|East|West|Any [<pixmap>]] - if pixmap is omitted -
+  *                                                          empty bevel will be drawn
+  *     [NoSide      North|South|East|West|Any]
+- *     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is ommited -
++ *     [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] - if pixmap is omitted -
+  *                                                                          empty bevel will be drawn
+  *     [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+  * #new settings :
+diff --git a/libAfterImage/ChangeLog b/libAfterImage/ChangeLog
+index 2b265d8..e151365 100644
+--- a/libAfterImage/ChangeLog
++++ b/libAfterImage/ChangeLog
+@@ -2151,7 +2151,7 @@ CHANGELOG
+  * done with about 50% of ascompose documentation.
+ 
+ [2001-12-31: sashav]
+- * Fixed HSV and HLS colorspaces to correctly assign meaningfull HUE values
++ * Fixed HSV and HLS colorspaces to correctly assign meaningful HUE values
+    with straight mapping onto 360 degree colorcircle with red being 0, green
+    120 and blue 240 degrees. Fixed adjust_asimage_hsv to correctly translate
+    degrees. debugged <hsv> tag in ascompose. Added ARGB32_RED16 macro and the
+diff --git a/libAfterImage/afterimage.h b/libAfterImage/afterimage.h
+index 8748c22..95c84fb 100644
+--- a/libAfterImage/afterimage.h
++++ b/libAfterImage/afterimage.h
+@@ -1,7 +1,7 @@
+ #ifndef LIB_AFTERIMAGE_H_HEADER_INCLUDED
+ #define LIB_AFTERIMAGE_H_HEADER_INCLUDED
+ 
+-/* the follwoing files has to be included in user app to get access to
++/* the following files has to be included in user app to get access to
+  * libAfterImage functionality.
+  */
+ #include "afterbase.h"
+@@ -47,7 +47,7 @@
+  * libAfterImage has been implemented as an attempt to address several
+  * issues. First one, and most important is that X Window System
+  * completely lacks any tools for image manipulation, except for very
+- * rudimentary operations. With Introduction of Render extentions in
++ * rudimentary operations. With Introduction of Render extensions in
+  * XFree86 4.0 that situation is changing, but still is far from
+  * perfect. There need is therefore to implement client side image
+  * manipulation. That inturn creates a problem of image data transfer
+diff --git a/libAfterImage/apps/astext.c b/libAfterImage/apps/astext.c
+index 0629f50..3fa091f 100644
+--- a/libAfterImage/apps/astext.c
++++ b/libAfterImage/apps/astext.c
+@@ -466,7 +466,7 @@ int main(int argc, char* argv[])
+  * DESCRIPTION
+  * On this step we have 2 images ready for us - background and texturized
+  * text. At this point we need to merge them together by alpha-blending
+- * text over background (remeber - text is alpha-channel of foreground
++ * text over background (remember - text is alpha-channel of foreground
+  * texture). At the same time we would like to add some nice bevel border
+  * around entire image. To accomplish that task all we have to do is setup
+  * ASImageLayer structure for both background and foreground, and apply
+diff --git a/libAfterImage/apps/astile.c b/libAfterImage/apps/astile.c
+index 88d2860..daadd89 100644
+--- a/libAfterImage/apps/astile.c
++++ b/libAfterImage/apps/astile.c
+@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
+  * the server easily. That is why to_xim argument is set to ASA_XImage.
+  * As the result obtained ASImage will not have any data in its buffers,
+  * but it will have ximage member set to point to valid XImage.
+- * Subsequently we enjoy that convinience, by setting use_cached to True
++ * Subsequently we enjoy that convenience, by setting use_cached to True
+  * in call to asimage2pixmap(). That ought to save us a lot of processing.
+  *
+  * Tinting works in both directions - it can increase intensity of the
+diff --git a/libAfterImage/asfont.h b/libAfterImage/asfont.h
+index f8a111f..202b93e 100644
+--- a/libAfterImage/asfont.h
++++ b/libAfterImage/asfont.h
+@@ -106,7 +106,7 @@ struct ASFont;
+ typedef struct ASGlyph
+ {
+ 	CARD8 		   *pixmap ;        /* glyph's RLE encoded pixmap */
+-	short 	width, height ;	/* meaningfull width and height
++	short 	width, height ;	/* meaningful width and height
+ 									 * of the glyphs pixmap */
+ 	short  lead, step ;			    /* distance pen position to glyph
+ 									 * beginning and to the next glyph */
+@@ -364,7 +364,7 @@ void    destroy_font_manager( struct ASFontManager *fontman, Bool reusable );
+  * DESCRIPTION
+  * open_freetype_font() will attempt to find font file in any of the
+  * directories specified in ASFontManager's font_path. If it fails to do
+- * so - then it will check if filename has alldigit extentions. It will
++ * so - then it will check if filename has alldigit extensions. It will
+  * then try to interpret that extension as a face number, and try and
+  * find the file with extension stripped off.
+  * If file was found function will atempt to read it using FreeType
+@@ -565,7 +565,7 @@ Bool get_fancy_text_size( const void *text,
+  * x       - pointer to the variable to receive horizontal spacing value.
+  * y       - pointer to the variable to receive vertical spacing value.
+  * RETURN VALUE
+- * True if meaningfull information has been returned.
++ * True if meaningful information has been returned.
+  * DESCRIPTION
+  * Returns inter-glyph spacing of specified font.
+  *********/
+diff --git a/libAfterImage/asimagexml.c b/libAfterImage/asimagexml.c
+index 90f0fa9..cca19ba 100644
+--- a/libAfterImage/asimagexml.c
++++ b/libAfterImage/asimagexml.c
+@@ -1921,7 +1921,7 @@ handle_asxml_tag_scale( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* par
+  * size of the text or a widget, while preserving its borders undistorted, 
+  * which is the usuall result of simple scaling.
+  * If you want to keep image proportions while resizing-use "proportional"
+- * instead of specific size for particular dimention.
++ * instead of specific size for particular dimension.
+  ******/
+ static ASImage *
+ handle_asxml_tag_slice( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* parm, ASImage *imtmp, int width, int height)
+@@ -1971,7 +1971,7 @@ handle_asxml_tag_slice( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* par
+  * This tag applies to the first image contained within the tag.  Any
+  * further images will be discarded.
+  * If you want to keep image proportions while resizing-use "proportional"
+- * instead of specific size for particular dimention.
++ * instead of specific size for particular dimension.
+  ******/
+ static ASImage *
+ handle_asxml_tag_pixelize( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* parm, ASImage *imtmp, int width, int height)
+@@ -2020,7 +2020,7 @@ handle_asxml_tag_pixelize( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t*
+  * This tag applies to the first image contained within the tag.  Any
+  * further images will be discarded.
+  * If you want to keep image proportions while resizing-use "proportional"
+- * instead of specific size for particular dimention.
++ * instead of specific size for particular dimension.
+  ******/
+ static ASImage *
+ handle_asxml_tag_color2alpha( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* parm, ASImage *imtmp, int width, int height)
+@@ -2201,7 +2201,7 @@ handle_asxml_tag_tile( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* parm
+  * affected_radius
+  *          Optional. Value in degrees to be used in order to
+  *          calculate the range of affected hues. Range is determined by
+- *          substracting and adding this value from/to affected_hue.
++ *          subtracting and adding this value from/to affected_hue.
+  * hue_offset
+  *          Optional. Value by which to adjust the hue.
+  * saturation_offset
+diff --git a/libAfterImage/asstorage.c b/libAfterImage/asstorage.c
+index ace133c..a071183 100644
+--- a/libAfterImage/asstorage.c
++++ b/libAfterImage/asstorage.c
+@@ -1952,7 +1952,7 @@ query_storage_slot(ASStorage *storage, ASStorageID id, ASStorageSlot *dst )
+ 				LOCAL_DEBUG_OUT( "target_id = %lX", target_id );
+ 				if( target_id == id ) 
+ 				{
+-					show_error( "reference refering to self id = %lX", id );
++					show_error( "reference referring to self id = %lX", id );
+ 					return False;
+ 				}
+ 				return query_storage_slot(storage, target_id, dst);
+@@ -1984,7 +1984,7 @@ print_storage_slot(ASStorage *storage, ASStorageID id)
+ 				fprintf (stderr, " : References storage ID 0x%lX\n\t>", (unsigned long)target_id);
+ 				if( target_id == id ) 
+ 				{	
+-					show_error( "reference refering to self id = %lX", id );
++					show_error( "reference referring to self id = %lX", id );
+ 					return 0;
+ 				}
+ 				return print_storage_slot(storage, target_id);
+@@ -2041,7 +2041,7 @@ forget_data(ASStorage *storage, ASStorageID id)
+ 				if( target_id != id ) 
+ 					forget_data( storage, target_id );					
+ 				else
+-					show_error( "reference refering to self id = %lX", id );
++					show_error( "reference referring to self id = %lX", id );
+ 			}	 
+ 			LOCAL_DEBUG_OUT( "id = %lX, ref_count = %d;", id, slot->ref_count );
+ 			if( slot->ref_count >= 1 ) 
+@@ -2087,7 +2087,7 @@ dup_data(ASStorage *storage, ASStorageID id)
+ 				if( target_id != id ) 
+ 					target_slot = find_storage_slot( find_storage_block( storage, target_id ), target_id );
+ 				else
+-					show_error( "reference refering to self id = %lX", id );
++					show_error( "reference referring to self id = %lX", id );
+ 			}else
+ 				target_slot = slot ; 	
+ 			
+diff --git a/libAfterImage/blender.c b/libAfterImage/blender.c
+index e18ec60..19d98e8 100644
+--- a/libAfterImage/blender.c
++++ b/libAfterImage/blender.c
+@@ -322,7 +322,7 @@ merge_scanlines_func_desc std_merge_scanlines_func_list[] =
+   { "overlay", 7, overlay_scanlines, "some weird image overlaying(see GIMP)" },
+   { "saturate", 8, saturate_scanlines, "saturate bottom image same as top image"},
+   { "screen", 6, screen_scanlines, "another weird image overlaying(see GIMP)" },
+-  { "sub", 3, sub_scanlines, "color substraction with saturation" },
++  { "sub", 3, sub_scanlines, "color subtraction with saturation" },
+   { "tint", 4, tint_scanlines, "tinting image with image" },
+   { "value", 5, value_scanlines, "value bottom image same as top image" },
+   { NULL, 0, NULL }
+diff --git a/libAfterImage/import.h b/libAfterImage/import.h
+index b5680a2..d4521b1 100644
+--- a/libAfterImage/import.h
++++ b/libAfterImage/import.h
+@@ -258,7 +258,7 @@ Bool load_asimage_list_entry_data( ASImageListEntry *entry, size_t max_bytes );
+ 
+ /****f* libAfterImage/import/file2pixmap()
+  * NAME
+- * file2pixmap() - convinience function to load file into X Pixmap.
++ * file2pixmap() - convenience function to load file into X Pixmap.
+  * SYNOPSIS
+  * Pixmap file2pixmap( struct ASVisual *asv, Window root,
+  *                     const char *realfilename,
+diff --git a/libAfterImage/transform.h b/libAfterImage/transform.h
+index f565347..8714e30 100644
+--- a/libAfterImage/transform.h
++++ b/libAfterImage/transform.h
+@@ -452,7 +452,7 @@ ASImage* adjust_asimage_hsv( ASVisual *asv, ASImage *src,
+  *********/
+ /****f* libAfterImage/transform/create_asimage_from_vector()
+  * NAME
+- * create_asimage_from_vector() - convinience function allowing to 
++ * create_asimage_from_vector() - convenience function allowing one to
+  * create new ASImage, set its vector data and colorize it using 
+  * palette - all in one step.
+  * SYNOPSIS
+diff --git a/libAfterImage/ximage.h b/libAfterImage/ximage.h
+index 2b2fb27..4154425 100644
+--- a/libAfterImage/ximage.h
++++ b/libAfterImage/ximage.h
+@@ -47,7 +47,7 @@ extern "C" {
+  * DESCRIPTION
+  * picture_ximage2asimage will attempt to create new ASImage with the same
+  * dimensions as supplied XImage. If both XImages are supplied - they must
+- * have same dimentions. XImage will be decoded based on
++ * have same dimensions. XImage will be decoded based on
+  * supplied ASVisual, and resulting scanlines will be encoded into
+  * ASImage.
+  *********/
+@@ -55,7 +55,7 @@ extern "C" {
+  * NAME
+  * ximage2asimage() - same as picture_ximage2asimage with alpha_ximage 
+  * set to NULL. Supplied for compatibility with older versions and for 
+- * convinience.
++ * convenience.
+  * SYNOPSIS
+  * ASImage *ximage2asimage ( struct ASVisual *asv, XImage * xim,
+  *                           unsigned int compression );
+@@ -125,7 +125,7 @@ extern "C" {
+  * picture2asimage will obtain XImage of the requested area of the
+  * X Pixmap, If alpha channel pixmap is supplied - it will be used to 
+  * encode ASImage's alpha channel. Alpha channel pixmap must be either
+- * 8 or 1 bit deep, and it must have the same dimentions as main Pixmap.
++ * 8 or 1 bit deep, and it must have the same dimensions as main Pixmap.
+  *********/
+ /****f* libAfterImage/pixmap2asimage()
+  * NAME
+@@ -153,7 +153,7 @@ extern "C" {
+  * success. NULL on failure.
+  * DESCRIPTION
+  * same as picture2asimage() with alpha pixmap set to None. Supplied for
+- * compatibility and convinience.
++ * compatibility and convenience.
+  *********/
+ ASImage *picture_ximage2asimage (ASVisual *asv, XImage *xim, XImage *alpha_xim, unsigned int compression);
+ ASImage *ximage2asimage (struct ASVisual *asv, XImage * xim, unsigned int compression);
+@@ -224,7 +224,7 @@ ASImage *pixmap2asimage (struct ASVisual *asv, Pixmap p, int x, int y,
+ /****f* libAfterImage/asimage2mask_ximage()
+  * NAME
+  * asimage2mask_ximage() - same as asimage2alpha_ximage(). Supplied for 
+- * convinience and compatibility with older versions.
++ * convenience and compatibility with older versions.
+  * SYNOPSIS
+  * XImage  *asimage2mask_ximage (struct ASVisual *asv, ASImage *im);
+  * INPUTS
+diff --git a/libAfterStep/desktop_category.h b/libAfterStep/desktop_category.h
+index ab5dfa8..e0914b0 100644
+--- a/libAfterStep/desktop_category.h
++++ b/libAfterStep/desktop_category.h
+@@ -80,7 +80,7 @@ typedef struct ASDesktopEntry
+ 	char *StartupWMClass ;
+ #define ASDE_KEYWORD_StartupWMClass_LEN	14
+ 
+-	/* AfterStep extentions : */
++	/* AfterStep extensions : */
+ 	char *IndexName ;
+ #define ASDE_KEYWORD_IndexName_LEN	    9
+ 	char *Aliases ;
+diff --git a/libAfterStep/event.h b/libAfterStep/event.h
+index 2fe6e98..de4f84e 100644
+--- a/libAfterStep/event.h
++++ b/libAfterStep/event.h
+@@ -132,7 +132,7 @@ int  peek_event (register XEvent * event_return);
+ void quietly_unmap_window( Window w, long event_mask );
+ void quietly_reparent_window( Window w, Window new_parent, int x, int y, long event_mask );
+ void safely_destroy_window (Window w);
+-/* convinience function : all the parameters are optional ! */
++/* convenience function : all the parameters are optional ! */
+ Bool query_pointer( Window w,
+ 					Window *root_return, Window *child_return,
+ 					int *root_x_return, int *root_y_return,
+diff --git a/libAfterStep/screen.h b/libAfterStep/screen.h
+index d744884..f550e5a 100644
+--- a/libAfterStep/screen.h
++++ b/libAfterStep/screen.h
+@@ -153,7 +153,7 @@ typedef struct ScreenInfo
+ 
+ 	Bool (*on_dead_window)( Window w );
+ 	
+-	/* supported X extentions : */
++	/* supported X extensions : */
+ 	int XineEventBase, XineErrorBase;
+ 	int	ShmCompletionEventType ;
+ 	int	ShapeEventBase ;
+diff --git a/libAfterStep/shape.c b/libAfterStep/shape.c
+index 6043a5e..97c4893 100644
+--- a/libAfterStep/shape.c
++++ b/libAfterStep/shape.c
+@@ -453,7 +453,7 @@ subtract_rectangle_from_list (ASVector * list, int left, int top,
+ 			continue;
+ 		}
+ 
+-		/* otherwise we can build at most 4 rectangles from each substraction : */
++		/* otherwise we can build at most 4 rectangles from each subtraction : */
+ 		if (top < r_bottom && bottom > r_top) {	/* we may need to create 2 vertical rectangles ( left and right ) : */
+ 			/* left rectangle : */
+ 			tmp.y = r_top;
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index 019224a..3f61af9 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -739,7 +739,7 @@ gen_syntax_doc( const char *source_dir, const char *dest_dir, SyntaxDef *syntax,
+ 		int overview_size = 0 ;
+ 		int tmp ;
+ 		/* we generate up to 4 files in PHP mode : overview, Base config, MyStyles and Config Options
+-		 * Overview and Config Options are always present. Others may be ommited if source is missing 
++		 * Overview and Config Options are always present. Others may be omitted if source is missing
+ 		 * If Overview is too small - say < 1024 bytes - it could be bundled with Config Options */	   
+ 		
+ 		set_flags( doc_class_mask, DOC_CLASS_Overview );
+diff --git a/src/ASDocGen/source/Look/MenuSubItemStyle b/src/ASDocGen/source/Look/MenuSubItemStyle
+index 531a9de..9b47c8a 100644
+--- a/src/ASDocGen/source/Look/MenuSubItemStyle
++++ b/src/ASDocGen/source/Look/MenuSubItemStyle
+@@ -12,8 +12,8 @@
+ 		the "Applications" item with some offset.
+ </para><para>
+ 		It looks much better when this subitems are shown with
+-		different (smaller ) font. To achive that - specify a MyStyle
+-		with asmaller font using the MenuSubItemStyle option in your look
++		different (smaller) font. To achieve that - specify a MyStyle
++		with a smaller font using the MenuSubItemStyle option in your look
+ 		file.
+ </para><para>
+ 		This feature could be turned off or altered by using the
+diff --git a/src/ASDocGen/source/MyFrame/_overview b/src/ASDocGen/source/MyFrame/_overview
+index a68369a..deeb1c4 100644
+--- a/src/ASDocGen/source/MyFrame/_overview
++++ b/src/ASDocGen/source/MyFrame/_overview
+@@ -8,7 +8,7 @@ frame decoration could be built from 9 TBars:</para>
+                    TitleButtonOrder setting ( see below ).</para>
+                 <para>2) 4 frame sides. Each of this have fixed width that is
+                    determined by SideSize setting  or image size if SideSize is
+-                   ommited. Second dimension of the TBar changes to match the
++                   omitted. Second dimension of the TBar changes to match the
+                    size of the window.</para>
+                 <para>3) 4 frame corners. Each of this have both fixed width and
+                    height, as determined by CornerSize setting or image size.</para>
+@@ -23,7 +23,7 @@ frame decoration could be built from 9 TBars:</para>
+ 
+ 
+ <para>  MyFrame allows different MyStyles to be used for titlebar and
+-                frame decorations. If any of those are ommited - default
++                frame decorations. If any of those are omitted - default
+                 setting from FWindowStyle/UWindowStyle/SWindowStyle will be
+                 used.</para>
+ 
+@@ -83,10 +83,10 @@ MyFrame "name"
+ 	[SouthWest   <pixmap>]
+     #alternative form :
+ 	[Side        North|South|East|West|Any [<pixmap>]] 
+-	if pixmap is ommited - empty bevel will be drawn
++	if pixmap is omitted - empty bevel will be drawn
+         [NoSide      North|South|East|West|Any]
+         [Corner      NorthEast|SouthEast|NorthWest|SouthWest|Any <pixmap>] 
+-	if pixmap is ommited - empty bevel will be drawn
++	if pixmap is omitted - empty bevel will be drawn
+         [NoCorner    NorthEast|SouthEast|NorthWest|SouthWest|Any]
+     #new settings :
+         [TitleUnfocusedStyle   <style>]
+diff --git a/src/ASDocGen/source/Pager/_overview b/src/ASDocGen/source/Pager/_overview
+index 6cd28f6..0b9701b 100644
+--- a/src/ASDocGen/source/Pager/_overview
++++ b/src/ASDocGen/source/Pager/_overview
+@@ -13,7 +13,7 @@ manner:</para>
+ <para>In case you use Pager to switch your root backgrounds 
+ <command>Wait</command> can be used as shown above.  This will insure that the 
+ <command>Pager</command> has set the root background before you start
+-any furthur apps (like transparent aterms and Eterms).</para>
++any further apps (like transparent aterms and Eterms).</para>
+ 
+ <para>or from within an afterstep menu file by 'Pager':</para>
+ <literallayout>
+diff --git a/src/ASDocGen/source/Wharf/ShapeToContents b/src/ASDocGen/source/Wharf/ShapeToContents
+index ce16b86..9ba3bbc 100644
+--- a/src/ASDocGen/source/Wharf/ShapeToContents
++++ b/src/ASDocGen/source/Wharf/ShapeToContents
+@@ -1,7 +1,7 @@
+ <varlistentry id="options.ShapeToContents">
+ 	<term>ShapeToContents</term>
+ 	<listitem>
+-		<para>Will cause Wharf to use X Shaped extentions and have a window of
++		<para>Will cause Wharf to use X Shaped extensions and have a window of
+ 		non-rectangular shape. Shape is composed from the overall geometry of
+ 		buttons ( see FitContents ), shape of the MyStyle used to draw Wharf
+ 		background ( if BackPixmap 126 or 125 is used ), contents of each
+diff --git a/src/Audio/Audio.man b/src/Audio/Audio.man
+index 192fe55..fedfafa 100644
+--- a/src/Audio/Audio.man
++++ b/src/Audio/Audio.man
+@@ -93,7 +93,7 @@ Anything other then these built in options will be considered a command
+ line parameters for the external player. External player itself has to 
+ be specified at compile time using --with-soundplayer option for configure.
+ Default is "play" utility from the SoX package.
+-If this option is ommited then external player is used with no parameters.
++If this option is omitted then external player is used with no parameters.
+ .IP ""
+ Note: sound file to be played always goes as the last parameter in external 
+ player's command line.
+diff --git a/src/Pager/Pager.man b/src/Pager/Pager.man
+index 18e4555..fd921ce 100644
+--- a/src/Pager/Pager.man
++++ b/src/Pager/Pager.man
+@@ -21,7 +21,7 @@ manner:
+ In case you use Pager to switch your root backgrounds 
+ \fIWait\fP can be used as shown above.  This will insure that the 
+ \fBPager\fP has set the root background before you start
+-any furthur apps (like transparent aterms and Eterms).
++any further apps (like transparent aterms and Eterms).
+ .sp
+ or from within an afterstep menu file by 'Pager':
+ .nf
+diff --git a/src/Wharf/Wharf.c b/src/Wharf/Wharf.c
+index 0fc4372..a072c0e 100644
+--- a/src/Wharf/Wharf.c
++++ b/src/Wharf/Wharf.c
+@@ -2898,7 +2898,7 @@ Bool on_wharf_button_moveresize (ASWharfButton * aswb, ASEvent * event)
+ 		render_wharf_button (aswb);
+ 	}
+ #ifndef SHAPE
+-	swallowed_changes = 0;				/* if no shaped extentions - ignore the changes */
++	swallowed_changes = 0;				/* if no shaped extensions - ignore the changes */
+ #endif
+ 	if (is_canvas_dirty (aswb->canvas) || swallowed_changes != 0) {
+ 		update_canvas_display (aswb->canvas);
+diff --git a/src/afterstep/asinternals.h b/src/afterstep/asinternals.h
+index 9f75fd8..a805c5a 100644
+--- a/src/afterstep/asinternals.h
++++ b/src/afterstep/asinternals.h
+@@ -157,7 +157,7 @@ typedef struct ASWindow
+ 	struct MyFrame    *frame_data;  /* currently selected frame decorations for this window */
+ 
+ 	struct ASTBarData *frame_bars[FRAME_PARTS] ; /* regular sidebar is the same as frame with S, SE and SW parts */
+-	struct ASTBarData *tbar ;                    /* same as frame_bars[FRAME_PARTS] for convinience */
++	struct ASTBarData *tbar ;                    /* same as frame_bars[FRAME_PARTS] for convenience */
+ 	struct ASTBarData *icon_button ;
+ 	struct ASTBarData *icon_title ;
+ 
+diff --git a/src/afterstep/misc.c b/src/afterstep/misc.c
+index 3e1ab65..312ae2e 100644
+--- a/src/afterstep/misc.c
++++ b/src/afterstep/misc.c
+@@ -30,7 +30,7 @@
+ #include "asinternals.h"
+ 
+ /****************************************************************************/
+-/* window management specifics - button ungrabbing convinience functions:   */
++/* window management specifics - button ungrabbing convenience functions:   */
+ /****************************************************************************/
+ inline void ungrab_window_buttons (Window w)
+ {

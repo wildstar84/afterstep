@@ -1,0 +1,7 @@
+<varlistentry id="options.ShortLiving">
+	<term>ShortLiving</term>
+	<listitem>
+		<para>ShortLiving windows are always placed automatically and do
+		not affect AvoidCover stuff.</para>
+	</listitem>
+</varlistentry>

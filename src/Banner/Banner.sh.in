@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if test -f @with_afterdir@/banner; then
+	ascompose -T Banner -f @with_afterdir@/banner --no-shape -q -g +0-0  --topmost --timeout 200 -I
+else
+    	ascompose -T Banner -f @datarootdir@/afterstep/banner --no-shape -q -g +0-0  --topmost --timeout 200 -I	
+fi
+

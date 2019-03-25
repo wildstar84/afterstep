@@ -1,0 +1,6 @@
+<varlistentry id="options.VTiled">
+	<term>VTiled</term>
+	<listitem>
+		<para>Tiles image to fill entire widget's height.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,19 @@
+#!/bin/sh
+# vim: ts=3 et
+# $Id: fix_autogen 264 2011-01-23 12:58:09Z robert $
+
+set -e
+
+[ -d debian ] || cd ..
+[ -d debian ] || cd ..
+[ -d debian ] || { echo "Can't find debian directory" ; exit 1; }
+
+for pkg in "$@"; do
+   fgrep -rl "### Generated from" debian/$pkg  2>/dev/null | while read f ; do
+      echo "Removing autogen comment from $f"
+      sed -e '/^### Generated from.*###$/d' < "$f" > "$f.tmp"
+      chmod --reference="$f" "$f.tmp"
+      touch --reference="$f" "$f.tmp"
+      mv $f.tmp $f
+   done
+done

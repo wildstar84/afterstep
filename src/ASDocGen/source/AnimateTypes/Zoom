@@ -1,0 +1,6 @@
+<varlistentry id="options.Zoom">
+	<term>Zoom</term>
+	<listitem>
+		<para>Windows will only shrink when iconified.</para>
+	</listitem>
+</varlistentry>

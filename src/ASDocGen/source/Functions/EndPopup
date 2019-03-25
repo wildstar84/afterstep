@@ -1,0 +1,6 @@
+<varlistentry id="options.EndPopup">
+	<term>EndPopup</term>
+	<listitem>
+		<para>Terminates a Popup definition.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,8 @@
+<varlistentry id="options.WindowBox">
+	<term>WindowBox <emphasis remap='I'>"windowbox_name"</emphasis></term>
+	<listitem>
+		<para>WindowBox defines an area on the screen/virtual desktop into which a window will
+        be placed on startup.</para>
+		<para>See Also: <ulink url="FeelWindowBox#synopsis">Feel WindowBox definition</ulink> for further details.</para>
+	</listitem>
+</varlistentry>

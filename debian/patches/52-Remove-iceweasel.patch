@@ -1,0 +1,38 @@
+From: Robert Luberda <robert@debian.org>
+Date: Wed, 18 Jan 2017 23:41:53 +0100
+Subject: Remove iceweasel and iceape
+
+Remove both apps from the afterstep config files.
+---
+ afterstep/database | 2 --
+ afterstep/wharf    | 2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/afterstep/database b/afterstep/database
+index 06dff0c..4849e10 100644
+--- a/afterstep/database
++++ b/afterstep/database
+@@ -74,8 +74,6 @@ Style	"Galeon"		IgnoreConfig
+ # , StartsOnDesk 1
+ Style	"Netscape"		Icon netscape.xpm, IgnoreConfig	
+ # , StartsOnDesk 1
+-Style	"Iceape-bin"		IgnoreConfig
+-Style	"Iceweasel"		IgnoreConfig
+ 
+ # Email apps
+ #Style	"Thunderbird-bin"	StartsOnDesk 2
+diff --git a/afterstep/wharf b/afterstep/wharf
+index 85b6e32..1f50d3a 100644
+--- a/afterstep/wharf
++++ b/afterstep/wharf
+@@ -119,10 +119,8 @@
+ # First available GUI Web Browser :
+ #
+ *Wharf WebBrowser normal/WWW    Exec x-www-browser &
+-*Wharf WebBrowser logos/Firefox Exec "Iceweasel" iceweasel &
+ *Wharf WebBrowser logos/Firefox Exec "Firefox" firefox &
+ *Wharf WebBrowser logos/Firefox Exec "Firefox2" mozilla-firefox &
+-*Wharf WebBrowser logos/mozilla Exec "Iceape" iceape &
+ *Wharf WebBrowser logos/mozilla Exec "Mozilla" mozilla &
+ *Wharf WebBrowser logos/Opera   Exec "Opera Web Browser" opera &
+ *Wharf WebBrowser normal/WWW    Exec sensible-browser &

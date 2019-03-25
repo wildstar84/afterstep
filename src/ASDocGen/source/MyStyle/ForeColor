@@ -1,0 +1,8 @@
+<varlistentry id="options.ForeColor">
+<term>ForeColor <emphasis remap='I'>color</emphasis></term>
+      <listitem>
+<para>Specifies the text color associated with this style. 
+<emphasis remap='I'>color</emphasis>is color definition in one of the <ulink url="ColorScheme#color_values">color formats</ulink> supported by AfterStep.
+</para>
+	</listitem>
+</varlistentry>

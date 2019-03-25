@@ -1,0 +1,62 @@
+From: Juan Picca <jumapico@gmail.com>
+Date: Tue, 19 May 2015 00:00:00 +0000
+Subject: Make build reproducible
+
+Add variable ASDOCGENOPTS in Makefile.in to pass extra options to ASDocGen
+when build the documentation.
+---
+ src/ASDocGen/Makefile.in | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/src/ASDocGen/Makefile.in b/src/ASDocGen/Makefile.in
+index 4476478..c6d4407 100644
+--- a/src/ASDocGen/Makefile.in
++++ b/src/ASDocGen/Makefile.in
+@@ -1,3 +1,6 @@
++# You can set these variables from the command line.
++ASDOCGENOPTS	=
++
+ OBJS		= ASDocGen.o datadoc.o docfile.o robodoc.o xmlproc.o
+ 
+ PROG		= ASDocGen
+@@ -18,18 +21,18 @@ do_compile:    $(OBJS) $(LIBS_DEPEND) Makefile show_flags_cc
+ 		@touch do_compile
+ 
+ doc_man:	do_compile
+-		@echo -n "Generating man pages ..." ; ./ASDocGen -l log.man -t nroff ; echo "Done" ; touch doc_man
++		@echo -n "Generating man pages ..." ; ./ASDocGen -l log.man -t nroff $(ASDOCGENOPTS) ; echo "Done" ; touch doc_man
+ 
+ doc_html:    	do_compile
+-		@echo -n "Generating HTML docs ..." ; ./ASDocGen -l log.html -t html ; echo "Done" ; \
++		@echo -n "Generating HTML docs ..." ; ./ASDocGen -l log.html -t html $(ASDOCGENOPTS) ; echo "Done" ; \
+ 		echo -n "Extracting Visualselect HTML ..." ; tar xf visualselect4html.tar -C html ; echo "Done" ; \
+ 		touch doc_html
+ 
+ doc_xml:	do_compile
+-		@echo -n "Generating XML docs ..." ; ./ASDocGen -l log.xml -t xml ; echo "Done" ; touch doc_xml
++		@echo -n "Generating XML docs ..." ; ./ASDocGen -l log.xml -t xml $(ASDOCGENOPTS) ; echo "Done" ; touch doc_xml
+ 
+ doc_text:    	do_compile
+-		@echo -n "Generating Plain Text docs ..." ; ./ASDocGen -l log.text -t plain ; echo "Done" ; touch doc_text
++		@echo -n "Generating Plain Text docs ..." ; ./ASDocGen -l log.text -t plain $(ASDOCGENOPTS) ; echo "Done" ; touch doc_text
+ 
+ data_php:  	do_compile
+ 		@echo "Generating PHP catalogue of installed data files ..." ; \
+@@ -37,7 +40,7 @@ data_php:  	do_compile
+ 		FONT_PATH="$HOME/.afterstep/desktop/fonts/:/usr/local/share/afterstep/desktop/fonts/:/usr/share/fonts/default/TrueType/:/usr/X11R6/lib/X11/fonts/TTF"; \
+ 		IMAGE_PATH="$HOME/.afterstep/desktop/icons/:/usr/local/share/afterstep/desktop/icons/:$HOME/.afterstep/desktop/:/usr/local/share/afterstep/desktop/:$HOME/.afterstep/desktop/buttons/:/usr/local/share/afterstep/desktop/buttons/:$HOME/.afterstep/backgrounds/:/usr/local/share/afterstep/backgrounds/:/usr/X11R6/include/X11/pixmaps/"; \
+ 		export IMAGE_PATH; export FONT_PATH; \
+-		./ASDocGen -t php --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D data/php -l /log.data.php.log  ; \
++		./ASDocGen -t php --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D data/php -l /log.data.php.log $(ASDOCGENOPTS) ; \
+ 		IMAGE_PATH=$(old_IMAGE_PATH); FONT_PATH=$(old_FONT_PATH); \
+ 		export IMAGE_PATH; export FONT_PATH; \
+ 		echo "Done"
+@@ -86,7 +89,7 @@ install.data_html:  do_compile
+ 			FONT_PATH="@with_afterdir@/desktop/fonts/:@datarootdir@/afterstep/desktop/fonts/:/usr/share/fonts/default/TrueType/:@x_libraries@/X11/fonts/TTF"; \
+ 			IMAGE_PATH="@with_afterdir@/desktop/icons/:@datarootdir@/afterstep/desktop/icons/:@with_afterdir@/desktop/:@datarootdir@/afterstep/desktop/:@with_afterdir@/desktop/buttons/:@datarootdir@/afterstep/desktop/buttons/:@with_afterdir@/backgrounds/:@datarootdir@/afterstep/backgrounds/:@x_includes@/X11/pixmaps/"; \
+ 			export IMAGE_PATH; export FONT_PATH; \
+-			./ASDocGen -t html --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D $(AFTER_DOC_DIR)/html/data -l /dev/null  ; \
++			./ASDocGen -t html --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D $(AFTER_DOC_DIR)/html/data -l /dev/null $(ASDOCGENOPTS) ; \
+ 			IMAGE_PATH=$(old_IMAGE_PATH); FONT_PATH=$(old_FONT_PATH); \
+ 			export IMAGE_PATH; export FONT_PATH; \
+ 			echo "Done"; \

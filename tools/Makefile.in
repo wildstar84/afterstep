@@ -1,0 +1,18 @@
+
+SCRIPTS		= ascommand importasmenu makeastheme installastheme postcard.sh Xpm2Jpg
+
+@MAKEFILECOMMON@
+
+%::%.pl
+	cp -a $< $@
+
+module.clean:
+		rm -f $(basename $(wildcard *.pl))
+
+install.script: $(SCRIPTS)
+
+all: 		$(SCRIPTS)
+
+install:	install.script
+
+uninstall:	uninstall.script

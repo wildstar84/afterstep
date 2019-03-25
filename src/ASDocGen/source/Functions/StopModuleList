@@ -1,0 +1,6 @@
+<varlistentry id="options.StopModuleList">
+	<term>StopModuleList</term>
+	<listitem>
+		<para>Stops all AfterStep modules.</para>
+	</listitem>
+</varlistentry>

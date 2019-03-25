@@ -1,0 +1,25 @@
+OBJS            = Pager.o
+
+# x_pager.o
+
+PROG		= Pager
+
+LIBS_PRIVATE      = $(LIB_AFTERCONF) $(LIB_AFTERSTEP) \
+					$(LIB_AFTERIMAGE) $(LIB_AFTERBASE) $(LIBS_AFTERIMAGE)
+LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) \
+				  $(LIB_AFTERCONF)
+
+@MAKEFILECOMMON@
+
+$(PROG):        $(OBJS) $(LIBS_DEPEND)
+		$(CC) $(OBJS) $(LIBS_ALL) -o $(@)
+
+module.clean:
+		
+install:	install.bin
+#        ln -s -f Pager $(DESTDIR)$(BINDIR)/WPager
+#        ln -s -f Pager $(DESTDIR)$(BINDIR)/XPager
+#        ln -s -f Pager $(DESTDIR)$(BINDIR)/YPager
+#        ln -s -f Pager $(DESTDIR)$(BINDIR)/ZPager
+
+uninstall:	uninstall.bin

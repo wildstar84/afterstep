@@ -1,0 +1,6 @@
+<varlistentry id="options.Virtual">
+	<term>Virtual</term>
+	<listitem>
+		<para>Defines that area is in virtual coordinates.</para>
+	</listitem>
+</varlistentry>

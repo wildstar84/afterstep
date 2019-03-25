@@ -1,0 +1,6 @@
+<varlistentry id="options.RightBtnBackground">
+	<term>RightBtnBackground</term>
+	<listitem>
+		<para>Defines the background to be used for the right buttons.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleBackground">
+	<term>TitleBackground</term>
+	<listitem>
+		<para>Defines the background to be used for the window title.</para>
+	</listitem>
+</varlistentry>

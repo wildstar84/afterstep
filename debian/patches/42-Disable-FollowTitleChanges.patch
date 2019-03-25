@@ -1,0 +1,22 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sat, 25 Oct 2014 16:15:41 +0200
+Subject: 42 Disable FollowTitleChanges
+
+Disable FollowTitleChanges in feel.Debian (closes: #441897).
+---
+ afterstep/feels/feel.Debian | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/afterstep/feels/feel.Debian b/afterstep/feels/feel.Debian
+index 6946a08..5869933 100644
+--- a/afterstep/feels/feel.Debian
++++ b/afterstep/feels/feel.Debian
+@@ -26,7 +26,7 @@ Yzap 2
+ KeepIconWindows
+ 
+ # when application changes its name - hints will be updated and applied
+-FollowTitleChanges
++#FollowTitleChanges
+ 
+ #
+ # Don't push titlebar when clicked

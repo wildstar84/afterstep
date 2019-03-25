@@ -1,0 +1,24 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 1 Mar 2016 20:17:53 +0100
+Subject: Fix a warning
+
+Fix the following warning by using mystrcasecmp:
+ASDocGen.c:263:9: warning: implicit declaration of function 'strcasecmp' [-Wimplicit-function-declaration]
+if( strcasecmp( argv[i], "none") == 0 )
+---
+ src/ASDocGen/ASDocGen.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index 079c3a2..019224a 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -260,7 +260,7 @@ main (int argc, char **argv)
+ 			}else if( strcmp( argv[i], "--html-data-back" ) == 0 && i+1 < argc && argv[i+1] != NULL ) 
+ 			{
+ 				++i ;				
+-				if( strcasecmp( argv[i], "none") == 0 ) 
++				if( mystrcasecmp( argv[i], "none") == 0 )
+ 					HTML_DATA_BACKGROUND_File = NULL ;
+ 				else
+ 					HTML_DATA_BACKGROUND_File = argv[i] ;

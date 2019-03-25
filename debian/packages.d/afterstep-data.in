@@ -1,0 +1,61 @@
+%#
+%dirs%
+etc/X11/afterstep
+usr/share/doc/afterstep-data/html
+%#
+%#
+%doc-base.doc-html%
+Document: afterstep-html
+Title: AfterStep 2.0 documentation
+Author: Sasha Vasko and Niklas Lunger
+Section: Window Managers
+Abstract: Documentation of the AfterStep Window Manager.
+
+Format: HTML
+Index: /usr/share/doc/afterstep-data/html/index.html
+Files: /usr/share/doc/afterstep-data/html/*.html
+%#
+%#
+%doc-base.faq%
+Document: afterstep-faq
+Title: AfterStep 2.0 FAQ
+Author: Sasha Vasko and Niklas Lunger
+Abstract: This document is an ever growing set of
+ questions, statements, ideas and
+ complaints about AfterStep version 2.0
+Section: Window Managers
+
+Format: HTML
+Index: /usr/share/doc/afterstep-data/html/afterstep_faq.html
+Files: /usr/share/doc/afterstep-data/html/afterstep_faq.html
+%#
+%#
+%install%
+../addons/DebianLogo/mini/Debian			usr/share/afterstep/desktop/icons/mini
+../addons/DebianLogo/logos/Debian			usr/share/afterstep/desktop/icons/logos
+etc/X11/afterstep
+usr/share/afterstep
+usr/share/pixmaps
+usr/share/doc/afterstep-data
+%#
+%#
+%links%
+usr/share/fonts/truetype/freefont/FreeMonoBoldOblique.ttf       usr/share/afterstep/desktop/fonts/DefaultBoldOblique.ttf
+usr/share/fonts/truetype/freefont/FreeMonoBold.ttf              usr/share/afterstep/desktop/fonts/DefaultBold.ttf
+usr/share/fonts/truetype/freefont/FreeMonoOblique.ttf           usr/share/afterstep/desktop/fonts/DefaultOblique.ttf
+usr/share/fonts/truetype/freefont/FreeMono.ttf                  usr/share/afterstep/desktop/fonts/Default.ttf
+usr/share/fonts/truetype/freefont/FreeSansBoldOblique.ttf       usr/share/afterstep/desktop/fonts/DefaultSansBoldOblique.ttf
+usr/share/fonts/truetype/freefont/FreeSansBold.ttf              usr/share/afterstep/desktop/fonts/DefaultSansBold.ttf
+usr/share/fonts/truetype/freefont/FreeSansOblique.ttf           usr/share/afterstep/desktop/fonts/DefaultSansOblique.ttf
+usr/share/fonts/truetype/freefont/FreeSans.ttf                  usr/share/afterstep/desktop/fonts/DefaultSans.ttf
+usr/share/afterstep/feels/feel.Debian                           usr/share/afterstep/non-configurable/0_feel
+usr/share/afterstep/looks/look.DEFAULT                          usr/share/afterstep/non-configurable/0_look
+usr/share/afterstep/backgrounds/Default                         usr/share/afterstep/non-configurable/0_background
+usr/share/afterstep/colorschemes/colorscheme.Stormy_Skies       usr/share/afterstep/non-configurable/0_colorscheme
+%#
+%#
+%lintian-overrides%
+afterstep-data: extra-license-file usr/share/afterstep/desktop/icons/normal/License
+afterstep-data: font-in-non-font-package usr/share/afterstep/desktop/fonts/DefaultFancy.ttf
+afterstep-data: package-contains-broken-symlink usr/share/afterstep/* etc/X11/afterstep/*
+afterstep-data: package-contains-documentation-outside-usr-share-doc usr/share/afterstep/desktop/icons/normal/License

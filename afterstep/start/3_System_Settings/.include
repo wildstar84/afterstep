@@ -1,0 +1,15 @@
+order 8
+
+# Look in:
+#	/usr/share/afterstep/applications/
+#		- OR -
+#	~/.afterstep/applications/
+#
+#	for *.desktop files with the following Categories:
+
+exclude         X-GNOME-Settings-Panel
+exclude         GNOME
+exclude         "X-XfceSettingsDialog"
+FolderReference "System Settings"
+Category        "Settings"
+Category        "SystemSetup"

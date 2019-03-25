@@ -1,0 +1,6 @@
+<varlistentry id="options.MaxWidth">
+	<term>MaxWidth <emphasis remap='I'>width</emphasis></term>
+	<listitem>
+		<para>Places restrains on what size window could be placed in this area.</para>
+	</listitem>
+</varlistentry>

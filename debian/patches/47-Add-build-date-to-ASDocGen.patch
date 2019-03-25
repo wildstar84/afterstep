@@ -1,0 +1,96 @@
+From: Juan Picca <jumapico@gmail.com>
+Date: Mon, 18 May 2015 00:00:00 +0000
+Subject: Add build date to ASDocGen
+
+Add build-date flag for use the given unix time instead current time in
+timestamps.
+---
+ src/ASDocGen/ASDocGen.c | 34 ++++++++++++++++++++++++++++------
+ 1 file changed, 28 insertions(+), 6 deletions(-)
+
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index e8942d9..fe5bff1 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -19,6 +19,9 @@
+ #define LOCAL_DEBUG
+ #define EVENT_TRACE
+ 
++#define _XOPEN_SOURCE   /* for strptime() */
++#include <time.h>
++
+ #include "../../configure.h"
+ #include "../../libAfterStep/asapp.h"
+ #include <unistd.h>
+@@ -195,14 +198,15 @@ asdocgen_usage (void)
+ 	printf ("Usage:\n"
+ 			"%s\t\t[-t |--target plain|text|html|php|xml|nroff|source] [-s | -css stylesheets_file]\n"
+ 			"\t\t\t[--faq-css stylesheets_file] [--html-data-back background] [-d | --data]\n"
+-			"\t\t\t[-S | --source source_dir] [-D | --dst destination_dir]\n"
++			"\t\t\t[-S | --source source_dir] [-D | --dst destination_dir] [--build-date unixtime]\n"
+ 			"-t | --target 		- selects oputput file format\n"
+ 			"-s | --css 		- selects which file to get HTML style sheets from\n"
+ 			"     --faq-css    	- selects which file to get HTML style sheets from for FAQs\n"
+ 			"	  --html-data-back - which image file to use as HTML background ( default background.jpg )\n"
+ 			"-d | --data        - generate HTML catalogue of image/data files\n"
+ 			"-S | --source      - specifies dir to read XML source or data source from\n"
+-			"-D | --dst         - specifies destination directory - where to wriote stuff to\n",
++			"-D | --dst         - specifies destination directory - where to wriote stuff to\n"
++			"     --build-date  - uses the given unix time instead current time\n",
+ 			MyName);
+ 	exit (0);
+ }
+@@ -215,6 +219,8 @@ main (int argc, char **argv)
+ 	char *source_dir = NULL ;
+ 	const char *destination_dir = NULL ;
+ 	Bool do_data = False;
++	Bool use_build_date = False;
++	time_t build_date;
+ 	ASDocType target_type = DocType_Source ;
+ 	/* Save our program name - for error messages */
+ 	set_DeadPipe_handler(DeadPipe);
+@@ -269,6 +275,17 @@ main (int argc, char **argv)
+ 			{
+ 				++i ;				
+ 				destination_dir = argv[i] ;
++			}else if( strcmp( argv[i], "--build-date" ) == 0 && i+1 < argc && argv[i+1] != NULL )
++			{
++				++i ;
++				struct tm tm;
++				if( strptime(argv[i], "%s", &tm) == NULL)
++					show_error( "invalid unix time \"%s\"", argv[i] );
++				else
++				{
++					build_date = mktime(&tm);
++					use_build_date = True;
++				}
+ 			}
+ 		}
+ 	}		  
+@@ -295,7 +312,6 @@ main (int argc, char **argv)
+ 	TopicIndexName = UserTopicIndexName ; 
+ 
+ 	if( target_type < DocType_Source ) {	
+-		time_t curtime;
+    	struct tm *loctime;
+ 		ASHashData hashd;
+ 		
+@@ -306,9 +322,15 @@ main (int argc, char **argv)
+ 		}
+ 		
+ 		/* Get the current time. */
+-		curtime = time (NULL);
+-     	/* Convert it to local time representation. */
+-		loctime = localtime (&curtime);
++		if( use_build_date )
++			loctime = gmtime (&build_date);
++		else
++		{
++			time_t curtime = time (NULL);
++			/* Convert it to local time representation. */
++			loctime = localtime (&curtime);
++		}
++
+ 		strftime(CurrentDateLong, DATE_SIZE, "%b %e %Y", loctime);
+ 		strftime(CurrentDateShort, DATE_SIZE, "%m/%d/%Y", loctime);
+ 	}

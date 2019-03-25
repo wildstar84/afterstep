@@ -1,0 +1,159 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sun, 28 May 2006 14:13:00 +0200
+Subject: 23 Remove tools pl suffix
+
+Remove any .pl or .sh suffixes from installed tools, as required by the Debian Policy.
+---
+ tools/Makefile.in          | 10 +++++++++-
+ tools/README.theme.handler | 24 ++++++++++++------------
+ tools/ascommand.pl         |  2 +-
+ tools/installastheme.pl.in |  4 ++--
+ tools/makeastheme.pl.in    |  4 ++--
+ 5 files changed, 26 insertions(+), 18 deletions(-)
+
+diff --git a/tools/Makefile.in b/tools/Makefile.in
+index e19fb2c..53e01c4 100644
+--- a/tools/Makefile.in
++++ b/tools/Makefile.in
+@@ -1,9 +1,17 @@
+ 
+-SCRIPTS		= ascommand.pl importasmenu makeastheme.pl installastheme.pl postcard.sh Xpm2Jpg
++SCRIPTS		= ascommand importasmenu makeastheme installastheme postcard.sh Xpm2Jpg
+ 
+ @MAKEFILECOMMON@
+ 
++%::%.pl
++	cp -a $< $@
++
+ module.clean:
++		rm -f $(basename $(wildcard *.pl))
++
++install.script: $(SCRIPTS)
++
++all: 		$(SCRIPTS)
+ 
+ install:	install.script
+ 
+diff --git a/tools/README.theme.handler b/tools/README.theme.handler
+index 37cf0bf..4c230bf 100644
+--- a/tools/README.theme.handler
++++ b/tools/README.theme.handler
+@@ -67,31 +67,31 @@ specific subir of the themes dir.
+ Also, the theme pack will only look in ~/GNUstep/Library/AfterStep for 
+ module configuration files.  That means when building a theme, it only
+ takes modifications from that dir.  If the config files aren't there, 
+-makeastheme.pl will ignore that module.  When installing a theme, 
+-installastheme.pl will only edit files in ~/GNUstep/Library/Afterstep.
++makeastheme will ignore that module.  When installing a theme,
++installastheme will only edit files in ~/GNUstep/Library/Afterstep.
+ If it doesn't find any modules there, it will skip that module.  At a
+ minimum, you should have 'wharf', 'pager', and 'winlist' files in the
+ ~/GNUstep/Library/AfterStep dir.
+ 
+-Both installastheme.pl and makeastheme.pl take the same command line
++Both installastheme and makeastheme take the same command line
+ arguments.  The arguments can be in any order.  The directory from
+ which the scripts are called is irrelevant.  All directory paths are
+ coded into the scripts and double-checked at runtime.  After running
+-installastheme.pl, you will need to manually restart AfterStep for the 
++installastheme, you will need to manually restart AfterStep for the
+ changes to take place.
+ 
+-When making the themes, you simply run 'makeastheme.pl' with the '--theme
++When making the themes, you simply run 'makeastheme' with the '--theme
+ <theme_name>' argument and any any of the other command line arguments you
+ might want to use.  This script will grab all the config files necessary
+ and all images specified within those config files.  It then creates the
+ theme in your '~/GNUstep/Library/AfterStep/desktop/themes' directory in
+ both .tar.gz format and in a directory by the same name.
+ 
+-Usage: [make|install]astheme.pl [--theme <theme_name>] [--no_wharf] [--no_pager] [--no_winlist] [--no_background]
++Usage: [make|install]astheme [--theme <theme_name>] [--no_wharf] [--no_pager] [--no_winlist] [--no_background]
+ 
+ --theme:	this option is used to specify the theme to install.
+-		With installastheme.pl it is mandatory.  With
+-		makeastheme.pl if unspecified, the $USER
++		With installastheme it is mandatory.  With
++		makeastheme if unspecified, the $USER
+ 		environmental variable will be used instead.
+ 
+ --no_wharf:
+@@ -99,10 +99,10 @@ Usage: [make|install]astheme.pl [--theme <theme_name>] [--no_wharf] [--no_pager]
+ --no_winlist:
+ --no_background:	Each of these options tell the scripts to skip 
+ 			processing for each of these modules.  For
+-			makeastheme.pl it is similar to saying, "I
++			makeastheme it is similar to saying, "I
+ 			don't have anything interesting in this
+ 			module, don't store those options in the
+-			theme."	For installastheme.pl it is similar to 
++			theme."	For installastheme it is similar to
+ 			saying, "I really like my <module>, don't
+ 			change any settings in there."
+ 
+@@ -134,6 +134,6 @@ notice when you change the background.
+ 
+ TODO
+ 
+--- Implement uninstallastheme.pl
++-- Implement uninstallastheme
+ -- Add support for sounds
+--- makeastheme.pl needs to be more modular as installastheme.pl
++-- makeastheme needs to be more modular as installastheme
+diff --git a/tools/ascommand.pl b/tools/ascommand.pl
+index 5c886a3..51827fb 100755
+--- a/tools/ascommand.pl
++++ b/tools/ascommand.pl
+@@ -174,7 +174,7 @@ my ($file, $interactive, $window_id);
+ my $module_socket;
+ 
+ sub version {
+-  print "ascommand.pl version $version\n";
++  print "ascommand version $version\n";
+ }
+ 
+ sub usage {
+diff --git a/tools/installastheme.pl.in b/tools/installastheme.pl.in
+index 8a05b1b..2ec9dcb 100644
+--- a/tools/installastheme.pl.in
++++ b/tools/installastheme.pl.in
+@@ -102,7 +102,7 @@ my %MOD_FLAGS = (
+ 
+ ###################
+ # Defines
+-my $PROGRAM_NAME = "installastheme.pl";
++my $PROGRAM_NAME = "installastheme";
+ my $VERSION_MAJOR = 0;
+ my $VERSION_MINOR = 5;
+ my $VERSION_PATCH = 3;
+@@ -526,7 +526,7 @@ close BASE_FILE;
+ close BASE_INPUT;
+ 
+ if ($UPDATE_AS) {
+-  exec('ascommand.pl', 'Restart "" afterstep');
++  exec('ascommand', 'Restart "" afterstep');
+ }
+ 
+ sub edit_config {
+diff --git a/tools/makeastheme.pl.in b/tools/makeastheme.pl.in
+index a79d848..8037cce 100644
+--- a/tools/makeastheme.pl.in
++++ b/tools/makeastheme.pl.in
+@@ -122,7 +122,7 @@ my %LOOK_IMAGE_OPTIONS = (
+ 
+ ###################
+ # Defines
+-my $PROGRAM_NAME = "makeastheme.pl";
++my $PROGRAM_NAME = "makeastheme";
+ my $VERSION_MAJOR = 0;
+ my $VERSION_MINOR = 5;
+ my $VERSION_PATCH = 3;
+@@ -501,7 +501,7 @@ chdir($TMPDIR);
+ qx{tar cf - "$THEME_NAME" | gzip -9 > "$AFTERSTEP_DIR/themes/$THEME_NAME.tar.gz"};
+ 
+ if ($UPDATE_AS) {
+-  exec('ascommand.pl', 'QuickRestart "" startmenu');
++  exec('ascommand', 'QuickRestart "" startmenu');
+ }
+ 
+ sub get_image {

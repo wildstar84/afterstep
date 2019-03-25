@@ -1,0 +1,6 @@
+<varlistentry id="options.TakeFrameShot">
+	<term>TakeFrameShot <emphasis>"name" filename</emphasis></term>
+	<listitem>
+		<para>Grabs screenshot of the client window including frame decorations and save it in specifyed files.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,6 @@
+<varlistentry id="options.ChangeThemeFile">
+	<term>ChangeThemeFile</term>
+	<listitem>
+		<para>Installs a theme from a provided .tar, .tar.gz, or .tar.bz2 AfterStep theme file.</para>
+	</listitem>
+</varlistentry>

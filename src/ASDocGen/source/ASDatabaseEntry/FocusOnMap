@@ -1,0 +1,6 @@
+<varlistentry id="options.FocusOnMap">
+	<term>FocusOnMap</term>
+	<listitem>
+		<para>Client window will be focused when it is mapped even if it is not directly under mouse pointer.</para>
+	</listitem>
+</varlistentry>

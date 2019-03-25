@@ -1,0 +1,36 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: 05 afterstepdoc
+
+Use sensible-browser to show afterstep's documentation.
+---
+ doc/afterstepdoc.in | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
+
+diff --git a/doc/afterstepdoc.in b/doc/afterstepdoc.in
+index ee04958..22f233b 100755
+--- a/doc/afterstepdoc.in
++++ b/doc/afterstepdoc.in
+@@ -9,21 +9,4 @@
+ # First try standard path, then local, then other possible paths
+ #
+ 
+-for app in sensible-browser x-www-browser firefox mozilla opera konqueror netscape; do 
+-	full_path=`which $app`
+-	if [ "x$full_path" != "x" ] ; then
+-     		$app @datarootdir@/doc/afterstep/html/index.html & exit
+-	fi
+-done
+-
+-for lynx in /usr/bin/lynx /bin/lynx /usr/local/bin/lynx ; do
+-    if [ -x $lynx ] ; then
+-	if [ -x /usr/bin/aterm ] ; then
+-	    exec /usr/bin/aterm -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+-	elif [ -x /usr/local/bin/aterm ] ; then
+-	    exec /usr/local/bin/aterm -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+-	else			       
+-	    exec xterm -bg black -fg white -sl 500 -vb -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+-	fi
+-    fi
+-done
++exec sensible-browser "file://@datarootdir@/doc/afterstep/html/index.html"

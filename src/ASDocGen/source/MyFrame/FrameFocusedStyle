@@ -1,0 +1,6 @@
+<varlistentry id="options.FrameFocusedStyle">
+	<term>FrameFocusedStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>Defines the MyStyle to apply to the window frame if window is in focused state.</para>
+	</listitem>
+</varlistentry>

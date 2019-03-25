@@ -1,0 +1,6 @@
+<varlistentry id="options.PinMenu">
+	<term>PinMenu <emphasis remap='I'>["name"]</emphasis></term>
+	<listitem>
+		<para>Pins menu on desktop.</para>
+	</listitem>
+</varlistentry>

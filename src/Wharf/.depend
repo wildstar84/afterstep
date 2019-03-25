@@ -1,0 +1,23 @@
+./OffiX/DragAndDrop.h:
+
+./OffiX/DragAndDropTypes.h:
+
+./Wharf.o: \
+		../../configure.h \
+		../../libAfterStep/asapp.h \
+		../../libAfterStep/afterstep.h \
+		../../libAfterStep/screen.h \
+		../../libAfterStep/session.h \
+		../../libAfterStep/module.h \
+		../../libAfterStep/parser.h \
+		../../libAfterStep/mystyle.h \
+		../../libAfterStep/mystyle_property.h \
+		../../libAfterStep/balloon.h \
+		../../libAfterStep/aswindata.h \
+		../../libAfterStep/decor.h \
+		../../libAfterStep/event.h \
+		../../libAfterStep/wmprops.h \
+		../../libAfterStep/functions.h \
+		../../libAfterStep/shape.h \
+		../../libAfterStep/desktop_category.h \
+		../../libAfterConf/afterconf.h

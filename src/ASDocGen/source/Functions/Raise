@@ -1,0 +1,6 @@
+<varlistentry id="options.Raise">
+    <term>Raise [<emphasis remap='I'>"name"</emphasis>]</term>
+    <listitem>
+	<para>Allows the user to raise a window.</para>
+    </listitem>
+</varlistentry>

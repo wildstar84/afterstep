@@ -1,0 +1,56 @@
+#
+# Copyright (c) 1998, Guylhem AZNAR <guylhem@oeil.qc.ca>
+#
+
+LIBS_PRIVATE      = ../libAfterConf/libAfterConf.a ../libAfterStep/libAfterStep.a\
+		    ../libAfterImage/libAfterImage.a ../libAfterBase/libAfterBase.a
+
+LIB_INCS= afterconf.h
+
+LIB_OBJS        = AfterStep.o AlignBevel.o Animate.o ASetRoot.o ASMount.o Sound.o \
+		Base.o balloon.o Clean.o Color.o Database.o DesktopEntry.o \
+		Feel.o function.o Ident.o Look.o MyFrame.o MyStyle.o \
+		Pager.o Wharf.o WinList.o WinTabs.o
+
+LIB_SOURCES     = AfterStep.c AlignBevel.c Animate.c ASetRoot.c ASMount.c Sound.c \
+		Base.c balloon.c Clean.c Color.c Database.c DesktopEntry.c \
+		Feel.c function.c Ident.c Look.c MyFrame.c MyStyle.c \
+		Pager.c Wharf.c WinList.c WinTabs.c
+
+LIB_APPS	= PrintDesktopEntries
+
+LIB_DIR_NAME    = libAfterConf
+LIB_NAME        = LIBAFTERCONF
+LIB_STATIC      = libAfterConf.a
+LIB_SHARED      = libAfterConf.so
+LIB_SHARED_CYG  = cygAfterConf.dll
+LIB_SHARED_CYG_AR  = libAfterConf.dll.a
+LIBVER          = @libafterconf_version@
+LIBVERMAJOR     = @libafterconf_version_major@
+
+CONFIG_SCRIPT=afterconf-config 
+
+
+@MAKEFILECOMMONLIB@
+
+test_asdesktop_entry.o: DesktopEntry.c
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) -DTEST_AS_DESKTOP_ENTRY $(INCLUDES) $(EXTRA_INCLUDES) -c DesktopEntry.c -o test_asdesktop_entry.o
+
+test_asdesktop_entry:	test_asdesktop_entry.o
+		$(CC) test_asdesktop_entry.o $(USER_LD_FLAGS) $(LIBS_ALL) $(LIBS_AFTERIMAGE) -o test_asdesktop_entry
+
+make_standard_categories.o:	DesktopEntry.c
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) -DMAKE_STANDARD_CATEGORIES $(INCLUDES) $(EXTRA_INCLUDES) -c DesktopEntry.c -o make_standard_categories.o
+
+make_standard_categories:	make_standard_categories.o
+		$(CC) make_standard_categories.o $(USER_LD_FLAGS) $(LIBS_ALL) $(LIBS_AFTERIMAGE) -o make_standard_categories
+
+PrintDesktopEntries.o:	DesktopEntry.c
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) -DPRINT_DESKTOP_ENTRIES $(INCLUDES) $(EXTRA_INCLUDES) -c DesktopEntry.c -o PrintDesktopEntries.o
+
+PrintDesktopEntries:	PrintDesktopEntries.o
+		$(CC) PrintDesktopEntries.o $(USER_LD_FLAGS) $(LIBS_ALL) $(LIBS_AFTERIMAGE) -o PrintDesktopEntries
+
+install.inc:
+
+

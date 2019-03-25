@@ -1,0 +1,7 @@
+name 		Menu Options
+
+SmallMiniPixmap Folder-MenuEdit
+
+Comment "AfterStep current-session\nmenu behaviors & visuals.\n(temporary unless changed\nin Look configurations)."
+
+#Category 	"AfterStepConfig"

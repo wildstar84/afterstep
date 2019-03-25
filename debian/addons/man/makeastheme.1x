@@ -1,0 +1,135 @@
+.\" $Id: makeastheme.1x,v 1.5 2008-02-10 18:28:30 robert Exp $
+.\" vim:ft=nroff
+.TH MAKEASTHEME 1x "Feb 10th, 2008"
+.SH NAME
+makeastheme, installastheme \- manage themes in the Afterstep windows manager.
+.SH SYNOPSIS
+.B makeastheme
+.RI [\-\-theme " <theme_name>" ] 
+.RI [\-\-no_wharf] 
+.RI [\-\-no_pager] 
+.RI [\-\-no_winlist] 
+.RI [\-\-no_background]
+.PP
+.B installastheme
+.RI [\-\-theme " <theme_name>" ] 
+.RI [\-\-no_wharf] 
+.RI [\-\-no_pager] 
+.RI [\-\-no_winlist] 
+.RI [\-\-no_background]
+.SH DESCRIPTION
+This bundle of two Perl scripts is used to implement themes in the
+AfterStep window manager for X (http://www.afterstep.org). 
+.PP
+At this time, these scripts are becoming solid beta quality.  I would
+still highly recommend you to backup your configuration files in the
+.I ~/.afterstep 
+dir.  The easiest way to undo a theme is
+to simply restore your old files.
+.PP
+This theme pack currently supports the following modules and options:
+.RS
+.nf
+Wharf:                  Pager:
+        BgColor                 Align
+        Pixmap                  Back
+        TextureColor            BalloonBack
+        TextureType             BalloonBorderColor
+                                BalloonBorderWidth
+WinList:                        BalloonFore
+        Font                    DesktopImage
+        Fore                    Font
+        Back                    Hilight
+        Justify                 Image
+        Pixmap (AS 1.5b6 pl2)   SmallFont
+.fi
+.RE
+.PP
+Of course, the look file and desktop background is supported.  Also,
+any images specified in the look file or the module options above are
+also carried with the theme that is built.
+.PP
+This theme pack expects to find the
+.I ~/.afterstep/desktop/themes 
+directory.  Each theme
+should be a subdirectory from there.  When you download a theme, untar 
+it in the themes dir.  Also, when you build a theme, if you want to
+bundle any unique icons for use in the database file, put them in the
+specific subir of the themes dir.
+.PP
+Also, the theme pack will only look in 
+.I ~/.afterstep 
+for module configuration files.  That means when building a theme, it only
+takes modifications from that dir.  If the config files aren't there, 
+.B makeastheme 
+will ignore that module.  When installing a theme, 
+.B installastheme 
+will only edit files in 
+.IR ~/.afterstep .
+If it doesn't find any modules there, it will skip that module.  At a
+minimum, you should have 
+.IR 'wharf' ", " 'pager' ", and " 'winlist' 
+files in the
+.I ~/.afterstep 
+dir.
+.SH OPTIONS
+.PP
+Both 
+.B installastheme 
+and 
+.B makeastheme 
+take the same command line, which can be in any order.  The directory from
+which the scripts are called is irrelevant.  All directory paths are
+coded into the scripts and double-checked at runtime.  After running
+.BR installastheme , 
+you will need to manually restart AfterStep for the changes to take place.
+.PP
+When making the themes, you simply run 
+.B makeastheme
+with the 
+.BI \-\-theme " <theme_name>" 
+argument and any of the other command line arguments you might want to use. 
+This script will grab all the config files necessary
+and all images specified within those config files.  It then creates the
+theme in your 
+.I '~/.afterstep/desktop/themes' 
+.TP 
+.B \-\-theme
+this option is used to specify the theme to install.
+With 
+.B installastheme 
+it is mandatory.  With
+.B makeastheme 
+if unspecified, the $USER
+environmental variable will be used instead.
+.TP 
+.BR \-\-no_wharf ", " \-\-no_pager ", " \-\-no_winlist ", "\-\-no_background
+Each of these options tell the scripts to skip 
+processing for each of these modules.  For
+.B makeastheme 
+it is similar to saying, "I don't have anything interesting in this
+module, don't store those options in the
+theme."	For 
+.B installastheme 
+it is similar to 
+saying, "I really like my 
+.IR <module> , 
+don't change any settings in there."
+.SH SEE ALSO
+.BR afterstep (1x),
+.BR Pager (1x),
+.BR Wharf (1x),
+.BR WinList (1x),
+.br
+.IR /usr/share/doc/afterstep/README.theme.handler.gz " ."
+.SH AUTHORS
+These tools were written by Lathi <alcornd@earthlink.net>.
+.PP
+This manual page was written by Robert Luberda <robert@debian.org>,
+based on the README.theme.handler file,
+for the Debian GNU/Linux system (but may be used by others).
+.SH BUGS
+If you find any, you can email me (mailto:alcornd@earthlink.net) or
+the AfterStep mailing list (mailto:afterstep@linuxcenter.com).
+Alternatively, you can also probably find me on EfNet channel
+#afterstep as Lathi.

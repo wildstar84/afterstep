@@ -1,0 +1,7 @@
+<varlistentry id="options.TitleUStyle">
+	<term>TitleUStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>Alias for TitleUnfocusedStyle.</para>
+	</listitem>
+</varlistentry>
+

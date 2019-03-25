@@ -1,0 +1,6 @@
+<varlistentry id="options.FrameUStyle">
+	<term>FrameUStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>Alias for FrameUnfocusedStyle.</para>
+	</listitem>
+</varlistentry>

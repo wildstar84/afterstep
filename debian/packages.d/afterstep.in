@@ -1,0 +1,90 @@
+%# vim:ts=4:et
+%dirs%
+usr/bin
+usr/share/applications
+usr/share/gnome-session/sessions
+usr/share/gnome/wm-properties
+usr/share/xsessions
+var/lib/afterstep
+%#
+%#
+%docs%
+#BUILD_TREE#/NEW
+#BUILD_TREE#/README
+#BUILD_TREE#/TEAM
+#BUILD_TREE#/tools/README.theme.handler
+#BUILD_TREE#/NEW.*
+%#
+%#
+%examples%
+debian/tmp/usr/bin/importasmenu
+%#
+%#
+%install%
+../../#BUILD_TREE#/libAfterImage/apps/ascompose     usr/bin/
+usr/bin/afterstep
+usr/bin/afterstepdoc
+usr/bin/Animate
+usr/bin/Arrange
+usr/bin/ascolor
+usr/bin/ascommand
+usr/bin/ASFileBrowser
+usr/bin/ASMount
+usr/bin/ASRun
+usr/bin/ASWallpaper
+usr/bin/Banner
+usr/bin/GWCommand
+usr/bin/Ident
+usr/bin/installastheme
+usr/bin/makeastheme
+usr/bin/Pager
+usr/bin/postcard.sh                     usr/share/afterstep/tools
+usr/bin/Wharf
+usr/bin/WinCommand
+usr/bin/WinList
+usr/bin/WinTabs
+usr/share/applications
+usr/share/gnome-session/sessions
+usr/share/gnome/wm-properties
+usr/share/man/man1
+usr/share/xsessions
+var/
+%#
+%#
+%links%
+usr/bin/Wharf                           usr/bin/MonitorWharf
+usr/share/doc/afterstep-data/html       usr/share/doc/afterstep/html
+usr/share/man/man1/AfterStep.1x         usr/share/man/man1/afterstep.1x
+usr/share/man/man1/makeastheme.1x       usr/share/man/man1/installastheme.1x
+usr/share/man/man1/Wharf.1x             usr/share/man/man1/MonitorWharf.1x
+%#
+%#
+%lintian-overrides%
+afterstep: script-not-executable usr/share/afterstep/ucf/afterstep.menu-method
+afterstep: spelling-error-in-manpage usr/share/man/man1/makeastheme.1x.gz Hilight Highlight
+# afterstep provides menu-method file managed by ucf
+afterstep: postinst-has-useless-call-to-update-menus
+afterstep: postrm-has-useless-call-to-update-menus
+%#
+%#
+%maintscript%
+symlink_to_dir /usr/share/doc/afterstep /usr/share/doc/afterstep-data 2.2.12-4~
+%#
+%#
+%manpages%
+debian/addons/man/*.1x
+#BUILD_TREE#/libAfterImage/apps/ascompose.man
+%#
+%#
+%prerm%
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+if [ "$1" = "remove" ] ; then
+    rm -rf /var/lib/afterstep/menu
+fi
+
+exit 0

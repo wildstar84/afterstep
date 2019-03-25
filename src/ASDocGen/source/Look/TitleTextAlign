@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleTextAlign">
+	<term>TitleTextAlign <emphasis>align</emphasis></term>
+	<listitem>
+		<para>Defines how titlebar text should be aligned - Left, Right or Center.</para>
+	</listitem>
+</varlistentry>

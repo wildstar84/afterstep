@@ -1,0 +1,164 @@
+./ashash.o : \
+		config.h \
+		astypes.h \
+		ashash.h \
+		safemalloc.h \
+		output.h \
+		audit.h
+
+./aslist.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		safemalloc.h \
+		selfdiag.h \
+		aslist.h \
+		audit.h
+
+./asvector.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		safemalloc.h \
+		selfdiag.h \
+		asvector.h \
+		audit.h
+
+./audit.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		ashash.h \
+		audit.h \
+		selfdiag.h \
+		mystring.h \
+		safemalloc.h
+
+./fs.o : \
+		config.h \
+		astypes.h \
+		mystring.h \
+		safemalloc.h \
+		fs.h \
+		output.h \
+		audit.h
+
+./layout.o : \
+		config.h \
+		astypes.h \
+		safemalloc.h \
+		output.h \
+		layout.h \
+		audit.h
+
+./mystring.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		safemalloc.h \
+		mystring.h \
+		audit.h
+
+./os.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		mystring.h \
+		safemalloc.h \
+		os.h \
+		audit.h
+
+./output.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		ashash.h \
+		parse.h
+
+./parse.o : \
+		config.h \
+		astypes.h \
+		ashash.h \
+		mystring.h \
+		safemalloc.h \
+		xwrap.h \
+		parse.h \
+		audit.h \
+		output.h \
+		xml.h
+
+./regexp.o : \
+		config.h \
+		astypes.h \
+		mystring.h \
+		safemalloc.h \
+		regexp.h \
+		audit.h
+
+./safemalloc.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		selfdiag.h \
+		safemalloc.h
+
+./selfdiag.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		selfdiag.h
+
+./sleep.o : \
+		config.h \
+		astypes.h \
+		sleep.h
+
+./socket.o : \
+		config.h \
+		astypes.h \
+		safemalloc.h \
+		aslist.h \
+		output.h \
+		socket.h \
+		audit.h
+
+./timer.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		safemalloc.h \
+		timer.h
+
+./trace.o : \
+		config.h \
+		astypes.h \
+		trace.h \
+		trace.h
+
+./xml.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		safemalloc.h \
+		mystring.h \
+		xml.h \
+		selfdiag.h \
+		ashash.h \
+		audit.h
+
+./xprop.o : \
+		config.h \
+		astypes.h \
+		output.h \
+		parse.h \
+		safemalloc.h \
+		xwrap.h \
+		xprop.h \
+		audit.h
+
+./xwrap.o : \
+		config.h \
+		xwrap.h \
+		audit.h \
+		output.h \
+		parse.h

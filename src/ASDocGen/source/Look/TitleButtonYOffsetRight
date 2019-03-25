@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleButtonYOffsetRight">
+	<term>TitleButtonYOffsetRight <emphasis remap='I'>y_offset_val</emphasis></term>
+	<listitem>
+		<para>Determines the distance of the right block of titlebar buttons from the top/bottom of the titlebar</para>
+	</listitem>
+</varlistentry>

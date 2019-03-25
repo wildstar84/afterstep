@@ -1,0 +1,6 @@
+<varlistentry id="options.TakeScreenShot">
+	<term>TakeScreenShot <emphasis>"name" filename</emphasis></term>
+	<listitem>
+		<para>Grabs screenshot of the entire screen and save it in specifyed files.</para>
+	</listitem>
+</varlistentry>

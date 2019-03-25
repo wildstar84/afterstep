@@ -1,0 +1,9 @@
+<varlistentry id="options.CompositionMethod">
+	<term>CompositionMethod <emphasis remap='I'>testure_type</emphasis></term>
+	<listitem>
+		<para>Determines algorithm used to blend all the icons and
+		Wharf background to form the button's image. Valid es are
+		130-145 ( see MyStyles section ). The default value is 131
+		( alpha-blending )</para>
+	</listitem>
+</varlistentry>

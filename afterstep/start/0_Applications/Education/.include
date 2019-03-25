@@ -1,0 +1,12 @@
+# Look in:
+#	/usr/share/afterstep/applications/
+#		- OR -
+#	~/.afterstep/applications/
+#
+#	for *.desktop files with the following Categories:
+
+FolderReference "Education"
+Category        "Education"
+Category        "Science"
+Category        "Engineering"
+Category        "Teaching"

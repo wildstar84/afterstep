@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleSHue">
+	<term>TitleSHue</term>
+	<listitem>
+		<para>Alias for TitleStickyHue.</para>
+	</listitem>
+</varlistentry>

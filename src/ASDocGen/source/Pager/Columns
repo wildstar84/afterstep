@@ -1,0 +1,8 @@
+<varlistentry id="options.Columns">
+	<term>Columns</term>
+	<listitem>
+		<para>Tells afterstep how many columns of desks to use when
+		laying out the pager window. Set to 1 for vertical Pager and
+		define  PagerRows.</para>
+	</listitem>
+</varlistentry>

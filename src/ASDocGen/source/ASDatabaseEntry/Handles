@@ -1,0 +1,7 @@
+<varlistentry id="options.Handles">
+      <term><emphasis remap='I'>Handles</emphasis></term>
+      <listitem>
+<para>Specifies that the app window will display the "low bar" decoration.
+ This is the default for all windows.</para>
+      </listitem>
+</varlistentry>

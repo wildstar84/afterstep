@@ -1,0 +1,66 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 23 Mar 2010 00:14:00 +0100
+Subject: 30 Menu progress display
+
+Make the progress screen less verbose by displaying a line of dots
+instead of menu names.
+---
+ src/afterstep/configure.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/src/afterstep/configure.c b/src/afterstep/configure.c
+index 85cbd80..20b507c 100644
+--- a/src/afterstep/configure.c
++++ b/src/afterstep/configure.c
+@@ -54,6 +54,8 @@
+ 
+ #include "../../libAfterConf/afterconf.h"
+ 
++#include <time.h>
++
+ 
+ typedef struct AfterStepConfig {
+ 	ASModuleConfig asmodule_config;
+@@ -1981,18 +1983,30 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
+ 																 MenuMiniPixmaps) ?
+ 											"Reloading menu pixmaps :" :
+ 											"Unloading menu pixmaps :");
++		time_t startTime = time(NULL);
++		int all_count = 0;
++		if( start_hash_iteration( Scr.Feel.Popups, &i ) ) {
++			do { ++all_count;  } while ( next_hash_item( &i ) );
++		}
++		const int procentage_count = all_count / 25 + 1; // to show about 25 dots of progressbar
++		                                                 // +1 to make sure it's grater than 0
++
+ 		if (start_hash_iteration (Scr.Feel.Popups, &i))
+ 			do {
+ 				MenuData *md = curr_hash_data (&i);
+ 				if (!get_flags (Scr.Look.flags, MenuMiniPixmaps))
++				{
++					++count;
+ 					free_menu_pmaps (md);
++				}
+ 				else {
+ 					char *name = md->name;
+-					Bool newline = (count % 10 == 0);
+ 					if (isdigit (name[0]))
+ 						if (md->first != NULL && md->first->fdata->func == F_TITLE)
+ 							name = md->first->item;
+-					display_progress (newline, newline ? "    %s" : "%s", name);
++					if (count % procentage_count == 0) {
++						display_progress( False, ".");
++					}
+ 					++count;
+ 
+ 					reload_menu_pmaps (md, get_flags (what, PARSE_BASE_CONFIG));
+@@ -2000,6 +2014,9 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
+ 
+ 			} while (next_hash_item (&i));
+ 
++	    time_t endTime = time(NULL);
++	    display_progress( False, "Done.");
++	    fprintf(stderr, "(Re)loaded %d menu items in %d seconds\n", count, (int)difftime(endTime,startTime));
+ 		display_progress (True, "Advertising titlebar properties ...");
+ 		advertise_tbar_props ();
+ 		display_progress (False, "Done.");

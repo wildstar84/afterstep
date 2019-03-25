@@ -1,0 +1,18 @@
+AfterStep for Debian
+----------------------
+
+This is Debian GNU/Linux's prepackaged version of AfterStep, a window manager
+based on FVWM which emulates some of the NEXTSTEP look and feel.
+
+This was packaged by Jonathon D Nelson <jnelson@boa.org>, from
+sources obtained from http://www.afterstep.org/
+
+The changes made beyond the addition of the Debian control files include:
+
+        * Changed several file locations to conform with FHS
+        * Added support for Debian menu system
+	* Wrote missing man pages
+
+The Official AfterStep HomePage can be found at http://www.afterstep.org/
+
+Robert Luberda <robert@debian.org>  Wed, 23 Mar 2005 19:49:48 +0100

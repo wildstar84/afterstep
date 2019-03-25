@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# GPL
+#
+# Copyright (C) 1998, Cristian Gafton <gafton@redhat.com>
+#               1998, Lars Torben Wilson <torben@netmill.com>
+#
+# If netscape isn't available, run lynx in a xiterm
+# First try standard path, then local, then other possible paths
+#
+
+for app in sensible-browser x-www-browser firefox mozilla opera konqueror netscape; do 
+	full_path=`which $app`
+	if [ "x$full_path" != "x" ] ; then
+     		$app @datarootdir@/doc/afterstep/html/index.html & exit
+	fi
+done
+
+for lynx in /usr/bin/lynx /bin/lynx /usr/local/bin/lynx ; do
+    if [ -x $lynx ] ; then
+	if [ -x /usr/bin/aterm ] ; then
+	    exec /usr/bin/aterm -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+	elif [ -x /usr/local/bin/aterm ] ; then
+	    exec /usr/local/bin/aterm -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+	else			       
+	    exec xterm -bg black -fg white -sl 500 -vb -e $lynx @datarootdir@/doc/afterstep/html/index.html &
+	fi
+    fi
+done

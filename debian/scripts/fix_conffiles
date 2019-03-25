@@ -1,0 +1,110 @@
+#!/bin/sh
+# vim: ts=3 et
+# $Id: fix_conffiles 286 2011-06-18 10:23:45Z robert $
+
+set -e
+
+[ -d debian ] || cd ..
+[ -d debian ] || cd ..
+[ -d debian ] || { echo "Can't find debian directory" ; exit 1; }
+
+ASDIR=usr/share/afterstep
+UCFDIR=$ASDIR/ucf
+CONFDIR1=etc/X11/afterstep
+CONFDIR2=etc/menu-methods
+
+gen_dh_script() {
+pkg=$1;    shift
+type=$1; shift
+cfgdir=$1; shift
+args=$*
+script="debian/$pkg.$type.debhelper"
+touch $script
+cat >> "$script.tmp" << EOF
+# Automatically added by $0
+
+cfgdir="$cfgdir"
+ucfdir="/$UCFDIR"
+cfgfiles="$args"
+package="$pkg"
+
+EOF
+case "$type" in
+   postinst)
+      cat >> "$script.tmp" << "EOF"
+if [ "$1" = "configure" ] ; then
+   ucfforce=""
+   if dpkg --compare-versions "$2" le 2.2.11-2~; then
+      ucfforce="--force"
+   fi
+
+   for f in $cfgfiles; do
+      uf="$ucfdir/$f"
+      cf="$cfgdir/${f%.menu-method}"
+      ucf --three-way "$uf" "$cf"
+      ucfr $ucfforce "$package" "$cf"
+   done
+fi
+
+EOF
+   ;;
+   postrm)
+      cat >> "$script.tmp" << "EOF"
+if [ "$1" = "purge" ] ; then
+   # check is ucf is still installed  (see Bug#325905)
+   which ucf >/dev/null && HAS_UCF=yes || HAS_UCF=no
+   which ucfr >/dev/null && HAS_UCFR=yes || HAS_UCFR=no
+
+   for f in $cfgfiles; do
+      cf="$cfgdir/${f%.menu-method}"
+      # we mimic dpkg as closely as possible, so we remove configuration
+      # files with dpkg backup extensions too:
+      for ext in '~' '%' .bak .ucf-new .ucf-old .ucf-dist '';  do
+         rm -f "${cf}${ext}"
+      done
+      if [ "$HAS_UCF" = "yes"  ]; then ucf  --purge "$cf"; fi
+      if [ "$HAS_UCFR" = "yes" ]; then ucfr --purge "$package" "$cf"; fi
+   done
+
+   [ ! -d "$cfgdir" ] || rmdir --parents --ignore-fail-on-non-empty "$cfgdir"
+fi
+
+EOF
+esac
+echo "# End automatically added section" >> "$script.tmp"
+[ -e "$script" ] && cat "$script" >> "$script.tmp"
+mv "$script.tmp" "$script"
+}
+
+
+for pkg in "$@"; do
+   DESTDIR=debian/$pkg;
+   rm -f debian/cfgfiles
+
+   if [ "$pkg" = "afterstep-data" ]; then
+      mkdir -p  "$DESTDIR/$UCFDIR"
+      for x in $DESTDIR/$ASDIR/*; do
+         [ ! -f "$x" ] && continue;
+         bx="${x##*/}"
+         [ "$bx" = "CREDITS" ] && continue
+         mv "$x" "$DESTDIR/$UCFDIR/$bx"
+         ln -sv "/$CONFDIR1/$bx" "$x"
+         echo -n "$bx " >> debian/cfgfiles
+      done
+
+      gen_dh_script afterstep-data postinst "/$CONFDIR1" `cat debian/cfgfiles`
+      gen_dh_script afterstep-data postrm   "/$CONFDIR1" `cat debian/cfgfiles`
+   fi
+
+
+   if [ "$pkg" = "afterstep" ]; then
+      mkdir -p  "$DESTDIR/$UCFDIR"
+      install -p -m 0644  debian/afterstep.menu-method "$DESTDIR/$UCFDIR"
+      gen_dh_script afterstep postinst "/$CONFDIR2" afterstep.menu-method
+      gen_dh_script afterstep postrm   "/$CONFDIR2" afterstep.menu-method
+   fi
+done
+
+rm -f debian/cfgfiles
+exit 0
+

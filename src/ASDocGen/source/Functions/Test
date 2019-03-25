@@ -1,0 +1,6 @@
+<varlistentry id="options.Test">
+	<term>Test</term>
+	<listitem>
+		<para>Do not use. Internal function.</para>
+	</listitem>
+</varlistentry>

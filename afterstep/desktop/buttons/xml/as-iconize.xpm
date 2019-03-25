@@ -1,0 +1,10 @@
+<composite>
+  <bevel border="2 2 1 1" colors="#FFFFFF #000000" solid="0">
+    <solid color="#C0C0C0" width="15" height="15"/>
+  </bevel>
+
+  <tile tint="#010101">
+    <img src="dots/windows_small"/>
+  </tile>
+</composite>
+

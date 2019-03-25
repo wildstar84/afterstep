@@ -1,0 +1,3 @@
+%install%
+#LIBDIR#/libAfterImage.so.*
+#LIBDIR#/libAfterBase.so.*

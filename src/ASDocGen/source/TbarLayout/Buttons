@@ -1,0 +1,6 @@
+<varlistentry id="options.Buttons">
+	<term>Buttons</term>
+	<listitem>
+		<para>Specifies the group of buttons on the left and right side of the titlebar.</para>
+	</listitem>
+</varlistentry>

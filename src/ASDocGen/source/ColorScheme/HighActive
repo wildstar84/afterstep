@@ -1,0 +1,6 @@
+<varlistentry id="options.HighActive">
+	<term>HighActive</term>
+	<listitem>
+		<para>Used for focused menus. Should be similar to Active color, but somewhat lighter.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,12 @@
+<varlistentry id="options.Align">
+	<term>Align <emphasis remap='I'>[type]</emphasis></term>
+	<listitem>
+		<para>it  will  align resulting image according to type.  Possible
+		values are :
+		<para>1: - align to the right of the screen</para>
+		<para>2: - align to the bottom of the screen</para>
+		<para>3: - align to the bottom-right of the screen</para>
+		<para>0 or 4: - align to the center of the screen This option
+		works only in  conjunction  with  the following Pad option.</para>
+	</listitem>
+</varlistentry>

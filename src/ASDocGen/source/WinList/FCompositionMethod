@@ -1,0 +1,7 @@
+<varlistentry id="options.FCompositionMethod">
+	<term>FCompositionMethod</term>
+	<listitem>
+		<para>CompositionMethod for WinList buttons representing
+		focused windows.</para>
+	</listitem>
+</varlistentry>

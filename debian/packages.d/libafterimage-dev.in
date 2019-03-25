@@ -1,0 +1,63 @@
+%dirs%
+usr/share/doc/libafterimage-dev/
+usr/share/man/man3
+%#
+%#
+%doc-base%
+Document: libafterimage-dev
+Title: Generic imaging library originally designed for AfterStep X Window Manager.
+Author: Charlie Schmidt <ishamael@themes.org>
+Abstract: libAfterImage is the imaging library implemented for AfterStep
+ X Window Manager. It has been generalized to be suitable for any
+ application in need of robust graphics engine.
+ .
+ It provides facilities for loading images from files of different
+ formats, compressed in memory storage of images, scaling,
+ tinting/shading, flipping and superimposition of arbitrary number of
+ images over each other. In addition it allows for linear gradients
+ drawing, and antialiased/smoothed text drawing using both  FreeType
+ library and X Window fonts.
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/libafterimage-dev/html/index.html
+Files: /usr/share/doc/libafterimage-dev/html/*.html
+%# 
+%#
+%docs%
+#BUILD_TREE#/libAfterImage/README
+%#
+%#
+%examples%
+#BUILD_TREE#/libAfterImage/apps/*.c
+#BUILD_TREE#/libAfterImage/apps/*.h
+#BUILD_TREE#/libAfterImage/apps/*.man
+#BUILD_TREE#/libAfterImage/apps/*.xpm
+#BUILD_TREE#/libAfterImage/apps/*.ttf
+#BUILD_TREE#/libAfterImage/apps/*.xml
+#BUILD_TREE#/libAfterImage/apps/*.jpg
+#BUILD_TREE#/libAfterImage/apps/*.sh
+#BUILD_TREE#/libAfterImage/apps/README
+#BUILD_TREE#/libAfterImage/apps/Makefile
+%#
+%#
+%install%
+usr/include/libAfterImage
+usr/include/libAfterBase
+#LIBDIR#/libAfterImage.a
+#LIBDIR#/libAfterBase.a
+#LIBDIR#/libAfterImage.so
+#LIBDIR#/libAfterBase.so
+usr/share/doc/libafterimage-dev/html
+usr/bin/afterimage-libs
+usr/bin/afterimage-config
+usr/share/man/man3
+%#
+%#
+%lintian-overrides%
+libafterimage-dev: font-in-non-font-package usr/share/doc/libafterimage-dev/examples/test.ttf.gz
+libafterimage-dev: font-outside-font-dir usr/share/doc/libafterimage-dev/examples/test.ttf.gz
+%#
+%#
+%manpages%
+debian/addons/man/*.1

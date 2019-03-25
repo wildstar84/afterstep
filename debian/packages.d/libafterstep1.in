@@ -1,0 +1,4 @@
+%install%
+#LIBDIR#/libAfterStep.so.*
+#LIBDIR#/libAfterConf.so.*
+#LIBDIR#/libASGTK.so.*

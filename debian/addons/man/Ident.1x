@@ -1,0 +1,27 @@
+.\" $Id: Ident.1x,v 1.1 2005-02-20 18:37:53 robert Exp $
+.\" vim:ft=nroff
+.TH IDENT 1x "February 20th, 2005"
+.SH NAME
+\fBIdent\fP \- the AfterStep window identification module
+
+.SH SYNOPSIS
+.B Ident
+
+.SH DESCRIPTION
+.PP
+The \fBIdent\fP module prompts the user to select a target window, if
+the module was not launched from within a window context in AfterStep.
+After that, the \fBIdent\fP module pops up a window with information
+about the window which was selected.
+.PP
+Although \fBIdent\fP can be run from the command line, it is normally 
+spawned by afterstep from within an afterstep menu file by 'Modules->Ident'.
+
+.SH SEE ALSO
+.BR afterstep (1x)
+
+.SH AUTHOR
+This manual page was written by Robert Luberda <robert@debian.org>,
+based on the old afterstep's Ident manual page,
+for the Debian GNU/Linux system (but may be used by others).
+

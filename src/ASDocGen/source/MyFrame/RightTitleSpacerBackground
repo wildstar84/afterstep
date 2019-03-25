@@ -1,0 +1,6 @@
+<varlistentry id="options.RightTitleSpacerBackground">
+	<term>RightTitleSpacerBackground</term>
+	<listitem>
+		<para>Defines the background of the (by default) inner spacer, right of the window title.</para>
+	</listitem>
+</varlistentry>

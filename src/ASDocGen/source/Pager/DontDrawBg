@@ -1,0 +1,8 @@
+<varlistentry id="options.DontDrawBg">
+	<term>DontDrawBg</term>
+	<listitem>
+		<para>If specified, will not display background image, use  this  with
+		xearth or xfishtank.</para>
+		<para>Please note that this is deprecated, use DontDrawBackground (Look option) instead.</para>
+	</listitem>
+</varlistentry>

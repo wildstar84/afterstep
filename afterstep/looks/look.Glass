@@ -1,0 +1,436 @@
+##########################################################################
+# Look by Sasha Vasko (look.Glass updated May 30, 2003)
+#
+# Inspired by 23 Ounces of Glass theme for E by Nathan Baxter
+#
+#------------------------------------------------------------------------
+# Styles :
+#
+# If there is a style named "default" and no default style is specified,
+# the "default" style will be used as the default
+# Inherited styles will override options.
+
+# default should never be used, so let's make it obvious when it *is* used
+MyStyle "default"
+  Font		DefaultSans.ttf-14
+  ForeColor	InactiveText1
+  BackColor	Inactive1
+  BackMultiGradient  7 Saturation(20,Inactive1Light) 0.0 Inactive1Dark 0.3 Saturation(90,Inactive1Light)
+  ~MyStyle
+
+MyStyle "TitleButtonBalloon"
+  ForeColor	HighActiveText
+  BackColor	HighActiveBack
+  Font		DefaultBold.ttf-14
+  BackMultiGradient  7 Saturation(20,HighActiveBack) 0.0 Value(30,HighActiveBack) 0.3 Saturation(90,HighActiveBack)
+  ~MyStyle
+
+MyStyle "window_font"
+  Font		DefaultSans.ttf-16
+  TextStyle	0
+  ~MyStyle
+
+MyStyle "focused_window_style"
+  Inherit	"window_font"
+  TextStyle	3
+  ForeColor     ActiveText
+  BackColor	Active
+  BackPixmap    125 bars/title_tile_glass_focused
+  ~MyStyle
+
+MyStyle "unfocused_window_style"
+  Inherit       "window_font"
+  ForeColor     InactiveText1
+  BackColor	Inactive1
+  BackPixmap    125 bars/title_tile_glass_unfocused
+  ~MyStyle
+
+MyStyle "sticky_window_style"
+  Inherit       "window_font"
+  ForeColor     InactiveText2
+  BackColor	Inactive2
+  BackPixmap    125 bars/title_tile_glass_sticky
+  ~MyStyle
+
+MyStyle "focused_frame_style"
+  ForeColor     ActiveText
+  BackColor			Saturation(100,Active)
+  BackPixmap  149 	VALUE(100,Saturation(100,Active))
+  ~MyStyle
+
+MyStyle "unfocused_frame_style"
+  ForeColor     InactiveText1
+  BackColor	Saturation(100,Inactive1)
+  BackPixmap  149 	VALUE(100,Saturation(100,Inactive1))
+  ~MyStyle
+
+MyStyle "sticky_frame_style"
+  ForeColor     InactiveText2
+  BackColor	Saturation(100,Inactive2)
+  BackPixmap  149 	VALUE(100,Saturation(100,Inactive2))
+  ~MyStyle
+
+#----------Menu MyStyles---------#
+MyStyle "menu_title_font"
+  Font          DefaultFancy.ttf-17
+  TextStyle     0
+  ~MyStyle
+
+MyStyle "menu_font"
+  Font          Default.ttf-17
+  TextStyle     0
+  ~MyStyle
+
+MyStyle "unfocused_menu_title_style"
+  Inherit       "menu_title_font"
+  ForeColor     InactiveText1
+  BackColor     HighInactive
+  BackPixmap    125 bars/title_tile_glass_menu
+  ~MyStyle
+
+MyStyle "focused_menu_title_style"
+  Inherit       "menu_title_font"
+  ForeColor	ActiveText
+  BackColor     HighActive
+  BackPixmap    125 bars/title_tile_glass_menu_focused
+  ~MyStyle
+
+MyStyle "menu_item_style"
+  Inherit       "menu_font"
+  ForeColor     HighInactiveText
+  BackColor     HighInactiveBack
+  BackPixmap    151 bars/title_tile_glass_mi
+  ~MyStyle
+
+MyStyle "menu_hilite_style"
+  Font          DefaultBoldOblique.ttf-17
+  ForeColor     HighActiveText
+  BackColor     HighActiveBack
+  BackPixmap    151 bars/title_tile_glass_mi_high
+  ~MyStyle
+
+
+# make the stipple background the same as the menu item, or
+# strange border drawing artifacts could occur
+MyStyle "menu_stipple_style"
+  Inherit       "menu_item_style"
+  ForeColor	DisabledText
+  ~MyStyle
+
+MyStyle "menu_subitem_style"
+  Inherit       "menu_item_style"
+  Font		DefaultBold.ttf-12
+  ~MyStyle
+
+#----------Pager MyStyles---------#
+
+MyStyle "*PagerBalloon"
+	Inherit "TitleButtonBalloon"
+~MyStyle
+
+MyStyle "DeskStyle"
+# semitransparent gradient  :
+	BackGradient	8	#77222222 #77EEEEEE
+##  Gradiated Pager -
+# 	BackGradient	2 cyan gray30
+##  Pixmapped Pager -
+# 	BackPixmap	128 Back.xpm
+##  Transparent Pager -
+#	BackPixmap	129
+##  Translucent Pager tinted <color>
+# 	BackPixmap	129 #a8a8a8
+~MyStyle
+
+MyStyle "*PagerActiveDesk"
+   	Font 	       DefaultSansOblique.ttf-12
+	ForeColor      ActiveText
+   	BackColor      Active
+	BackMultiGradient	8  Saturation(20,ActiveLight) 0.0 ActiveDark 0.3 Saturation(90,ActiveLight)	   
+ ~MyStyle
+
+MyStyle "*PagerInActiveDesk"
+   	Font 	       DefaultSansOblique.ttf-12
+	ForeColor      InactiveText2
+   	BackColor      Inactive2
+	BackMultiGradient	8  Saturation(20,Inactive2Light) 0.0 Inactive2Dark 0.3 Saturation(90,Inactive2Light)	   
+ ~MyStyle
+
+MyStyle "Pager_font"
+  Font          DefaultBold.ttf-8
+  TextStyle     0
+  ~MyStyle
+
+
+MyStyle "*PagerFWindowStyle"
+    Inherit	"focused_window_style"
+	Inherit "Pager_font"
+# gradients, pixmap allowed, but no transparency
+~MyStyle
+
+MyStyle "*PagerUWindowStyle"
+    Inherit	"unfocused_window_style"
+	Inherit "Pager_font"
+# gradients, pixmap allowed, but no transparency
+~MyStyle
+
+MyStyle "*PagerSWindowStyle"
+    Inherit	"sticky_window_style"
+	Inherit "Pager_font"
+# gradients, pixmap allowed, but no transparency
+~MyStyle
+
+#----------Wharf MyStyles---------#
+
+MyStyle "*WharfBalloon"
+	Inherit "TitleButtonBalloon"
+~MyStyle
+
+MyStyle "*WharfTile"
+	Font 	       DefaultSansOblique.ttf-12
+	ForeColor      InactiveText2
+	BackColor      Inactive2
+	BackMultiGradient   6 #10222222 0.0 alpha(20,Inactive2Dark) 0.3 alpha(30,Inactive2Light) 0.5 alpha(60,Active) 0.8 alpha(30,ActiveLight) 1.0
+~MyStyle
+
+MyStyle "*WharfFocusedTile"
+	Font 	       DefaultSansOblique.ttf-12
+	ForeColor      ActiveText
+	BackColor      Active
+	BackMultiGradient   6 #10222222 0.0 ActiveDark) 0.3 ActiveLight 0.5 Inactive1 0.8 Inactive1Light) 1.0
+~MyStyle
+
+MyStyle "*MonitorWharfTile"
+	Font 	       DefaultSansOblique.ttf-12
+	ForeColor      InactiveText2
+	BackColor      Inactive2
+	BackPixmap     149 Inactive2
+~MyStyle
+
+#----------WinList MyStyles---------#
+
+MyStyle "WinListUnFocusedBar"
+	Inherit       	"unfocused_window_style"
+	BackMultiGradient	8  Saturation(20,Inactive1Light) 0.0 Inactive1Dark 0.3 Saturation(90,Inactive1Light)	   
+~MyStyle
+
+MyStyle "WinListFocusedBar"
+	Inherit       	"focused_window_style"
+	BackMultiGradient	8  Saturation(20,ActiveLight) 0.0 ActiveDark 0.3 Saturation(90,ActiveLight)
+~MyStyle
+
+MyStyle "WinListStickyBar"
+	Inherit       	"sticky_window_style"
+	BackMultiGradient	8  Saturation(20,Inactive2Light) 0.0 Inactive2Dark 0.3 Saturation(90,Inactive2Light)	
+~MyStyle
+
+MyStyle "*WinListBalloon"
+	Inherit "TitleButtonBalloon"
+~MyStyle
+
+#----------ASMount MyStyles---------#
+
+MyStyle "*ASMountMounted"
+		Inherit      "sticky_window_style"
+   	Font 	       DefaultSansBold.ttf-9
+ ~MyStyle
+
+MyStyle "*ASMountUnmounted"
+		Inherit      "unfocused_window_style"
+   	Font 	       DefaultSans.ttf-9
+ ~MyStyle
+
+
+#----------aterm MyStyles---------#
+
+MyStyle "*aterm"
+	ForeColor      InactiveText2
+	BackColor      Inactive2
+	BackMultiGradient  8 alpha(90,Saturation(20,Inactive2Light)) 0.0 alpha(80,Inactive2Dark) 0.3 alpha(60,saturation(90,Inactive2Light))
+#	BackPixmap     154 bars/title_tile_glass_sticky
+~MyStyle
+
+
+#----------iconized window  Button MyStyles---------#
+
+MyStyle "ButtonPixmap"
+  	BackColor     Black
+	BackMultiGradient  7 Saturation(20,HighActiveBack) 0.0 Value(30,HighActiveBack) 0.3 Saturation(90,HighActiveBack)
+~MyStyle
+
+MyStyle "ButtonText"
+	TextStyle	0
+  	Font		DefaultSans.ttf-13
+~MyStyle
+
+MyStyle "ButtonTitleFocus"
+  	Inherit		"WinListFocusedBar"
+	Inherit		"ButtonText"
+  ~MyStyle
+
+MyStyle "ButtonTitleSticky"
+	Inherit "WinListStickyBar"
+	Inherit		"ButtonText"
+ ~MyStyle
+
+MyStyle "ButtonTitleUnfocus"
+	Inherit "WinListUnFocusedBar"
+	Inherit		"ButtonText"
+  ~MyStyle
+
+# [0|1] Show Title on Buttons how?
+SeparateButtonTitle 0
+#  Border around iconifyied windows ?
+#ButtonNoBorder
+ButtonBevel	None
+ButtonAlign	Center
+# button border defines an area to be drawn around the icon in addition to bevel
+# 0(bevel)+4(spacing)+56(icon)+4(spacing)+0(bevel) == 64
+ButtonIconSpacing  4
+# [x y] Size of application icons ?
+ButtonSize 64 64
+
+# Also lets define colors for the cursor ( from selected colorscheme ) :
+
+CursorFore "Cursor"
+CursorBack "ActiveText"
+#####################################################################
+
+
+
+#  [0-10] Allows selection of move/resize rubberband look
+RubberBand 2
+#  Corner where the resize box goes to: ++, +-, -+, -- (clockwise)
+#ResizeMoveGeometry ++
+
+# 3) TextStyle :
+#  Mode is either 0 (normal), 1 (big 3d), 2 (nice 3d)
+# 3-1) Text : fonts
+IconBox                 1 -80 -1 -1
+
+MyFrame "glass"
+	TitleBevel 		None
+	LeftBtnBackground	bars/title_lbtn_glass
+	LeftBtnBackAlign	HScaled,VScaled,LabelSize
+	LeftSpacerBackground	bars/title_lspacer_glass_transp
+	LeftSpacerBackAlign	VScaled
+	RightSpacerBackground	bars/title_rspacer_glass_transp
+	RightSpacerBackAlign	VScaled
+	RightBtnBackground	bars/title_rbtn_glass
+	RightBtnBackAlign	HScaled,VScaled,LabelSize
+
+#default layout is : Buttons,Spacer,TitleSpacer   Title   TitleSpacer,Spacer,Buttons
+# The following lines will swap it around : 
+#	LeftTitlebarLayout	Spacer,Buttons
+#	RightTitlebarLayout	Buttons,Spacer
+# This will make titlebar not to be sized same as the window :
+#	CondenseTitlebar	Left
+
+	Side North		bars/frame_north_glass_transp
+	Side East		bars/frame_east_glass_transp
+	Side South		bars/frame_south_glass_transp
+	Side West		bars/frame_west_glass_transp
+	Corner NW		bars/frame_nw_glass_transp
+	Corner NE		bars/frame_ne_glass_transp
+	Corner SW		bars/frame_sw_glass_transp
+	Corner SE		bars/frame_se_glass_transp
+	FrameUnfocusedStyle	"unfocused_frame_style"
+	FrameFocusedStyle	"focused_frame_style"
+	FrameStickyStyle	"sticky_frame_style"
+	NoBorder
+~MyFrame
+
+DefaultFrame "glass"
+DecorateFrames 1
+
+DefaultStyle "default"
+FWindowStyle "focused_window_style"
+UWindowStyle "unfocused_window_style"
+SWindowStyle "sticky_window_style"
+
+MenuItemStyle "menu_item_style"
+MenuTitleStyle "unfocused_menu_title_style"
+MenuHiliteStyle "menu_hilite_style"
+MenuStippleStyle "menu_stipple_style"
+MenuSubItemStyle  "menu_subitem_style"
+MenuHiTitleStyle  "focused_menu_title_style"
+
+#All this style does - is it defines an alias for folder image at 
+# the background of menu minipixmaps.
+# it can later be referenced in xml as : 
+# <recall srcid="menu.folder_minipixmap"/>
+
+MyStyle "menu_folder_pixmap"
+	BackPixmap   128   mini/FolderAquaYellow
+#	BackPixmap   128   mini/FolderOpenBlueAqua
+#	BackPixmap   128   mini/FolderOpenRedAqua
+#  standard NeXTish folder : 	
+#	BackPixmap   128   mini/FolderNeXT        	
+#  standard KDE folder : 	
+#	BackPixmap   128   mini/FolderKDECyan
+~MyStyle
+
+
+MArrowPixmap		arrow-dots.xpm
+#  [0/1/2] Draw lines between menu options ?
+DrawMenuBorders 2
+#  [0/1] Texture menu options individually, or the whole menu ?
+TextureMenuItemsIndividually 1
+# [0/1] Do you want minipixmaps in root menu ?
+MenuMiniPixmaps 1
+# [0/1] Sort Start menu entries by 1=alphabetical order, 0=date (default)
+StartMenuSortMode 1
+
+
+# 4) TileBar options :
+# [0/1/2] make a 3 pixel space(0);
+# 	or make a 1 pixel space (WM) beside buttons (1);
+#	or use custom offsets (2).
+TitleButtonStyle	2
+TitleButtonXOffset	6
+TitleButtonYOffset	5
+#  define the number of pixels between titlebar buttons ; 0
+TitleButtonSpacing	3
+
+TitleTextAlign          2
+
+# TitleButtons : [1] [3] [5] [7] [9] (title) [0] [8] [6] [4] [2]
+# order could be altered using TitleButtonOrder setting. Default is equivalent to :
+#
+# TitleButtonOrder 13579T08642
+#
+# for example all 10 buttons could be placed on one side of the title :
+# TitleButtonOrder 1357908642T
+
+
+# Normal buttons
+TitleButton 1 glass-switchwindow 	glass-switchwindow-pressed
+TitleButton 2 glass-kill   	 	glass-kill-pressed
+TitleButton 3 glass-menu 	 	glass-menu-pressed
+TitleButton 4 glass-shade  	 	glass-shade-pressed
+TitleButton 6 glass-iconize 	 	glass-iconize-pressed
+
+# the following is used instead of MenuPinOn :
+TitleButton 5 glass-pin	 		glass-pin-pressed
+
+TitleButtonBalloons
+TitleButtonBalloonBorderHilite	Right,Bottom
+TitleButtonBalloonXOffset	10
+TitleButtonBalloonYOffset	10
+TitleButtonBalloonDelay		200
+TitleButtonBalloonCloseDelay	2000
+TitleButtonBalloonStyle 	"TitleButtonBalloon"
+
+MenuBalloons
+MenuBalloonBorderHilite	Right,Bottom
+MenuBalloonXOffset	100
+MenuBalloonYOffset	-50
+MenuBalloonDelay		2000
+MenuBalloonCloseDelay	10000
+MenuBalloonStyle 	"menu_hilite_style"
+
+# modules specific look : 
+# setting up WinList look : 
+*WinListUnfocusedStyle  "WinListUnFocusedBar"
+*WinListFocusedStyle  	"WinListFocusedBar"
+*WinListStickyStyle  	"WinListStickyBar"
+

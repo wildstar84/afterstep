@@ -1,0 +1,26 @@
+./asdocview.h:
+
+./fltk/ascpui.h:
+
+./ascolor.o: \
+		../../configure.h \
+		../../libAfterStep/asapp.h \
+		../../libAfterImage/afterimage.h \
+		../../libAfterStep/afterstep.h \
+		../../libAfterConf/afterconf.h \
+		../../libAfterStep/colorscheme.h \
+		../../libAfterStep/module.h \
+		../../libAfterStep/event.h \
+		../../libAfterStep/wmprops.h
+
+./asimbrowser.o: \
+		../../configure.h \
+		../../libAfterStep/asapp.h \
+		../../libAfterImage/afterimage.h \
+		../../libAfterStep/afterstep.h \
+		../../libAfterConf/afterconf.h \
+		../../libAfterStep/colorscheme.h \
+		../../libAfterStep/module.h \
+		../../libAfterStep/event.h \
+		../../libAfterStep/wmprops.h \
+		../../libAfterStep/session.h

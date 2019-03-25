@@ -1,0 +1,6 @@
+<varlistentry id="options.UseSkipList">
+	<term>UseSkipList</term>
+	<listitem>
+		<para>Obey SkipWinList flags set by applications or database config.</para>
+	</listitem>
+</varlistentry>

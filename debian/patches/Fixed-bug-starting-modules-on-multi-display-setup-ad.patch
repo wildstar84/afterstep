@@ -1,0 +1,75 @@
+From: Sasha Vasko <sasha@aftercode.net>
+Date: Thu, 29 Aug 2013 11:20:49 -0500
+Subject: Fixed bug starting modules on multi-display setup adding extra dot
+ into display string. Also fixes Fedora bug where 0 is truncated for no
+ reason. Spelling fixes.
+
+---
+ libAfterImage/asimagexml.c |  2 +-
+ libAfterStep/asapp.c       | 19 +++++++++++--------
+ src/afterstep/dbus.c       |  2 +-
+ 3 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/libAfterImage/asimagexml.c b/libAfterImage/asimagexml.c
+index fc3f44a..a536daa 100644
+--- a/libAfterImage/asimagexml.c
++++ b/libAfterImage/asimagexml.c
+@@ -1861,7 +1861,7 @@ handle_asxml_tag_rotate( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* pa
+  * This tag applies to the first image contained within the tag.  Any
+  * further images will be discarded.
+  * If you want to keep image proportions while scaling - use "proportional"
+- * instead of specific size for particular dimention.
++ * instead of specific size for particular dimension.
+  ******/
+ static ASImage *
+ handle_asxml_tag_scale( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* parm, ASImage *imtmp, int width, int height)
+diff --git a/libAfterStep/asapp.c b/libAfterStep/asapp.c
+index f8fa094..5400b2f 100644
+--- a/libAfterStep/asapp.c
++++ b/libAfterStep/asapp.c
+@@ -1426,21 +1426,24 @@ spawn_child (const char *cmd, int singleton_id, int screen,
+ 
+ 		len = strlen ((char *)cmd);
+ 		if (pass_args) {
+-			register int i = 0;
+-
+-			while (display[i])
+-				++i;
+-
+-			while (i > 0 && isdigit (display[--i])) ;
+-			if (display[i] == '.')
+-				display[i + 1] = '\0';
+ /*
+ 			This bit of code seems to break AS restarting
+ 			on Fedora 8. causing DISPLAY=":0.0" to
+ 			become DISPLAY=":0.".  -- Jeremy
++			Fixed by moving code under if(screen_str) -- Sasha Vasko
+ */
+ 			if (screen >= 0)
+ 				screen_str = string_from_int (screen);
++
++			if (screen_str) {
++				register int i = 0;
++
++				while (display[i])	++i;
++				while (i > 0 && isdigit (display[--i])) ;
++				if (display[i] == '.')
++					display[i] = '\0';
++			}
++
+ 			if (w != None)
+ 				w_str = string_from_int (w);
+ 			if (context != C_NO_CONTEXT)
+diff --git a/src/afterstep/dbus.c b/src/afterstep/dbus.c
+index 5486d9f..d7594d9 100644
+--- a/src/afterstep/dbus.c
++++ b/src/afterstep/dbus.c
+@@ -308,7 +308,7 @@ void asdbus_process_messages ()
+ 					CloseSessionClients (False);
+ 					/* we want to end to the very end */
+ 				} else if (strcmp (member, "Stop") == 0) {
+-					asdbus_Notify ("Session is over.", "Buy-buy!", 0);
++					asdbus_Notify ("Session is over.", "Bye-bye!", 0);
+ 					dbus_connection_read_write (ASDBus.session_conn, 0);
+ 					Done (False, NULL);
+ 				}

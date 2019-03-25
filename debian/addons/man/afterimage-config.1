@@ -1,0 +1,94 @@
+.\" $Id: afterimage-config.1 281 2011-03-06 18:47:51Z robert $
+.\" vim:ft=nroff
+.TH AFTERIMAGE-CONFIG 1 "September 1st, 2009"
+.SH NAME
+afterimage-config - script to get information about the installed version of libAfterImage
+.SH SYNOPSIS
+.B afterimage-config
+[\-\-prefix\fI[=PREFIX]\fP] [\-\-exec\-prefix\fI[=PREFIX]\fP] [\-\-version] 
+[\-\-libs [\-\-external\-only]] 
+[\-\-libtool] [\-\-cflags] [\-\-have\-afterbase] [\-\-preferred\-image\-format] [\-\-have\-x\-support]
+[\fILIBRARIES\fP]
+.SH DESCRIPTION
+.PP
+\fIafterimage-config\fP is a tool that is used to configure to determine
+the compiler and linker flags that should be used to compile and link
+programs that use \fIlibAfterImage\fP library. 
+.
+.SH OPTIONS
+\fIafterimage-config\fP accepts the following options:
+.TP 8
+.B  \-\-version
+Print the currently installed version of \fIlibAfterImage\fP on the standard
+output.
+.TP 8
+.B  \-\-libs
+Print the linker flags that are necessary to link a program using \fIlibAfterImage\fP.
+.TP 8
+.B  \-\-libs \-\-external\-only
+Print the linker flags containing only external (i.e. not coming from afterstep package) libraries needed to link a program 
+using \fIlibAfterImage\fP.
+.TP 8
+.B \-\-libtool
+Print the name of file containing \fBlibtool\fP(1) definitions.
+.TP 8
+.B \-\-have\-afterbase
+Print `\fIyes\fP' if \fIlibAfterBase\fP is available.
+.TP 8
+.B \-\-preferred\-image\-format
+Print the image format set as preferred when \fIlibAfterImage\fP was compiled.
+.TP 8
+.B \-\-have\-x\-support
+Print `\fIyes\fP' if \fBX\fP support is available.
+.TP 8
+.B  \-\-cflags
+Print the compiler flags that are necessary to compile a \fIlibAfterImage\fP
+program.
+.TP 8
+.B  \-\-prefix
+Print the prefix with which \fIlibAfterImage\fP was compiled.
+.TP 8
+.BI  \-\-prefix= PREFIX
+If specified, use \fIPREFIX\fP instead of the installation prefix that
+\fIlibAfterImage\fP was built with when computing the output for the
+\-\-cflags and \-\-libs options. This option is also used for the exec
+prefix if \-\-exec\-prefix was not specified. This option must be
+specified before any \-\-libs or \-\-cflags options.
+.TP 8
+.B  \-\-exec\-prefix
+Print the exec\-prefix with which \fIlibAfterImage\fP was compiled.
+.TP 8
+.BI  \-\-exec\-prefix= PREFIX
+If specified, use \fIPREFIX\fP instead of the installation exec prefix that
+\fIlibAfterImage\fP was built with when computing the output for the
+\-\-cflags and \-\-libs options.  This option must be specified before
+any \-\-libs or \-\-cflags options.
+.SH COPYRIGHT
+\fIlibAfterBase\fP
+.nf
+        Copyright \(co 1999-2004 Sasha Vasko     <sasha at aftercode.net>
+        Copyright \(co 2000,2001 Andrew Ferguson <andrew@owsla.cjb.net>
+        Copyright \(co 1999 Ethan Fischer        <allanon@crystaltokyo.com>
+        Copyright \(co 1998 Pierre Clerissi      <clerissi@pratique.fr>
+.fi
+
+\fIlibAfterImage\fP
+.nf
+        Copyright \(co 1999-2004 Sasha Vasko <sasha at aftercode.net>
+        Copyright \(co 2004 Valeriy Onuchin <Valeri dot Onoutchine at cern dot ch>
+        Copyright \(co 2001 Eric Kowalski <eric@beancrock.net>
+        Copyright \(co 1999,2001 Ethan Fisher <allanon@crystaltokyo.com>
+        Copyright \(co 1999-2001 Free Software Foundation, Inc.
+        Copyright \(co 2004 Maxim Nikulin <nikulin at gorodok.net> 
+.fi
+.PP
+This library is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+.SH AUTHOR
+This manual page was written by Robert Luberda <robert@debian.org>,
+strongly based on the cppunit-config man page, which itself
+is an almost word-for-word copy of the gtk-config manpage, written by 
+Owen Taylor.  The cppunit-config man page was modified by E. Sommerlade
+<eric@sommerla.de>.

@@ -1,0 +1,31 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sun, 10 Feb 2008 19:28:00 +0100
+Subject: 24 AsDocGen man
+
+Documentation fixes, correct generated man pages to fix warnings emitted by man.
+---
+ src/ASDocGen/xmlproc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/ASDocGen/xmlproc.c b/src/ASDocGen/xmlproc.c
+index 80f6f4b..5e50125 100644
+--- a/src/ASDocGen/xmlproc.c
++++ b/src/ASDocGen/xmlproc.c
+@@ -179,7 +179,7 @@ write_doc_cdata( const char *cdata, int len, ASXMLInterpreterState *state )
+ 				fputs( "\\&", state->dest_fp );	
+ 			else if ( c == '\\' && state->doc_type == DocType_NROFF ) 
+ 				fputc( '\\', state->dest_fp );	
+-			else if ( c == 'Â˜' && state->doc_type == DocType_NROFF ) 
++			else if ( c == '˜' && state->doc_type == DocType_NROFF )
+ 				c = '~';
+ 			fputc( c, state->dest_fp );
+ 		}		   
+@@ -638,7 +638,7 @@ end_literallayout_tag( xml_elem_t *doc, xml_elem_t *parm, ASXMLInterpreterState
+ 	{	
+ 		fwrite( "</PRE>", 1, 6, state->dest_fp );	  
+ 	}else if( state->doc_type == DocType_NROFF )
+-		fprintf( state->dest_fp, "\n.fi ");
++		fprintf( state->dest_fp, "\n.fi\n");
+ }
+ 
+ void 

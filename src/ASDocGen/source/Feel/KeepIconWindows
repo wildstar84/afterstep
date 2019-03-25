@@ -1,0 +1,7 @@
+<varlistentry id="options.KeepIconWindows">
+<term><emphasis remap='I'>KeepIconWindows</emphasis></term>
+  <listitem>
+<para>Specifies that applications should be allowed to specify their own icon
+windows.</para>
+	</listitem>
+</varlistentry>

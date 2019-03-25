@@ -1,0 +1,6 @@
+<varlistentry id="options.StartIconic">
+	<term>StartIconic</term>
+	<listitem>
+		<para>Causes the pager to start iconified.</para>
+	</listitem>
+</varlistentry>

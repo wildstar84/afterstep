@@ -1,0 +1,7 @@
+<varlistentry id="options.BaseLight">
+	<term>BaseLight</term>
+	<listitem>
+		<para>Color that should be about 10% lighter then the Base color, but have similar hue and saturation.
+Useful for drawing gradiented desktop background.</para>
+	</listitem>
+</varlistentry>

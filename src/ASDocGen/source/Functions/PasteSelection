@@ -1,0 +1,6 @@
+<varlistentry id="options.PasteSelection">
+	<term>PasteSelection</term>
+	<listitem>
+		<para>This function allows for substitute of X clipboard copy-pasting if application is missing it.</para>
+	</listitem>
+</varlistentry>

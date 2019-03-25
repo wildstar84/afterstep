@@ -1,0 +1,22 @@
+From: Robert Luberda <robert@debian.org>
+Date: Wed, 14 Aug 2013 22:54:46 +0200
+Subject: 37 Fix crash with debugging enabled
+
+Fix a crash occurring when afterstep was configured with --enable-debug.
+---
+ libAfterStep/hints.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libAfterStep/hints.c b/libAfterStep/hints.c
+index 8c5a165..bb2a60a 100644
+--- a/libAfterStep/hints.c
++++ b/libAfterStep/hints.c
+@@ -2983,7 +2983,7 @@ void print_clean_hints (stream_func func, void *stream, ASHints * clean)
+ 	if (clean->client_cmd)
+ 		func (stream, "CLEAN.client_cmd = \"%s\";\n", clean->client_cmd);
+ 
+-	func (stream, "CLEAN.extwm_window_type = \"%s\";\n", clean->extwm_window_type);
++	func (stream, "CLEAN.extwm_window_type = \"%ld\";\n", clean->extwm_window_type);
+ }
+ 
+ void

@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleStickyStyle">
+	<term>TitleStickyStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>MyStyle to apply to titlebar if window is in sticky state.</para>
+	</listitem>
+</varlistentry>

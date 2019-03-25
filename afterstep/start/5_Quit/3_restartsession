@@ -1,0 +1,2 @@
+Restart "Restart Window Manager" afterstep -r
+SmallMiniPixmap "normal/Recycle"

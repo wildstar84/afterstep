@@ -1,0 +1,15 @@
+<varlistentry id="options.MenuPinOn">
+	<term>MenuPinOn <emphasis remap='I'>pixmap_name</emphasis></term>
+	<listitem>
+		<para>MenuPinOn is deprecated and AfterStep will reinterpret
+                it, and it will create new TitleButton using last unused
+                TitleButton context. It will then assign PinMenu function to
+                this button. This button will only be shown on titlebars
+                belonging to menu windows. This button behaves just like any
+                other TitleButton - for example you can use TitleButtonOrder to
+                specify where it should go. Problem is you may not know what
+                context AfterStep had chosen for it. The better way would be
+                to explicitly define TitleButton, and assign PinMenu to it in
+                your feel.</para>
+	</listitem>
+</varlistentry>

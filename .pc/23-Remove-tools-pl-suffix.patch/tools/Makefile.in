@@ -1,0 +1,10 @@
+
+SCRIPTS		= ascommand.pl importasmenu makeastheme.pl installastheme.pl postcard.sh Xpm2Jpg
+
+@MAKEFILECOMMON@
+
+module.clean:
+
+install:	install.script
+
+uninstall:	uninstall.script

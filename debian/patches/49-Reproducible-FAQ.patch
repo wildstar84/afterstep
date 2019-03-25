@@ -1,0 +1,23 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sat, 20 Feb 2016 09:37:06 +0100
+Subject: Reproducible FAQ
+
+Fix gen_faq_doc() to sort directory entries by names to ensure
+that FAQ is generated in the correct order.
+---
+ src/ASDocGen/ASDocGen.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index fe5bff1..8011ae5 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -880,7 +880,7 @@ gen_faq_doc( const char *source_dir, const char *dest_dir, ASDocType doc_type )
+ 	
+ 	/* BODY *************************************************************************/
+ 	set_flags( state.flags, ASXMLI_OrderSections );
+-	list_len = my_scandir ((char*)faq_dir, &list, ignore_dots, NULL);
++	list_len = my_scandir ((char*)faq_dir, &list, ignore_dots, direntry_compar_alpha);
+ 	for (i = 0; i < list_len; i++)
+ 	{	
+ 		if ( !S_ISDIR (list[i]->d_mode) )

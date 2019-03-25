@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleButtonBalloons">
+	<term>TitleButtonBalloons</term>
+	<listitem>
+		<para>Turns on displaying of balloons for buttons in the titlebar.</para>
+	</listitem>
+</varlistentry>

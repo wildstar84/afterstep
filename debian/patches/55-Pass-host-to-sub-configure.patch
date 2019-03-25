@@ -1,0 +1,27 @@
+From: Helmut Grohne <helmut@subdivi.de>
+Date: Sun, 20 May 2018 17:27:02 +0000
+Subject: Pass --host option to subprojects ./configure
+
+afterstep fails to cross build from source, because the subprojects
+configured from the main ./configure are configured without --host. I.e.
+the upstream build system fails to propagate --host. I hope that the
+attached patch fixes the problem.
+
+Bugs-Debian: https://bugs.debian.org/899200
+---
+ autoconf/configure.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/autoconf/configure.in b/autoconf/configure.in
+index d553ed1..37e67ab 100644
+--- a/autoconf/configure.in
++++ b/autoconf/configure.in
+@@ -314,6 +314,8 @@ FROM_AFTERSTEP_CONFIGURE=yes
+ export FROM_AFTERSTEP_CONFIGURE
+ 
+ _def_lib_conf_opts=" \
++	--build=${build_alias} \
++	--host=${host_alias} \
+ 	--prefix=${prefix} \
+ 	--exec-prefix=${exec_prefix} \
+ 	--bindir=${bindir} \

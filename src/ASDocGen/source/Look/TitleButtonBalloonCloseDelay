@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleButtonBalloonCloseDelay">
+	<term>TitleButtonBalloonCloseDelay <emphasis remap='I'>milliseconds</emphasis></term>
+	<listitem>
+		<para>Determines the period of time to wait until a TitleButtonBallon is automatically closed.</para>
+	</listitem>
+</varlistentry>

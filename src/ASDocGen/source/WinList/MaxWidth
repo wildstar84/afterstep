@@ -1,0 +1,7 @@
+<varlistentry id="options.MaxWidth">
+	<term>MaxWidth</term>
+	<listitem>
+		<para>This is depreciated and just there for compatibility.
+		Please use MaxSize/MinSize instead.</para>
+	</listitem>
+</varlistentry>

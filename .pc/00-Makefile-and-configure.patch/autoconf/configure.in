@@ -1,0 +1,1016 @@
+dnl# -*- sh -*-
+dnl# Process this file with autoconf to produce a configure script.
+dnl#
+dnl#Copyright (c) 1998 Michal Vitecek <fuf@fuf.sh.cvut.cz>
+dnl#Copyright (c) 1998-2008 Sasha Vasko <sasha at aftercode.net>
+dnl#Copyright (c) 1998 Juergen Sawinski <Juergen.Sawinski@urz.uni-heidelberg.de>
+dnl#Copyright (c) 1997 1998 Guylhem AZNAR <guylhem@oeil.qc.ca>
+
+dnl#AC_INIT(afterstep/autoexec.in)
+AC_INIT(AfterStep,2.2.12,as-bugs@afterstep.org,AfterStep.tar)
+AC_CONFIG_AUX_DIR(autoconf)
+AC_CONFIG_HEADER(config.h:autoconf/config.h.in)
+
+version=$PACKAGE_VERSION
+app_version=$PACKAGE_VERSION
+libafterstep_version="1.17"
+libafterstep_version_major="1"
+libafterstep_name="LIBAFTERSTEP"
+libafterstep_file_name="libAfterStep"
+libafterconf_version="1.17"
+libafterconf_version_major="1"
+libafterconf_name="LIBAFTERCONF"
+libafterconf_file_name="libAfterConf"
+libasgtk_version="1.05"
+libasgtk_version_major="1"
+libasgtk_name="LIBASGTK"
+libasgtk_file_name="libASGTK"
+
+dnl# Setup command-line options
+
+dnl# we need the standard prefixes defined early
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$exec_prefix" = xNONE && exec_prefix="$prefix"
+eval "bindir=$bindir"
+eval "datadir=$datadir"
+eval "datarootdir=$datarootdir"
+eval "mandir=$mandir"
+eval "libdir=$libdir"
+eval "includedir=$includedir"
+
+dnl# directories
+dnl# AC_ARG_WITH(gnustep_dir,	[  --with-gnustep-dir=DIR  GNUstep directory [[~/GNUstep]] ],with_gnustep_dir=$withval, with_gnustep_dir="~/GNUstep")
+dnl# AC_ARG_WITH(gnustep_lib,	[  --with-gnustep-lib=DIR  GNUstep/Library directory [[Library]] ],with_gnustep_lib=$withval, with_gnustep_lib="Library")
+AC_ARG_WITH(afterdir,		[  --with-afterdir=DIR     user AfterStep dir [[$HOME/.afterstep]]],with_afterdir=$withval, with_afterdir="\$HOME/.afterstep")
+
+dnl# helper apps
+AC_ARG_WITH(imageloader,	[  --with-imageloader=APP  used to display images in unsupported format  [[xli -onroot -quiet]] ],with_imageloader=$withval, with_imageloader="xli -onroot -quiet -colors 20")
+AC_ARG_WITH(helpcommand,	[  --with-helpcommand=APP  display manpage for window [[xiterm -e man]] ],with_helpcommand=$withval, with_helpcommand="xiterm -e man")
+
+dnl# look defaults
+AC_ARG_WITH(startsort,		[  --with-startsort=METHOD start menu sorting method [[SORTBYALPHA]] ],with_startsort=$withval, with_startsort="SORTBYALPHA")
+AC_ARG_ENABLE(different_looknfeels, [  --enable-different-looknfeels
+                          different look&feel for each desktop [[no]] ],enable_different_looknfeels=$enableval,enable_different_looknfeels="no")
+AC_ARG_WITH(desktops,		[  --with-desktops=DESKS   default desktops in pager [[4]] ],with_desktops=$withval, with_desktops="4")
+AC_ARG_WITH(deskgeometry,	[  --with-deskgeometry=GEOM desktop views as COLUMNSxROWS [[2x2]] ],with_deskgeometry=$withval, with_deskgeometry="2x2")
+with_desktops_1=`expr ${with_desktops} - 1`
+
+dnl# The following is passed directly to libAfterImage configure :
+AC_ARG_WITH(xpm,	    	[  --with-xpm               support XPM image format [[yes]]])
+AC_ARG_WITH(gif,	    	[  --with-gif               support GIF image format [[yes]]])
+AC_ARG_WITH(jpeg,		[  --with-jpeg              support JPEG image format [[yes]]])
+AC_ARG_WITH(jpeg_includes,  	[  --with-jpeg-includes=DIR use JPEG includes in DIR], jpeg_includes="$withval", jpeg_includes=no)
+AC_ARG_WITH(builtin_jpeg,   [  --with-builtin-jpeg      use included JPEG  library [no]],with_builtin_jpeg="$withval",with_builtin_jpeg=no)
+AC_ARG_WITH(png,		[  --with-png               support PNG image format [[yes]]])
+AC_ARG_WITH(png_includes,   	[  --with-png-includes=DIR  use PNG includes in DIR], png_includes="$withval", png_includes=no)
+AC_ARG_WITH(builtin_png,    [  --with-builtin-png       use included PNG library [no]],with_builtin_png="$withval",with_builtin_png=no)
+AC_ARG_WITH(builtin_zlib,   [  --with-builtin-zlib      use included libZ library (needed for PNG) [no]],with_builtin_zlib="$withval",with_builtin_zlib=no)
+AC_ARG_WITH(tiff,		[  --with-tiff              support TIFF image format [[yes]]])
+AC_ARG_WITH(tiff_includes,  	[  --with-tiff-includes=DIR use TIFF includes in DIR], tiff_includes="$withval", tiff_includes=no)
+AC_ARG_WITH(svg,		[  --with-svg               support SVG image format via librsvg 2.0 [[yes]]])
+
+AC_ARG_WITH(ttf,		[  --with-ttf               support True Type Fonts via FreeType library [[yes]]])
+AC_ARG_WITH(ttf_includes,   	[  --with-ttf-includes=DIR  use FreeType includes in DIR], ttf_includes="$withval", ttf_includes=no)
+AC_ARG_WITH(gtk,	    	[  --with-gtk               use GTK 2.0 widget libraries where possible [[yes]]])
+
+dnl# compile-time switches
+AC_ARG_ENABLE(i18n,		[  --enable-i18n           support I18N [[no]] ],enable_i18n=$enableval,enable_i18n="no")
+AC_ARG_ENABLE(xlocale,		[  --enable-xlocale        using X_LOCALE [[no]] ],enable_xlocale=$enableval,enable_xlocale="no")
+AC_ARG_ENABLE(savewindows,	[  --enable-savewindows    save windows and re-open next session [[yes]] ],enable_savewindows=$enableval,enable_savewindows="yes")
+AC_ARG_ENABLE(virtual,		[  --enable-virtual        support virtual desktops [[yes]] ],enable_virtual=$enableval,enable_virtual="yes")
+AC_ARG_ENABLE(windowlist,	[  --enable-windowlist     compile built-in window-list [[yes]] ],enable_windowlist=$enableval,enable_windowlist="yes")
+AC_ARG_ENABLE(availability,	[  --enable-availability   check for unavailable binaries [[yes]] ],enable_availability=$enableval,enable_availability="yes")
+AC_ARG_ENABLE(fixeditems,	[  --enable-fixeditems     enable fixed menu entries [[no]] ], enable_fixeditems=$enableval,enable_fixeditems="no")
+AC_ARG_ENABLE(ascp,     	[  --enable-ascp           build AfterStep Control Panel [[yes]] ], enable_ascp=$enableval,enable_ascp="yes")
+
+AC_ARG_WITH(locale,		[  --with-locale=LOCALE    locale name you want to use ],with_locale=$withval,with_locale="")
+AC_ARG_ENABLE(shaping,		[  --enable-shaping        support shaped windows [[yes]] ],enable_shaping=$enableval,enable_shaping="yes")
+AC_ARG_ENABLE(shmimage,		[  --enable-shmimage       support shared memory images [[yes]] ],enable_shmimage=$enableval,enable_shmimage="yes")
+AC_ARG_ENABLE(xinerama,		[  --enable-xinerama       support Xinerama Multihead extentions [[yes]] ],enable_xinerama=$enableval,enable_xinerama="yes")
+AC_ARG_ENABLE(glx,		[  --enable-glx            support for OpenGL extention [[yes]] ],enable_glx=$enableval,enable_glx="no")
+AC_ARG_ENABLE(staticlibs,       [  --enable-staticlibs     enable linking to libafterstep statically [[yes]] ],enable_staticlibs=$enableval,enable_staticlibs="yes")
+AC_ARG_ENABLE(sharedlibs,       [  --enable-sharedlibs     enable linking to libafterstep dynamically [[no]] ],enable_sharedlibs=$enableval,enable_sharedlibs="no")
+
+AC_ARG_WITH(gnome-session,  [  --with-gnome-session  make use of gnome-session for session management[[yes]] ], with_gnome_session=$withval,with_gnome_session="")
+AC_ARG_WITH(dbus1,          [  --with-dbus1          make use of DBus for interprocess communications[[yes]] ], with_dbus1=$withval,with_dbus1="")
+AC_ARG_WITH(readline,       [  --with-readline       make WinCommand use readline library for interactive mode[[yes]] ], with_readline=$withval,with_readline="")
+AC_ARG_WITH(libefence,		  [  --with-libefence      compile with libefence to debug buffer overruns [[no]] ],with_libefence=$withval,with_libefence="")
+AC_ARG_ENABLE(gdb,					[  --enable-gdb          add gdb symbols (-g -w) (for debugging) [[no]] ],enable_gdb=$enableval,enable_gdb="no")
+AC_ARG_ENABLE(sigsegv,			[  --enable-sigsegv      enable internal handler of Segmentation Fault (for self-diagnostics) [[yes]] ],enable_sigsegv=$enableval,enable_sigsegv="yes")
+AC_ARG_ENABLE(warn,		[  --enable-warn           turn on more compiler warnings (for debugging) [[no]] ],enable_warn=$enableval,enable_warn="no")
+AC_ARG_ENABLE(gprof,		[  --enable-gprof          add gprof symbols (-pg) (for debugging) [[no]] ],enable_gprof=$enableval,enable_gprof="no")
+AC_ARG_ENABLE(audit,		[  --enable-audit          memory usage audit (for debugging) [[no]] ],enable_audit=$enableval,enable_audit="no")
+AC_ARG_ENABLE(trace,		[  --enable-trace          some function calls tracing (see include/trace.h) (for debugging) [[no]] ],enable_trace=$enableval,enable_trace="no")
+AC_ARG_ENABLE(trace-x,		[  --enable-trace-x        trace X calls (runtime option) (for debugging) [[no]] ],enable_trace_x=$enableval,enable_trace_x="no")
+AC_ARG_ENABLE(mmx_optimization,	[  --enable-mmx-optimization  enable utilization of MMX instruction set to speed up imaging operations [[yes]] ],enable_mmx_optimization=$enableval,enable_mmx_optimization="yes")
+AC_ARG_ENABLE(send-postcard-to-developer, [  --enable-send-postcard-to-developer will enable AfterStep to send single e-mail to developers with your installation specifics.[[no]] ],send_postcard_to_developer=$enableval,send_postcard_to_developer="no")
+AC_ARG_ENABLE(data-reinstall,   [  --enable-data-reinstall will prevent AfterStep from reinstalling image and font files.[[yes]] ],data_reinstall=$enableval,data_reinstall="yes")
+
+AC_ARG_ENABLE(script,		[  --enable-script         compile Script module [[yes]] ], enable_script=$enableval,enable_script="yes")
+AC_ARG_ENABLE(reuse-font,	[  --enable-reuse-font     enables reuse of loaded font resource by modules (don't use with TrueType fonts !)[[no]] ],[if test x$enableval == "xyes"; then AC_DEFINE(MODULE_REUSE_LOADED_FONT,1,Enables reuse of loaded font resource by modules) fi])
+
+dnl# For FreeBSD, add -I/usr/local/include
+
+FBSD="no"
+if test `uname` = "FreeBSD"; then
+        FBSD="yes"
+        CPPFLAGS="-I/usr/local/include"
+fi
+
+echo "checking whether we are compiling in FreeBSD environment... $FBSD"
+
+dnl# Comman stuff : compiler tools, proggies, etc.
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_LN_S
+
+export CC
+export GCC
+
+export prefix
+export exec_prefix
+
+dnl# now we need to play abot with CFLAGS :
+
+dnl# Add -Wall
+
+dnl# Add -fPIC for IA64 compilation
+AC_CYGWIN
+if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
+  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+    CFLAGS="$CFLAGS -fPIC"
+  fi
+  LDFLAGS="$LDFLAGS -rdynamic"
+fi
+
+dnl# Add -g
+STRIP_BINARIES=
+if test "x$enable_gdb" = "xyes"; then
+  if ! test -n "`echo $CFLAGS' ' | grep '\-g ' 2> /dev/null`" ; then
+	CFLAGS="$CFLAGS -g"
+  fi
+  if ! test -n "`echo $CFLAGS' ' | grep '\-w ' 2> /dev/null`" ; then
+	CFLAGS="$CFLAGS -w"
+  fi
+  if ! test -n "`echo $LDFLAGS' ' | grep '\-g ' 2> /dev/null`" ; then
+	LDFLAGS="$LDFLAGS -g"
+  fi
+  if ! test -n "`echo $LDFLAGS' ' | grep '\-w ' 2> /dev/null`" ; then
+	LDFLAGS="$LDFLAGS -w"
+  fi
+else
+  STRIP_BINARIES="-s"
+  DIRTY_CFLAGS="$CFLAGS"
+  CFLAGS="-DNO_DEBUG_OUTPUT"
+  for f in $DIRTY_CFLAGS; do
+        if test "x$f" != "x-g"; then
+	   CFLAGS="$CFLAGS $f"
+	fi
+  done
+fi
+
+dnl# Add -pg
+if test "x$enable_gprof" = "xyes"; then
+  CFLAGS="$CFLAGS -pg"
+  LDFLAGS="$LDFLAGS -pg"
+fi
+
+dnl# Add lots more warnings
+if test "x$enable_warn" = "xyes"; then
+  CFLAGS="$CFLAGS -Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wbad-function-cast -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Wconversion -Wcomment -Wcast-align -Winline -Wshadow -Wredundant-decls"
+fi
+
+dnl# done with flags - lets export those for our children to use :
+export CFLAGS
+export LDFLAGS
+
+dnl# install checks :
+AC_PROG_INSTALL
+dnl# if the path to the install program is relative, make it absolute
+currdir=`pwd`
+INSTALL=`echo $INSTALL|sed -e "s@\^\.\.@${currdir}@" -e "s@^autoconf@${currdir}/autoconf@"`
+INSTALL_PROGRAM=`echo $INSTALL_PROGRAM|sed -e "s@\^\.\.@${currdir}@" -e "s@^autoconf@${currdir}/autoconf@"`
+INSTALL_DATA=`echo $INSTALL_DATA|sed -e "s@\^\.\.@${currdir}@" -e "s@^autoconf@${currdir}/autoconf@"`
+INSTALL_LIB=`echo $INSTALL_LIB|sed -e "s@\^\.\.@${currdir}@" -e "s@^autoconf@${currdir}/autoconf@"`
+
+export INSTALL
+export INSTALL_PROGRAM
+export INSTALL_DATA
+export INSTALL_LIB
+
+AC_PROG_RANLIB
+export RANLIB
+
+AC_PATH_PROG(RM, rm, rm)
+export RM
+AC_PATH_PROG(MV, mv, mv)
+export MV
+AC_PATH_PROG(CP, cp, cp)
+export CP
+AC_PATH_PROG(MKDIR, mkdir, mkdir)
+export MKDIR
+AC_PATH_PROG(PERL, perl, perl)
+export PERL
+AC_PATH_PROG(FIND, find, find)
+export FIND
+AC_PATH_PROG(XARGS, xargs, xargs)
+export XARGS
+AC_PATH_PROG(LDCONFIG, ldconfig, ldconfig, $PATH:/sbin:/usr/local/sbin)
+export LDCONFIG
+
+dnl# Checks for optional programs
+AC_PROG_LEX
+export LEX
+export LEXLIB
+AC_PROG_YACC
+export YACC
+
+AC_MSG_CHECKING([linkage type])
+if test "x$enable_staticlibs" = "xyes"; then
+   AC_MSG_RESULT([static])
+else
+   enable_sharedlibs="yes"
+   AC_MSG_RESULT([dynamic])
+fi
+
+dnl# Check for X :
+AC_PATH_XTRA
+
+user_ldflags=$LDFLAGS
+
+x_libs="$X_LIBS $X_EXTRA_LIBS $X_PRE_LIBS"
+if test "x$user_ldflags" = "x"; then
+	full_x_libs=$x_libs
+else
+	full_x_libs="$user_ldflags $x_libs"
+fi
+
+AC_CHECK_LIB(X11, XOpenDisplay, [x_libs="-lX11 $x_libs"],,$full_x_libs)
+if test "x$enable_xlocale" = "xyes"; then
+  AC_CHECK_LIB(X11, _Xsetlocale, AC_DEFINE(X_LOCALE,1,"X Locale support enabled"),, $full_x_libs)
+fi
+
+
+
+dnl# have to update full_x_libs again as x_libs may have changed above
+if test "x$user_ldflags" = "x"; then
+	full_x_libs=$x_libs
+else
+	full_x_libs="$user_ldflags $x_libs"
+fi
+
+have_shmimage=no
+
+if test "x$CYGWIN" = "xyes"; then
+	enable_shmimage=no
+fi
+
+if test "x$enable_shmimage" = "xyes"; then
+	AC_CHECK_LIB(Xext, XShmCreateImage, [have_shmimage=yes],,$full_x_libs)
+	if test "x$have_shmimage" = "xyes"; then
+		AC_CHECK_HEADER(sys/ipc.h,,[have_shmimage=no])
+	fi
+	if test "x$have_shmimage" = "xyes"; then
+		AC_CHECK_HEADER(sys/shm.h,,[have_shmimage=no])
+	fi
+	if test "x$have_shmimage" = "xyes"; then
+		add_lib_xext=yes
+		AC_DEFINE(XSHMIMAGE,1,Support for Shared memory images - unsafe in *bsd due to limited number of segments)
+	fi
+fi
+
+dnl# Check for X shaped window extension
+HAVESHAPE="NOSHAPE"
+if test "x$enable_shaping" = "xyes"; then
+  	AC_CHECK_LIB(Xext, XShapeCombineMask, [have_shaping=yes add_lib_xext=yes AC_DEFINE(SHAPE,1,Support for shaped windows)],,$full_x_libs)
+fi
+
+add_lib_GL=no
+if test "x$enable_glx" = "xyes"; then
+  	AC_CHECK_LIB(GL, glDrawPixels, [add_lib_GL=yes AC_DEFINE(HAVE_GLX,1,Support for OpenGL extention)],,$full_x_libs)
+fi
+
+
+
+PATH_XTRA_CHECKED=yes
+export PATH_XTRA_CHECKED
+export x_includes
+export x_libraries
+AC_SUBST(x_libraries)
+export X_CFLAGS
+export X_LIBS
+export X_EXTRA_LIBS
+export X_PRE_LIBS
+export CPP
+export have_x
+export have_shmimage
+export have_shaping
+
+dnl# DONE WITH COMMON STUFF
+dnl# #############################################################
+dnl# first configuringlibraries :
+
+FROM_AFTERSTEP_CONFIGURE=yes
+export FROM_AFTERSTEP_CONFIGURE
+
+_def_lib_conf_opts=" \
+	--prefix=${prefix} \
+	--exec-prefix=${exec_prefix} \
+	--bindir=${bindir} \
+	--sbindir=${sbindir} \
+	--libexecdir=${libexecdir} \
+	--datadir=${datadir} \
+	--sysconfdir=${sysconfdir} \
+	--sharedstatedir=${sharedstatedir} \
+	--localstatedir=${localstatedir} \
+	--libdir=${libdir} \
+	--includedir=${includedir} \
+	--oldincludedir=${oldincludedir} \
+	--infodir=${infodir} \
+	--mandir=${mandir} \
+	--with-x-includes=${x_includes} \
+	--with-x=${with_x} \
+	--enable-audit=${enable_audit} \
+	--enable-trace=${enable_trace} \
+	--enable-shmimage=${enable_shmimage} \
+	--enable-staticlibs=${enable_staticlibs} \
+	--enable-sharedlibs=${enable_sharedlibs} \
+"
+
+AC_CHECKING(libAfterBase)
+cd libAfterBase; \
+./configure $_def_lib_conf_opts \
+   --enable-trace-x=$enable_trace_x; \
+cd ../
+afterbase_lib=
+
+AC_CHECKING(libAfterImage)
+cd libAfterImage; \
+./configure $_def_lib_conf_opts \
+   --enable-i18n=$enable_i18n --enable-xlocale=$enable_xlocale --with-locale=$with_locale \
+   --with-xpm=$with_xpm   --with-builtin-gif=$with_gif \
+   --with-jpeg=$with_jpeg --with-jpeg-includes=$jpeg_includes --with-builtin-jpeg=$with_builtin_jpeg \
+   --with-png=$with_png   --with-png-includes=$png_includes \
+   --with-builtin-png=$with_builtin_png --with-builtin-zlib=$with_builtin_zlib \
+   --with-tiff=$with_tiff --with-tiff-includes=$tiff_includes --with-svg=$with_svg \
+   --with-ttf=$with_ttf   --with-ttf-includes=$ttf_includes \
+   --enable-mmx-optimization=$enable_mmx_optimization \
+   --enable-glx=$enable_glx; \
+cd ../
+afterimage_lib=
+
+dnl# let's check for endiannes of our box
+AC_C_BIGENDIAN
+AC_C_INLINE
+
+dnl# Check for headers
+AC_HEADER_TIME
+AC_CHECK_HEADERS(sys/time.h malloc.h stdlib.h limits.h)
+
+AC_CHECK_HEADERS(sys/wait.h,,AC_FUNC_WAIT3)
+
+dnl# Check for decls
+AC_CHECK_DECLS(environ,,,[#include <unistd.h>])
+
+
+AC_ARG_ENABLE(alsa, [  --enable-alsa           include alsa >= 0.9 output plugin ],
+[ BUILD_ALSA="$enableval" ],[ BUILD_ALSA="yes" ])
+
+if test "$BUILD_ALSA" = "yes"; then
+   AC_CHECK_LIB(asound, snd_pcm_open, have_alsa=yes, have_alsa=no)
+   AC_CHECK_HEADER(alsa/asoundlib.h, , have_alsa=no)
+fi
+
+if test "x$have_alsa" = xyes; then
+        ALSA_LIBS="-lasound"
+else
+        ALSA_LIBS=""
+fi
+AC_SUBST(ALSA_LIBS)
+
+
+xext_lib=""
+if test "x$add_lib_xext" = "xyes"; then
+	x_libs="$x_libs -lXext"
+	xext_lib="-lXext"
+	full_x_libs="$x_libs -lXext"
+fi
+
+if test "x$add_lib_GL" = "xyes"; then
+	x_libs="$x_libs -lGL"
+	xext_lib="-lXext -lGL"
+	full_x_libs="$x_libs -lXext -lGL"
+fi
+
+dnl# Check for Xinerama extension
+
+HAVEXINE="NOXINE"
+xine_libs=""
+if test "x$enable_xinerama" = "xyes"; then
+  AC_CHECK_LIB(Xinerama, XineramaQueryScreens, [x_libs="-lXinerama $x_libs";xine_libs="-lXinerama";AC_DEFINE(HAVE_XINERAMA,1,Support for Xinerama multiscreen)],,$full_x_libs)
+fi
+
+if test "x$enable_sigsegv" = "xyes"; then
+  AC_DEFINE(HAVE_SIGSEGV_HANDLING,1,self diagnostic SIGSEGV handling (as opposed to dumping core))
+fi
+
+if test "$with_readline" != no; then
+	AC_CHECK_LIB(ncurses, initscr,
+			[AC_CHECK_LIB(	readline, readline,
+					[readline_libs="-lreadline -lncurses";AC_DEFINE(HAVE_READLINE,1,Support for readline library for console input)])])
+fi
+
+if test -z "$PKG_CONFIG"; then
+   		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
+fi
+
+have_gnome_session=
+as_exec_command=
+if test "$with_gnome_session" = no; then
+	have_gnome_session=disabled
+else
+	AC_PATH_PROG([have_gnome_session],[gnome-session],no)
+	if test "$have_gnome_session" != "no" ; then
+		as_exec_command="gnome-session --session=AfterStep"
+	fi
+fi
+
+AC_SUBST(as_exec_command)
+
+have_dbus1=
+if test "$with_dbus1" = no; then
+	have_dbus1=disabled
+else
+	if test "$PKG_CONFIG" = "no" ; then
+		AC_MSG_CHECKING(if libdbus-1 is available)
+		AC_MSG_RESULT(pkg-config is not found. Cannot check for libdbus-1)
+		have_dbus1=no
+	else
+		have_dbus1=yes
+		pkg_modules="dbus-1 >= 0.22"
+
+		PKG_CHECK_MODULES(DBUS1,[$pkg_modules],,[have_dbus1=no])
+
+		if test "x$have_dbus1" = "xyes"; then
+			AC_DEFINE(HAVE_DBUS1,1,libdbus-1 v 0.22 or higher is available )
+		fi
+	fi
+fi
+
+AC_SUBST(DBUS1_LIBS)
+AC_SUBST(DBUS1_CFLAGS)
+
+if test "x$enable_staticlibs" = "xyes"; then
+   AFTERBASE_LIB="../../libAfterBase/libAfterBase.a"
+   AFTERIMAGE_LIB="../../libAfterImage/libAfterImage.a"
+   AFTERSTEP_LIB="../../libAfterStep/libAfterStep.a"
+   AFTERCONF_LIB="../../libAfterConf/libAfterConf.a"
+   ASGTK_LIB="../../libASGTK/libASGTK.a"
+   WIDGETS_LIB="../Script/Widgets/libWidgets.a"
+   LIBPROG='$(LIB_STATIC)'
+   LIBINSTALL="install.static"
+	LIBUNINSTALL="uninstall.static"
+else
+	if test "x$CYGWIN" = "xyes" ; then
+   		AFTERBASE_LIB="../../libAfterBase/libAfterBase.dll.a"
+   		AFTERIMAGE_LIB="../../libAfterImage/libAfterImage.dll.a"
+   		AFTERSTEP_LIB="../../libAfterStep/libAfterStep.dll.a"
+   		AFTERCONF_LIB="../../libAfterConf/libAfterConf.dll.a"
+   		ASGTK_LIB="../../libASGTK/libASGTK.dll.a"
+   		WIDGETS_LIB="../Script/Widgets/libWidgets.dll.a"
+   		LIBPROG='$(LIB_SHARED_CYG)'
+   		LIBINSTALL="install.cyg"
+		LIBUNINSTALL="uninstall.cyg"
+	else
+   		AFTERBASE_LIB="../../libAfterBase/libAfterBase.so"
+   		AFTERIMAGE_LIB="../../libAfterImage/libAfterImage.so"
+   		AFTERSTEP_LIB="../../libAfterStep/libAfterStep.so"
+   		AFTERCONF_LIB="../../libAfterConf/libAfterConf.so"
+		ASGTK_LIB="../../libASGTK/libASGTK.so"
+   		WIDGETS_LIB="../Script/Widgets/libWidgets.so"
+   		LIBPROG='$(LIB_SHARED)'
+   		LIBINSTALL="install.dyn"
+		LIBUNINSTALL="uninstall.dyn"
+	fi
+fi
+
+AFTERBASE_STATIC_LIB="../../libAfterBase/libAfterBase.a"
+AFTERIMAGE_STATIC_LIB="../../libAfterImage/libAfterImage.a"
+AFTERSTEP_STATIC_LIB="../../libAfterStep/libAfterStep.a"
+AFTERCONF_STATIC_LIB="../../libAfterConf/libAfterConf.a"
+ASGTK_STATIC_LIB="../../libASGTK/libASGTK.a"
+WIDGETS_STATIC_LIB="../Script/Widgets/libWidgets.a"
+
+
+AC_MSG_CHECKING(libAfterImage external libraries)
+AFTERIMAGE_LIBS=`libAfterImage/afterimage-libs --external-only`
+AC_MSG_RESULT($AFTERIMAGE_LIBS)
+AC_MSG_CHECKING(preferred image format)
+image_format=`libAfterImage/afterimage-libs --preferred-image-format`
+AC_MSG_RESULT($image_format)
+
+dnl# if ascp requested - check for fltk libraries
+
+LIBS=$saved_LIBS
+
+ASCP_FLTK_LIBS=
+ASCP_FLTK_INCLUDES=
+ASCP_FLTK=
+ASCP_GTK_LIBS=
+ASCP_GTK_INCLUDES=
+ASCP_GTK=
+
+have_gtk=
+if test "$with_gtk" = no; then
+	have_gtk=disabled
+else
+
+	if test "$PKG_CONFIG" = "no" ; then
+		AC_MSG_CHECKING(if gtk++ 2.0 is available)
+		AC_MSG_RESULT(pkg-config is not found. Cannot check for gtk++ 2.0.)
+		have_gtk=no
+	else
+		have_gtk=yes
+		pkg_modules="gtk+-2.0 >= 2.0.0"
+		PKG_CHECK_MODULES(GTK, [$pkg_modules],,[have_gtk=no])
+
+		if test "x$have_gtk" = "xyes"; then
+			CLEAN_GTK_LIBS=
+			CLEAN_GTK_CFLAGS=
+
+			AC_DEFINE(HAVE_GTK,1,GTK++ v.2.0 or higher is available )
+
+			present_libs="$LDFLAGS $LIBS $x_libs $AFTERIMAGE_LIBS";
+			for l in `echo "$GTK_LIBS"`; do
+	  	  	lib_found=no
+	  	  	for p in `echo "$present_libs"` ; do
+			  	if test "x$l" = "x$p" ; then
+    		    	lib_found=yes;
+		  	  	fi;
+	  	  	done;
+	  	  	if test "x$lib_found" != "xyes" ; then
+		  		CLEAN_GTK_LIBS="$CLEAN_GTK_LIBS $l" ;
+	  	  	fi;
+			done;
+			present_incs="$CCFLAGS $x_includes";
+			for l in `echo "$GTK_CFLAGS"` ;	do
+	  			inc_found=no
+		  		for p in `echo "$present_incs"` ; do
+					if test "x$l" = "x$p" ; then
+    		  			inc_found=yes;
+					fi;
+					if test "x$l" = "x-I$p" ; then
+    		  			inc_found=yes;
+					fi;
+	  			done;
+	  			if test "x$inc_found" != "xyes" ; then
+					CLEAN_GTK_CFLAGS="$CLEAN_GTK_CFLAGS $l" ;
+	  			fi;
+			done;
+			GTK_CFLAGS=$CLEAN_GTK_CFLAGS ;
+			GTK_LIBS=$CLEAN_GTK_LIBS ;
+		fi
+	fi
+fi
+
+GTK_INCLUDES=$GTK_CFLAGS
+
+have_glib=
+GLIB_LIBS=
+GLIB_INCLUDES=
+
+if test "$with_glib" = no; then
+	have_glib=disabled
+else
+
+	if test "$PKG_CONFIG" = "no" ; then
+		AC_MSG_CHECKING(if glib 2.0 or better is available)
+		AC_MSG_RESULT(pkg-config is not found. Cannot check for glib 2.0.)
+		have_glib=no
+	else
+		have_glib=yes
+		pkg_modules="glib-2.0 >= 2.0.0"
+		PKG_CHECK_MODULES(GLIB, [$pkg_modules],,[have_glib=no])
+
+		if test "x$have_glib" = "xyes"; then
+			CLEAN_GLIB_LIBS=
+			CLEAN_GLIB_CFLAGS=
+
+			AC_DEFINE(HAVE_GLIB,1,GLIB v.2.0 or higher is available )
+
+			present_libs="$LDFLAGS $LIBS $x_libs $AFTERIMAGE_LIBS";
+			for l in `echo "$GLIB_LIBS"`; do
+	  	  	lib_found=no
+	  	  	for p in `echo "$present_libs"` ; do
+			  	if test "x$l" = "x$p" ; then
+    		    	lib_found=yes;
+		  	  	fi;
+	  	  	done;
+	  	  	if test "x$lib_found" != "xyes" ; then
+		  		CLEAN_GLIB_LIBS="$CLEAN_GLIB_LIBS $l" ;
+	  	  	fi;
+			done;
+			present_incs="$CCFLAGS $x_includes";
+			for l in `echo "$GLIB_CFLAGS"` ;	do
+	  			inc_found=no
+		  		for p in `echo "$present_incs"` ; do
+					if test "x$l" = "x$p" ; then
+    		  			inc_found=yes;
+					fi;
+					if test "x$l" = "x-I$p" ; then
+    		  			inc_found=yes;
+					fi;
+	  			done;
+	  			if test "x$inc_found" != "xyes" ; then
+					CLEAN_GLIB_CFLAGS="$CLEAN_GLIB_CFLAGS $l" ;
+	  			fi;
+			done;
+			GLIB_CFLAGS=$CLEAN_GLIB_CFLAGS ;
+			GLIB_LIBS=$CLEAN_GLIB_LIBS ;
+		fi
+	fi
+fi
+
+GLIB_INCLUDES=$GLIB_CFLAGS
+
+have_giolib=
+GIOLIB_LIBS=
+GIOLIB_INCLUDES=
+
+if test "$with_giolib" = no; then
+	have_giolib=disabled
+else
+
+	if test "$PKG_CONFIG" = "no" ; then
+		AC_MSG_CHECKING(if gio 2.0 or better is available)
+		AC_MSG_RESULT(pkg-config is not found. Cannot check for gio 2.0.)
+		have_giolib=no
+	else
+		have_giolib=yes
+		pkg_modules="gio-2.0 >= 2.0.0"
+		PKG_CHECK_MODULES(GIOLIB, [$pkg_modules],,[have_giolib=no])
+
+		if test "x$have_giolib" = "xyes"; then
+			CLEAN_GIOLIB_LIBS=
+			CLEAN_GIOLIB_CFLAGS=
+
+			AC_DEFINE(HAVE_GIOLIB,1,GIOLIB v.2.0 or higher is available )
+			gio_saved_cflags=$CFLAGS
+			export CFLAGS="$CFLAGS $GIOLIB_CFLAGS"
+			AC_CHECK_TYPES([GSettings],[],[],[[#include "gio/gio.h"]])
+			export CFLAGS=$gio_saved_cflags
+
+			present_libs="$LDFLAGS $LIBS $x_libs $AFTERIMAGE_LIBS";
+			for l in `echo "$GIOLIB_LIBS"`; do
+	  	  	lib_found=no
+	  	  	for p in `echo "$present_libs"` ; do
+			  	if test "x$l" = "x$p" ; then
+    		    	lib_found=yes;
+		  	  	fi;
+	  	  	done;
+	  	  	if test "x$lib_found" != "xyes" ; then
+		  		CLEAN_GIOLIB_LIBS="$CLEAN_GIOLIB_LIBS $l" ;
+	  	  	fi;
+			done;
+			present_incs="$CCFLAGS $x_includes";
+			for l in `echo "$GIOLIB_CFLAGS"` ;	do
+	  			inc_found=no
+		  		for p in `echo "$present_incs"` ; do
+					if test "x$l" = "x$p" ; then
+    		  			inc_found=yes;
+					fi;
+					if test "x$l" = "x-I$p" ; then
+    		  			inc_found=yes;
+					fi;
+	  			done;
+	  			if test "x$inc_found" != "xyes" ; then
+					CLEAN_GIOLIB_CFLAGS="$CLEAN_GIOLIB_CFLAGS $l" ;
+	  			fi;
+			done;
+			GIOLIB_CFLAGS=$CLEAN_GIOLIB_CFLAGS ;
+			GIOLIB_LIBS=$CLEAN_GIOLIB_LIBS ;
+		fi
+	fi
+fi
+
+GIOLIB_INCLUDES=$GIOLIB_CFLAGS
+
+
+if test "x$enable_ascp" = "xyes"; then
+    AC_MSG_CHECKING(libraries required by FLTK version of ascp)
+	enable_ascp=no ;
+
+    if fltk-config --libs >/dev/null  ;then
+		present_libs="$LDFLAGS $LIBS $x_libs $AFTERIMAGE_LIBS";
+		for l in `fltk-config --ldflags`; do
+	  	  lib_found=no
+	  	  for p in `echo "$present_libs"` ; do
+			  if test "x$l" = "x$p" ; then
+    		    lib_found=yes;
+		  	  fi;
+	  	  done;
+	  	  if test "x$lib_found" != "xyes" ; then
+		  	ASCP_FLTK_LIBS="$ASCP_FLTK_LIBS $l" ;
+	  	  fi;
+		done;
+		AC_MSG_RESULT($ASCP_FLTK_LIBS)
+	    AC_MSG_CHECKING(headers required by ascp-fltk)
+
+  		if fltk-config --cflags >/dev/null  ;then
+			present_incs="$CCFLAGS $x_includes";
+			for l in `fltk-config --cflags` ;	do
+	  			inc_found=no
+		  		for p in `echo "$present_incs"` ; do
+					if test "x$l" = "x$p" ; then
+    		  			inc_found=yes;
+					fi;
+					if test "x$l" = "x-I$p" ; then
+    		  			inc_found=yes;
+					fi;
+	  			done;
+	  			if test "x$inc_found" != "xyes" ; then
+					ASCP_FLTK_INCLUDES="$ASCP_FLTK_INCLUDES $l" ;
+	  			fi;
+			done;
+			AC_MSG_RESULT($ASCP_FLTK_INCLUDES)
+			enable_ascp=yes ;
+	  		ASCP_FLTK=ascp-fltk ;
+  		fi;
+	fi;
+	if test -z "$PKG_CONFIG"; then
+    		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
+	fi
+	if test "x$have_gtk" = "xyes" ; then
+		ASCP_GTK=ascp_gtk
+		enable_ascp=yes ;
+	fi
+
+	if test "x$enable_ascp" = "xno"; then
+		AC_MSG_RESULT(neither fltk nor GTK found, ascp disabled)
+		echo "You have to install FLTK or GTK libaries in order to be able to compile ascp."
+    fi;
+fi;
+
+dnl# Electric Fence goes at the end
+if test "x$with_libefence" = "xyes"; then
+  AC_CHECK_LIB(efence,malloc,x_libs="$x_libs -lefence")
+fi
+
+dnl# Translate enable_* from "yes/no" to "1/0" (for configure.h)
+
+if test "x$enable_different_looknfeels" = "xyes"; then AC_DEFINE(DIFFERENTLOOKNFEELFOREACHDESKTOP,1,Each desktop may have its own look/feel) fi
+if test "x$enable_i18n" = "xyes"; then AC_DEFINE(I18N,1,Internationalized text support) fi
+if test "x$enable_savewindows" = "xno"; then AC_DEFINE(NO_SAVEWINDOWS,1,Save windows and re-open next session) fi
+if test "x$enable_virtual" = "xno"; then AC_DEFINE(NO_VIRTUAL,1,virtual screen support - several pages poer desktop) fi
+if test "x$enable_windowlist" = "xno"; then AC_DEFINE(NO_WINDOWLIST,1,Support for window list) fi
+if test "x$enable_availability" = "xno"; then AC_DEFINE(NO_AVAILABILITYCHECK,1,Check availability of menu items at startup) fi
+if test "x$enable_fixeditems" = "xyes"; then AC_DEFINE(FIXED_DIR, "fixed", enable fixed menu entries) fi
+if test "x$enable_audit" = "xyes"; then AC_DEFINE(DEBUG_ALLOCS,1,Trace memory allocations and check for errors) fi
+if test "x$enable_trace" = "xyes"; then AC_DEFINE(DEBUG_TRACE,1,Trace some functions) fi
+if test "x$enable_trace_x" = "xyes"; then AC_DEFINE(DEBUG_TRACE_X,1,Trace different X calls) fi
+if test "x$enable_script" = "xyes"; then enable_script="1"; else enable_script="0"; fi
+
+if test "x$data_reinstall" = "xyes"; then no_data_reinstall=""; else no_data_reinstall="yes"; fi
+
+
+dnl# Variable strings declaration
+
+dnl# don't process Script and its subdirs if it wasn't asked
+SCRIPT_DIR=""
+if test "x$enable_script" = "x1"; then
+    SCRIPT_DIR="src/Script/Widgets src/Script"
+fi
+
+if test "x$send_postcard_to_developer" = "xyes"; then
+	AC_CHECK_FUNCS(popen)
+	AC_DEFINE(DO_SEND_POSTCARD,1,E-mail installation notification to AfterStep developers)
+fi
+
+AC_CHECK_LIB([execinfo],[backtrace],[lib_execinfo="-lexecinfo"])
+
+AC_CANONICAL_TARGET
+AC_SUBST(build)
+AC_SUBST(build_os)
+AC_SUBST(build_cpu)
+AC_SUBST(build_vendor)
+
+AC_SUBST(STRIP_BINARIES)
+AC_SUBST(version)
+AC_SUBST(app_version)
+AC_SUBST(libafterstep_version)
+AC_SUBST(libafterstep_version_major)
+AC_SUBST(libafterstep_name)
+AC_SUBST(libafterstep_file_name)
+AC_SUBST(libafterwidget_version)
+AC_SUBST(libafterwidget_version_major)
+AC_SUBST(libafterwidget_name)
+AC_SUBST(libafterwidget_file_name)
+AC_SUBST(libafterconf_version)
+AC_SUBST(libafterconf_version_major)
+AC_SUBST(libafterconf_name)
+AC_SUBST(libafterconf_file_name)
+AC_SUBST(libasgtk_version)
+AC_SUBST(libasgtk_version_major)
+AC_SUBST(libasgtk_name)
+AC_SUBST(libasgtk_file_name)
+AC_SUBST(with_locale)
+AC_SUBST(image_format)
+AC_SUBST(ASCP_FLTK)
+AC_SUBST(ASCP_FLTK_LIBS)
+AC_SUBST(ASCP_FLTK_INCLUDES)
+AC_SUBST(ASCP_GTK)
+AC_SUBST(GTK_LIBS)
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_INCLUDES)
+AC_SUBST(GLIB_LIBS)
+AC_SUBST(GLIB_CFLAGS)
+AC_SUBST(GLIB_INCLUDES)
+AC_SUBST(GIOLIB_LIBS)
+AC_SUBST(GIOLIB_CFLAGS)
+AC_SUBST(GIOLIB_INCLUDES)
+AC_SUBST(user_ldflags)
+AC_SUBST(x_libs)
+AC_SUBST(xine_libs)
+AC_SUBST(xext_lib)
+AC_SUBST(readline_libs)
+AC_SUBST(dbus1_libs)
+AC_SUBST(x_includes)
+AC_SUBST(XEXT_LIB)
+AC_SUBST(AFTERBASE_LIB)
+AC_SUBST(AFTERIMAGE_LIB)
+AC_SUBST(AFTERIMAGE_LIBS)
+AC_SUBST(AFTERSTEP_LIB)
+AC_SUBST(AFTERCONF_LIB)
+AC_SUBST(ASGTK_LIB)
+AC_SUBST(WIDGETS_LIB)
+AC_SUBST(AFTERBASE_STATIC_LIB)
+AC_SUBST(AFTERIMAGE_STATIC_LIB)
+AC_SUBST(AFTERSTEP_STATIC_LIB)
+AC_SUBST(AFTERCONF_STATIC_LIB)
+AC_SUBST(ASGTK_STATIC_LIB)
+AC_SUBST(WIDGETS_STATIC_LIB)
+AC_SUBST(LIBPROG)
+AC_SUBST(LIBINSTALL)
+AC_SUBST(LIBUNINSTALL)
+AC_SUBST(with_afterdir)
+AC_SUBST(with_imageloader)
+AC_SUBST(with_soundplayer)
+AC_SUBST(with_helpcommand)
+AC_SUBST(with_startsort)
+AC_SUBST(with_desktops)
+AC_SUBST(with_desktops_1)
+AC_SUBST(with_deskgeometry)
+AC_SUBST(no_data_reinstall)
+AC_SUBST(lib_execinfo)
+dnl# old stuff :
+AC_SUBST(enable_different_looknfeels)
+AC_SUBST(enable_pagerbackground)
+AC_SUBST(enable_i18n)
+AC_SUBST(enable_menuwarp)
+AC_SUBST(enable_savewindows)
+AC_SUBST(enable_texture)
+AC_SUBST(enable_shade)
+AC_SUBST(enable_virtual)
+AC_SUBST(enable_saveunders)
+AC_SUBST(enable_windowlist)
+AC_SUBST(enable_availability)
+AC_SUBST(enable_fixeditems)
+
+AC_SUBST(SCRIPT_DIR)
+AC_SUBST(PERL)
+
+dnl# Write results
+
+dnl# AC_CONFIG_HEADER(include/config.h)
+
+dnl# Common parts of the Makefile
+MAKEFILEDEFINES=./autoconf/Makefile.defines
+MAKEFILECOMMON=./autoconf/Makefile.common
+MAKEFILECOMMONLIB=./autoconf/Makefile.common.lib
+LIBAFTERBASEFILES=./libAfterBase/.shared
+LIBAFTERIMAGEFILES=./libAfterImage/.shared
+LIBAFTERSTEPFILES=./libAfterStep/.shared
+LIBAFTERCONFFILES=./libAfterConf/.shared
+LIBASGTKFILES=./libASGTK/.shared
+
+if test "x$have_gtk" = "xyes"; then
+	LIBASGTKDIR=libASGTK
+	LIBASGTKDEP='$(LIB_ASGTK)'
+	GTK_APP_DIRS=gtk_app_dirs
+	GTK_WIN_COMMAND=GWCommand
+	RUN_COMMAND="Exec \"Run ...\" ASRun --myname \"Run command using AfterStep\" &"
+else
+	LIBASGTKDIR=
+dnl# trick to not depend on libASGTK :
+	LIBASGTKDEP='$(LIB_AFTERCONF)'
+	GTK_APP_DIRS=no_gtk_app_dirs
+	GTK_WIN_COMMAND=
+	RUN_COMMAND="ExecInTerm \"Run ...\" -n \"Run Command\" &"
+fi
+
+if test "x$have_giolib" = "xyes"; then
+	GIOLIB_APP_DIRS=giolib_app_dirs
+else
+	GIOLIB_APP_DIRS=no_giolib_app_dirs
+fi
+
+
+AC_SUBST_FILE(LIBAFTERBASEFILES)
+AC_SUBST_FILE(LIBAFTERIMAGEFILES)
+AC_SUBST_FILE(LIBAFTERSTEPFILES)
+AC_SUBST_FILE(LIBAFTERCONFFILES)
+AC_SUBST_FILE(LIBASGTKFILES)
+
+AC_SUBST(LIBASGTKDIR)
+AC_SUBST(LIBASGTKDEP)
+AC_SUBST(GTK_APP_DIRS)
+AC_SUBST(GTK_WIN_COMMAND)
+AC_SUBST(RUN_COMMAND)
+
+AC_SUBST(GIOLIB_APP_DIRS)
+
+AC_SUBST_FILE(MAKEFILEDEFINES)
+AC_SUBST_FILE(MAKEFILECOMMON)
+AC_SUBST_FILE(MAKEFILECOMMONLIB)
+
+dnl# These should be created before everything else, as it gets included by other files :
+AC_CONFIG_FILES([autoconf/Makefile.defines autoconf/Makefile.common autoconf/Makefile.common.lib])
+
+if test -d src/ascp ; then AC_CONFIG_FILES([src/ascp/Makefile src/ascp/fltk/Makefile src/ascp/gtk/Makefile ]) fi
+if test -d src/tools ; then AC_CONFIG_FILES([src/tools/ASFileBrowser/Makefile
+					     src/tools/ASRun/Makefile
+					     src/tools/ASWallpaper/Makefile]) fi
+
+if test -d src/ASMount ; then AC_CONFIG_FILES([src/ASMount/Makefile]) fi
+
+if test -d src/asetroot ; 	then AC_CONFIG_FILES([src/asetroot/Makefile]) fi
+if test -d src/Animate ; 	then AC_CONFIG_FILES([src/Animate/Makefile]) fi
+if test -d src/ASConfig ; 	then AC_CONFIG_FILES([src/ASConfig/Makefile]) fi
+if test -d src/ASDocGen ; 	then AC_CONFIG_FILES([src/ASDocGen/Makefile]) fi
+if test -d src/Arrange ; 	then AC_CONFIG_FILES([src/Arrange/Makefile]) fi
+if test -d src/Banner ; 	then AC_CONFIG_FILES([src/Banner/Banner.sh src/Banner/Makefile]) fi
+if test -d src/Clean ; 		then AC_CONFIG_FILES([src/Clean/Makefile]) fi
+if test -d src/Form ; 		then AC_CONFIG_FILES([src/Form/Makefile]) fi
+if test -d src/Gnome ; 		then AC_CONFIG_FILES([src/Gnome/Makefile]) fi
+if test -d src/Ident ; 		then AC_CONFIG_FILES([src/Ident/Makefile]) fi
+if test -d src/Pager ; 		then AC_CONFIG_FILES([src/Pager/Makefile]) fi
+if test -d src/Script ; 	then AC_CONFIG_FILES([src/Script/Makefile src/Script/Widgets/Makefile]) fi
+if test -d src/Scroll ; 	then AC_CONFIG_FILES([src/Scroll/Makefile]) fi
+if test -d src/Sound2 ;		then AC_CONFIG_FILES([src/Sound2/Makefile]) fi
+if test -d src/Wharf ; 		then AC_CONFIG_FILES([src/Wharf/Makefile]) fi
+if test -d src/WinList2 ; 	then AC_CONFIG_FILES([src/WinCommand/Makefile]) fi
+if test -d src/WinList2 ; 	then AC_CONFIG_FILES([src/WinList2/Makefile]) fi
+if test -d src/WinTabs ; 	then AC_CONFIG_FILES([src/WinTabs/Makefile]) fi
+if test -d src/Gadget ; 	then AC_CONFIG_FILES([src/Gadget/Makefile]) fi
+if test -d src/test ; 		then AC_CONFIG_FILES([src/test/Makefile]) fi
+
+if test "x$have_gtk" = "xyes"; then AC_CONFIG_FILES([libASGTK/asgtk-config libASGTK/Makefile]) fi
+
+AC_OUTPUT(\
+configure.h \
+Makefile AfterStep.spec AfterStep.desktop \
+afterstep/Makefile doc/Makefile doc/afterstepdoc \
+libAfterStep/afterstep-config \
+libAfterStep/Makefile \
+libAfterConf/Makefile \
+src/afterstep/Makefile \
+tools/Makefile \
+tools/installastheme.pl \
+tools/makeastheme.pl \
+tools/postcard.sh \
+\
+afterstep/applications/modules.desktop \
+afterstep/base \
+afterstep/sound \
+afterstep/autoexec \
+afterstep/pager \
+afterstep/start/.include \
+afterstep/start/3_run \
+afterstep/start/1_Desktop/Feel/.include \
+afterstep/start/1_Desktop/Color_Scheme/.include \
+afterstep/start/1_Desktop/Look/.include \
+afterstep/start/1_Desktop/Theme/.include \
+afterstep/start/1_Desktop/Pictures/AfterStep_Images/.include \
+afterstep/start/1_Desktop/Pictures/User_Backgrounds/.include \
+)
+
+
+echo "
+AfterStep $version IS NOW HOPEFULLY CONFIGURED:
+
+Just run : make ; make install
+
+Please consult INSTALL file for additional configuration steps
+required for your favorite desktop environment.
+
+Other make targets you may find usefull :
+
+make install.data       - installs all the images, fonts, etc.
+make install.config     - installs config files only
+make install.menu       - installs startmenu files
+make install.data_html  - catalogues installed data files
+make install.bin        - installs only binaries
+make install.lib        - installs libraries only
+make clean
+make distclean
+"

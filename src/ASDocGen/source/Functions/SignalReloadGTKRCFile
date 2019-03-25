@@ -1,0 +1,6 @@
+<varlistentry id="options.SignalReloadGTKRCFile">
+	<term>SignalReloadGTKRCFile</term>
+	<listitem>
+		<para>Forces all GTK apps to reload the gtkrc files.</para>
+	</listitem>
+</varlistentry>

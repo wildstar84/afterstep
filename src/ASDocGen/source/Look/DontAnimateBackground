@@ -1,0 +1,8 @@
+<varlistentry id="options.DontAnimateBackground">
+	<term>DontAnimateBackground</term>
+	<listitem>
+		<para>disables non-blocking root background changing of
+		full-screen backgrounds, that looks like slow animation. This is recommended
+		for fast machines.</para>
+	</listitem>
+</varlistentry>

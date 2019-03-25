@@ -1,0 +1,7 @@
+<varlistentry id="options.MinLayer">
+	<term>MinLayer <emphasis remap='I'>min_layer</emphasis></term>
+	<listitem>
+		<para>limits the effects of the WindowBox to windows with
+        layer value that falls in range.</para>
+	</listitem>
+</varlistentry>

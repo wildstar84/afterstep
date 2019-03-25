@@ -1,0 +1,185 @@
+OBJS		= ASDocGen.o datadoc.o docfile.o robodoc.o xmlproc.o
+
+PROG		= ASDocGen
+
+LIBS_PRIVATE      = $(LIB_AFTERCONF_STATIC) $(LIB_AFTERSTEP_STATIC) \
+					$(LIB_AFTERIMAGE_STATIC) $(LIB_AFTERBASE_STATIC) $(LIBS_AFTERIMAGE)
+LIBS_DEPEND     = $(LIB_AFTERBASE_STATIC) $(LIB_AFTERIMAGE_STATIC) $(LIB_AFTERSTEP_STATIC) \
+				  $(LIB_AFTERCONF_STATIC)
+
+@MAKEFILECOMMON@
+
+
+
+do_compile:    $(OBJS) $(LIBS_DEPEND) Makefile show_flags_cc
+		@$(CC) $(OBJS) $(LIBS_ALL) -o ASDocGen; \
+		 touch do_compile
+
+doc_man:	do_compile
+		@echo -n "Generating man pages ..." ; ./ASDocGen -l log.man -t nroff ; echo "Done" ; touch doc_man
+
+doc_html:    	do_compile
+		@echo -n "Generating HTML docs ..." ; ./ASDocGen -l log.html -t html ; echo "Done" ; \
+		echo -n "Extracting Visualselect HTML ..." ; tar xf visualselect4html.tar -C html ; echo "Done" ; \
+		touch doc_html
+
+doc_xml:	do_compile
+		@echo -n "Generating XML docs ..." ; ./ASDocGen -l log.xml -t xml ; echo "Done" ; touch doc_xml
+
+doc_text:    	do_compile
+		@echo -n "Generating Plain Text docs ..." ; ./ASDocGen -l log.text -t plain ; echo "Done" ; touch doc_text
+
+data_php:  	do_compile
+		@echo "Generating PHP catalogue of installed data files ..." ; \
+		old_IMAGE_PATH=$(IMAGE_PATH); old_FONT_PATH=$(FONT_PATH); \
+		FONT_PATH="$HOME/.afterstep/desktop/fonts/:/usr/local/share/afterstep/desktop/fonts/:/usr/share/fonts/default/TrueType/:/usr/X11R6/lib/X11/fonts/TTF"; \
+		IMAGE_PATH="$HOME/.afterstep/desktop/icons/:/usr/local/share/afterstep/desktop/icons/:$HOME/.afterstep/desktop/:/usr/local/share/afterstep/desktop/:$HOME/.afterstep/desktop/buttons/:/usr/local/share/afterstep/desktop/buttons/:$HOME/.afterstep/backgrounds/:/usr/local/share/afterstep/backgrounds/:/usr/X11R6/include/X11/pixmaps/"; \
+		export IMAGE_PATH; export FONT_PATH; \
+		./ASDocGen -t php --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D data/php -l /log.data.php.log  ; \
+		IMAGE_PATH=$(old_IMAGE_PATH); FONT_PATH=$(old_FONT_PATH); \
+		export IMAGE_PATH; export FONT_PATH; \
+		echo "Done"
+
+ASDocGen:	do_compile doc_man doc_html
+		@echo "All Done"
+
+module.clean:
+		$(RMF) do_compile doc_man doc_html doc_xml doc_text
+		$(RMF) -r man html xml text php
+		$(RMF) ASDocGen_php.tar ASDocGen_php.tar.gz
+		$(RMF) log.*
+
+install.man:	$(PROG)
+		@cd man; echo "Installing application man pages using command - " ; \
+		echo "    \"$(INSTALL_DATA) <name>.man $(AFTER_MAN_DIR)/<name>.1x\""; \
+		for f in `ls *.man`; do \
+			page_name=`echo $$f| awk -F . '{print $$1}'`; \
+	  		echo -n "$$f "; \
+	  		$(INSTALL_DATA) $$page_name.man $(AFTER_MAN_DIR)/$$page_name.1x; \
+		done; echo "Done"; \
+		cd API; echo "Installing API man pages using command - " ; \
+		echo "    \"$(INSTALL_DATA) <name>.man $(AFTER_MAN_API_DIR)/<name>.3x\""; \
+		for f in `ls *.man`; do \
+			page_name=`echo $$f| awk -F . '{print $$1}'`; \
+	  		echo -n "$$f "; \
+	  		$(INSTALL_DATA) $$page_name.man $(AFTER_MAN_API_DIR)/$$page_name.3x; \
+		done; echo "Done"; \
+		cd ../..
+
+install.data_html:  do_compile
+		@if [ -d $(AFTER_DOC_DIR)/html ] ; then \
+			if [ -z "$(NO_DATA_REINSTALL)" ] ; then \
+	  			echo $(RMF) -r $(AFTER_DOC_DIR)/html; \
+				$(RMF) -r $(AFTER_DOC_DIR)/html; \
+			fi; \
+			no_data_reinstall=$(NO_DATA_REINSTALL); \
+		else \
+	  		no_data_reinstall=""; \
+	  		echo "no previous installation detected"; \
+		fi;
+		if [ -z "$$no_data_reinstall" ]; then \
+			$(MKDIR) -p $(AFTER_DOC_DIR)/html/data; \
+			echo "Generating catalogue of installed data files ..." ; \
+			old_IMAGE_PATH=$(IMAGE_PATH); old_FONT_PATH=$(FONT_PATH); \
+			FONT_PATH="@with_afterdir@/desktop/fonts/:@datarootdir@/afterstep/desktop/fonts/:/usr/share/fonts/default/TrueType/:@x_libraries@/X11/fonts/TTF"; \
+			IMAGE_PATH="@with_afterdir@/desktop/icons/:@datarootdir@/afterstep/desktop/icons/:@with_afterdir@/desktop/:@datarootdir@/afterstep/desktop/:@with_afterdir@/desktop/buttons/:@datarootdir@/afterstep/desktop/buttons/:@with_afterdir@/backgrounds/:@datarootdir@/afterstep/backgrounds/:@x_includes@/X11/pixmaps/"; \
+			export IMAGE_PATH; export FONT_PATH; \
+			./ASDocGen -t html --data --css data_html_styles.css -S $(AFTER_SHAREDIR) -D $(AFTER_DOC_DIR)/html/data -l /dev/null  ; \
+			IMAGE_PATH=$(old_IMAGE_PATH); FONT_PATH=$(old_FONT_PATH); \
+			export IMAGE_PATH; export FONT_PATH; \
+			echo "Done"; \
+		fi
+
+		
+install.doc_html:	$(PROG)
+		@$(MKDIR) -p $(AFTER_DOC_DIR); \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/html; \
+		cd html; echo "Installing application HTML pages using command - " ; \
+		echo "    \"$(INSTALL_DATA) <file> $(AFTER_DOC_DIR)/html/<file>\""; \
+		for f in `ls *.html`; do \
+			echo -n "$$f "; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/html/$$f; \
+		done; echo ""; echo "Done"; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/html/images; \
+		cd ../images; echo "Installing application images using command - " ; \
+		echo "    \"$(INSTALL_DATA) <file> $(AFTER_DOC_DIR)/html/images/<file>\""; \
+		for f in `ls *.jpg *.png`; do \
+	  		echo -n "$$f "; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/html/images/$$f; \
+		done; echo ""; echo "Done"; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/html/API; \
+		cd ../html/API; echo "Installing API HTML docs using command - " ; \
+		echo "    \"$(INSTALL_DATA) <file> $(AFTER_DOC_DIR)/html/images/<file>\""; \
+		for f in `ls *.html`; do \
+	  		echo -n "$$f "; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/html/API/$$f; \
+		done; echo ""; echo "Done"; \
+		cd ../..
+
+install.doc_xml:	doc_xml
+		@if [ -d $(AFTER_DOC_DIR)/xml ] ; then \
+	  		echo $(RMF) -r $(AFTER_DOC_DIR)/xml; \
+			$(RMF) -r $(AFTER_DOC_DIR)/xml; \
+		fi; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/xml; \
+		cd xml; echo "Installing application XML pages ..." ; \
+		for f in `ls *.xml`; do \
+	  		echo $(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/$$f; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/$$f; \
+		done; echo "Done"; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/xml/images; \
+		cd ../images; echo "Installing images ..." ; \
+		for f in `ls *.jpg`; do \
+	  		echo $(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/images/$$f; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/images/$$f; \
+		done; echo "Done"; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/xml/API; \
+		cd ../xml/API; echo "Installing API XML docs ..." ; \
+		for f in `ls *.xml`; do \
+	  		echo $(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/API/$$f; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/xml/API/$$f; \
+		done; echo "Done"; \
+		cd ../..
+
+install.doc_text:	doc_text
+		@if [ -d $(AFTER_DOC_DIR)/text ] ; then \
+	  		echo $(RMF) -r $(AFTER_DOC_DIR)/text; \
+			$(RMF) -r $(AFTER_DOC_DIR)/text; \
+		fi; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/text; \
+		cd xml; echo "Installing application Plain Text pages ..." ; \
+		for f in `ls *.txt`; do \
+	  		echo $(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/text/$$f; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/text/$$f; \
+		done; echo "Done"; \
+		$(MKDIR) -p $(AFTER_DOC_DIR)/text/API; \
+		cd API; echo "Installing API Plain Text docs ..." ; \
+		for f in `ls *.txt`; do \
+	  		echo $(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/text/API/$$f; \
+	  		$(INSTALL_DATA) $$f $(AFTER_DOC_DIR)/text/API/$$f; \
+		done; echo "Done"; \
+		cd ../..
+
+php_pages:	do_compile
+		@echo -n "Generating PHP pages ..." ; ./ASDocGen -l log.text -t php ; echo "Done"; \
+		if [ -f ASDocGen_php.tar.gz ] ; then \
+			$(RM) ASDocGen_php.tar.gz ; \
+		fi; \
+		echo "Tar-gzipping PHP pages ..." ; \
+		cd php && tar cpvf ../ASDocGen_php.tar * && cd .. ; \
+		tar Apvf ./ASDocGen_php.tar images; \
+		gzip ./ASDocGen_php.tar; \
+		echo "Done."
+
+uninstall.man:
+		@for p in $(PROG); do \
+			$(RMF) $(AFTER_BIN_DIR)/$$p.1x; \
+		done
+
+
+
+install:	$(PROG) install.man install.doc_html
+
+uninstall:	uninstall.man
+
+

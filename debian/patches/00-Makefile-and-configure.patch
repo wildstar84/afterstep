@@ -1,0 +1,424 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: Customize autoconf stuff
+
+---
+ autoconf/Makefile.common.in     |  5 ++++-
+ autoconf/Makefile.common.lib.in | 30 ++----------------------------
+ autoconf/configure.in           | 32 ++++++++++++++++----------------
+ autoconf/configure.libs.in      | 20 ++++++++++----------
+ libASGTK/Makefile.in            |  5 ++++-
+ libAfterBase/Makefile.in        | 12 ++++++++----
+ libAfterBase/configure.in       | 13 +++++++------
+ libAfterConf/Makefile.in        |  4 ++++
+ libAfterImage/Makefile.in       |  8 ++++++--
+ libAfterImage/apps/Makefile.in  |  7 +++++++
+ libAfterImage/configure.in      | 10 +++++-----
+ libAfterStep/Makefile.in        |  2 ++
+ src/WinCommand/Makefile.in      |  4 ++--
+ src/afterstep/Makefile.in       |  2 ++
+ 14 files changed, 79 insertions(+), 75 deletions(-)
+
+diff --git a/autoconf/Makefile.common.in b/autoconf/Makefile.common.in
+index 51c3917..390e322 100644
+--- a/autoconf/Makefile.common.in
++++ b/autoconf/Makefile.common.in
+@@ -24,7 +24,10 @@ clean:		module.clean
+ distclean:	clean
+ 		$(RMF) *.orig Makefile
+ 
+-install.lib:	@LIBPROG@ @LIBINSTALL@
++install.man:
++install.data:
++
++install.lib:	# @LIBPROG@ @LIBINSTALL@
+ 
+ install.man:
+ install.data:
+diff --git a/autoconf/Makefile.common.lib.in b/autoconf/Makefile.common.lib.in
+index c5c2c61..b802b23 100644
+--- a/autoconf/Makefile.common.lib.in
++++ b/autoconf/Makefile.common.lib.in
+@@ -1,4 +1,4 @@
+-#
++# vim:ft=make
+ # Copyright (c) 1998, Guylhem AZNAR <guylhem@oeil.qc.ca>
+ #
+ 
+@@ -22,20 +22,6 @@ install.static:
+ 		if test -d $(LIBDIR) && test -w $(LIBDIR); then \
+ 		    echo "$(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR)"; \
+ 		    $(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR); \
+-		    if test `uname` = "Linux"; then \
+-			if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+-		    	    echo "" > /dev/null; \
+-			elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+-		    	    echo "" > /dev/null; \
+-			else \
+-		    	    echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+-		    	    echo "$(LIB_STATIC), you may need to add it or set LD_LIBRARY_PATH."; \
+-			fi; \
+-			if test -w /etc; then \
+-			    echo "$(LDCONFIG)"; \
+-			    $(LDCONFIG); \
+-			fi; \
+-		    fi ;\
+ 		fi \
+ 		)
+ 
+@@ -49,18 +35,6 @@ install.dyn:	uninstall.dyn
+ 		$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR); \
+ 		$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR); \
+ 		$(LN_S) -f $(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED); \
+-		 if test `uname` = "Linux"; then \
+-		   if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+-		     echo "" > /dev/null; \
+-		   elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+-		     echo "" > /dev/null; \
+-		   else \
+-		     echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+-		     echo "$(LIB_SHARED), you may need to add it or set LD_LIBRARY_PATH."; \
+-		   fi; \
+-		   echo "$(LDCONFIG)"; \
+-		   $(LDCONFIG); \
+-		 fi \
+ 		)
+ 
+ install.cyg:	uninstall.cyg
+@@ -253,7 +227,7 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
+ 
+ $(LIB_SHARED).$(LIBVER): $(LIB_OBJS) $(LIB_INCS) Makefile
+ 	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
+-	 $(LIB_OBJS)
++	 $(LIB_OBJS) $(DEB_EXTRA_LIBS)
+ 
+ install:	install.lib install.bin
+ 
+diff --git a/autoconf/configure.in b/autoconf/configure.in
+index 268d795..d553ed1 100644
+--- a/autoconf/configure.in
++++ b/autoconf/configure.in
+@@ -134,14 +134,14 @@ dnl# now we need to play abot with CFLAGS :
+ 
+ dnl# Add -Wall
+ 
+-dnl# Add -fPIC for IA64 compilation
+-AC_CYGWIN
+-if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
+-  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+-    CFLAGS="$CFLAGS -fPIC"
+-  fi
+-  LDFLAGS="$LDFLAGS -rdynamic"
+-fi
++#debian# dnl# Add -fPIC for IA64 compilation
++#debian# AC_CYGWIN
++#debian# if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
++#debian#   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
++#debian#     CFLAGS="$CFLAGS -fPIC"
++#debian#   fi
++#debian#   LDFLAGS="$LDFLAGS -rdynamic"
++#debian# fi
+ 
+ dnl# Add -g
+ STRIP_BINARIES=
+@@ -159,14 +159,14 @@ if test "x$enable_gdb" = "xyes"; then
+ 	LDFLAGS="$LDFLAGS -w"
+   fi
+ else
+-  STRIP_BINARIES="-s"
+-  DIRTY_CFLAGS="$CFLAGS"
+-  CFLAGS="-DNO_DEBUG_OUTPUT"
+-  for f in $DIRTY_CFLAGS; do
+-        if test "x$f" != "x-g"; then
+-	   CFLAGS="$CFLAGS $f"
+-	fi
+-  done
++#debian#   STRIP_BINARIES="-s"
++#debian#   DIRTY_CFLAGS="$CFLAGS"
++  CFLAGS="$CFLAGS -DNO_DEBUG_OUTPUT"
++#debian# for f in $DIRTY_CFLAGS; do
++#debian#         if test "x$f" != "x-g"; then
++#debian# 	   CFLAGS="$CFLAGS $f"
++#debian#	fi
++#debian#   done
+ fi
+ 
+ dnl# Add -pg
+diff --git a/autoconf/configure.libs.in b/autoconf/configure.libs.in
+index 52f9ba1..feb9e6c 100644
+--- a/autoconf/configure.libs.in
++++ b/autoconf/configure.libs.in
+@@ -91,13 +91,13 @@ if test "x$GCC" = "xyes"; then
+   fi
+ fi
+ 
+-dnl# Add -fPIC for IA64 compilation
+-AC_CYGWIN
+-if test "x$CYGWIN" = "x" -a "x$GCC" = "xyes" ; then
+-  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+-    CFLAGS="$CFLAGS -fPIC"
+-  fi
+-fi
++#debian# dnl# Add -fPIC for IA64 compilation
++#debian# AC_CYGWIN
++#debian# if test "x$CYGWIN" = "x" -a "x$GCC" = "xyes" ; then
++#debian#   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
++#debian#     CFLAGS="$CFLAGS -fPIC"
++#debian#   fi
++#debian# fi
+ 
+ dnl# Add -g
+ if test "x$enable_gdb" = "xyes"; then
+@@ -116,9 +116,9 @@ if test "x$enable_warn" = "xyes"; then
+   CFLAGS="$CFLAGS -Wuninitialized -Wwrite-strings -Wcast-qual -Wbad-function-cast -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Wconversion -Wcomment -Wcast-align -Winline -Wshadow -Wredundant-decls -Wid-clash-31"
+ fi
+ 
+-if test "x$GCC" = "xyes"; then
+-   LDFLAGS="$LDFLAGS -rdynamic"
+-fi
++#debian# if test "x$GCC" = "xyes"; then
++#debian#    LDFLAGS="$LDFLAGS -rdynamic"
++#debian# fi
+ 
+ dnl# done with flags - lets export those for our children to use :
+ export CFLAGS
+diff --git a/libASGTK/Makefile.in b/libASGTK/Makefile.in
+index 85b3e37..c67ab40 100644
+--- a/libASGTK/Makefile.in
++++ b/libASGTK/Makefile.in
+@@ -27,10 +27,13 @@ LIBVERMAJOR     = @libasgtk_version_major@
+ 
+ INCS_PRIVATE	= @GTK_INCLUDES@
+ 
+-LIBS_PRIVATE      = ../src/afterstep/$(LIB_ASGTK) ../src/afterstep/$(LIB_AFTERCONF) ../src/afterstep/$(LIB_AFTERSTEP) \
++LIBS_PRIVATE      = ../src/afterstep/$(LIB_AFTERCONF) ../src/afterstep/$(LIB_AFTERSTEP) \
+ 		    ../src/afterstep/$(LIB_AFTERIMAGE) ../src/afterstep/$(LIB_AFTERBASE) \
+ 		    @GTK_LIBS@ $(LIBS_AFTERIMAGE)
+ 
++DEB_EXTRA_LIBS		= $(LIBRARIES) -L../libAfterBase -lAfterBase -L../libAfterImage -lAfterImage \
++			  -L../libAfterConf -lAfterConf -L../libAfterStep -lAfterStep
++
+ @MAKEFILECOMMONLIB@
+ 
+ 
+diff --git a/libAfterBase/Makefile.in b/libAfterBase/Makefile.in
+index e5e91c2..41f53c6 100644
+--- a/libAfterBase/Makefile.in
++++ b/libAfterBase/Makefile.in
+@@ -41,6 +41,7 @@ LIB_SOURCES=	ashash.c aslist.c asvector.c audit.c \
+ 
+ # end specifics
+ ################################################################
++
+ # generic makefile stuff :
+ 
+ LIB_DIR_NAME	= libAfterBase
+@@ -84,8 +85,9 @@ INSTALL_SCRIPT	= @INSTALL@ -m 755
+ INCS_X		= @X_CFLAGS@
+ INCLUDES	= $(INCS_X) $(INCS_PRIVATE)
+ 
++
+ USER_LD_FLAGS	= @user_ldflags@
+-LIBS_X		= @x_libs@
++LIBS_X		= @x_libs@ -lXext
+ LIB_EXECINFO	= @lib_execinfo@
+ 
+ 
+@@ -310,10 +312,10 @@ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS)
+ 
+ %.o : %.c Makefile | show_flags_cc 
+ 		@echo " $*.c"
+-		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
++		@$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+ 
+ .c.s:
+-		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
++		$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+ 
+ #
+ # include dependency files if they exist
+@@ -338,9 +340,11 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
+ 	$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIB_SHARED).$(LIBVERMAJOR)
+ 
+ $(LIB_SHARED).$(LIBVER): $(LIB_OBJS) $(LIB_INCS)  Makefile
+-	$(CC) -shared -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
++	$(CC) -shared $(USER_LD_FLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
+ 	$(USER_LD_FLAGS) $(LIB_OBJS) $(LIBS_X) $(LIB_EXECINFO)	
+ 
+ install:	install.lib
+ 
+ uninstall:	uninstall.lib
++
++install.data:
+diff --git a/libAfterBase/configure.in b/libAfterBase/configure.in
+index 4bc2232..ea231d6 100644
+--- a/libAfterBase/configure.in
++++ b/libAfterBase/configure.in
+@@ -70,12 +70,13 @@ dnl# AfterSTep already checked everything for us
+     AC_SUBST(LEX)
+     AC_SUBST(LEXLIB)
+     AC_SUBST(YACC)
+-	if test "x$GCC" = "xyes" -a "x$CYGWIN" = "xno" ; then
+-      if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+-		CFLAGS="$CFLAGS -fPIC"
+-	  fi
+-	  LDFLAGS="$LDFLAGS -rdynamic"
+-	fi
++#debian# 	if test "x$GCC" = "xyes" -a "x$CYGWIN" = "xno" ; then
++#debian#       if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
++#debian# 		CFLAGS="$CFLAGS -fPIC"
++#debian# 	  fi
++#debian# 	  LDFLAGS="$LDFLAGS -rdynamic"
++#debian# 	fi
++		/bin/true
+ 
+ else
+ 
+diff --git a/libAfterConf/Makefile.in b/libAfterConf/Makefile.in
+index 07544c1..fa049a3 100644
+--- a/libAfterConf/Makefile.in
++++ b/libAfterConf/Makefile.in
+@@ -28,6 +28,10 @@ LIB_SHARED_CYG_AR  = libAfterConf.dll.a
+ LIBVER          = @libafterconf_version@
+ LIBVERMAJOR     = @libafterconf_version_major@
+ 
++# Debian Additions
++DEB_EXTRA_LIBS		=  -lX11  -g -rdynamic  -L/usr/X11R6/lib   -L../libAfterBase -lAfterBase -L../libAfterImage -lAfterImage -L../libAfterStep -lAfterStep
++
++
+ CONFIG_SCRIPT=afterconf-config 
+ 
+ 
+diff --git a/libAfterImage/Makefile.in b/libAfterImage/Makefile.in
+index 7e6cc96..9f0d18e 100644
+--- a/libAfterImage/Makefile.in
++++ b/libAfterImage/Makefile.in
+@@ -59,6 +59,10 @@ APPS_INCS=apps/common.h
+ 
+ # end specifics
+ ################################################################
++# Debian Addition
++DEB_EXTRA_LIBS		= -lX11   -L/usr/X11R6/lib    -lXext -lrsvg-2 -lgdk_pixbuf-2.0 -lfreetype -lgobject-2.0  -ltiff -ljpeg -lpng -lm  -L../libAfterBase -lAfterBase
++export ORIGINAL_BUILD = 1
++
+ # generic makefile stuff :
+ 
+ LIB_DIR_NAME    = libAfterImage
+@@ -406,7 +410,7 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
+ 
+ $(LIB_SHARED).$(LIBVER): show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h Makefile
+ 	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
+-	 $(LIB_OBJS)
++	 $(LIB_OBJS) $(DEB_EXTRA_LIBS)
+ 
+ install.man:
+ 		@if [ -d doc/man ] ; then \
+@@ -431,7 +435,7 @@ install.doc:
+ 			cd ../..; \
+ 		fi
+ 
+-install:	install.lib install.man install.doc install.apps
++install:	install.lib install.man install.doc
+ 
+ 
+ uninstall:	uninstall.lib
+diff --git a/libAfterImage/apps/Makefile.in b/libAfterImage/apps/Makefile.in
+index 47a64bd..f60d719 100644
+--- a/libAfterImage/apps/Makefile.in
++++ b/libAfterImage/apps/Makefile.in
+@@ -39,10 +39,15 @@ BIN_DIR		= $(DESTDIR)@bindir@
+ MAN_DIR		= $(DESTDIR)@mandir@/man1
+ SHAREDIR	= $(DESTDIR)@datarootdir@
+ 
++ifdef ORIGINAL_BUILD
+ # need this for dependancies :
+ LIBAFTERIMAGE_PATH =..
+ LIB_STATIC      = $(LIBAFTERIMAGE_PATH)/libAfterImage.a
+ LIB_SHARED      = $(LIBAFTERIMAGE_PATH)/libAfterImage.so
++else
++# build from libafterimage-dev  examples directory
++LIBAFTERIMAGE_PATH = /usr/lib
++ endif
+ 
+ 
+ all:    $(PROGS)
+@@ -184,6 +189,7 @@ install:	install.bin
+ 
+ uninstall:	uninstall.bin
+ 
++ifdef ORIGINAL_BUILD
+ include .depend
+ 
+ @LIBAFTERIMAGEFILES@
+@@ -193,3 +199,4 @@ $(LIBAFTERIMAGE_PATH)/libAfterImage.a: $(LIBAFTERIMAGE_OBJS) $(LIBAFTERIMAGE_INC
+ 
+ $(LIBAFTERIMAGE_PATH)/libAfterImage.so: $(LIBAFTERIMAGE_OBJS) $(LIBAFTERIMAGE_INCS)
+ 		cd $(LIBAFTERIMAGE_PATH)/; ${MAKE} libAfterImage.so
++endif
+diff --git a/libAfterImage/configure.in b/libAfterImage/configure.in
+index ca49a50..72121ce 100644
+--- a/libAfterImage/configure.in
++++ b/libAfterImage/configure.in
+@@ -120,11 +120,11 @@ case "$target" in
+     *)
+ esac
+ 
+-if test "x$CYGWIN" = "xno" -a "x$GCC" = "xyes" ; then
+-  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+-  	CFLAGS="$CFLAGS -fPIC"
+-  fi
+-fi
++#debian# if test "x$CYGWIN" = "xno" -a "x$GCC" = "xyes" ; then
++#debian#   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
++#debian#   	CFLAGS="$CFLAGS -fPIC"
++#debian#   fi
++#debian# fi
+ 
+ 
+ if test "x$FROM_AFTERSTEP_CONFIGURE" = "xyes"; then
+diff --git a/libAfterStep/Makefile.in b/libAfterStep/Makefile.in
+index a5c62ad..38096fe 100644
+--- a/libAfterStep/Makefile.in
++++ b/libAfterStep/Makefile.in
+@@ -45,6 +45,8 @@ LIB_SHARED_CYG_AR  = libAfterStep.dll.a
+ LIBVER          = @libafterstep_version@
+ LIBVERMAJOR     = @libafterstep_version_major@
+ 
++# Debian Additions
++DEB_EXTRA_LIBS		= $(LIBRARIES) -L../libAfterBase -lAfterBase -L../libAfterImage -lAfterImage
+ LIBS_PRIVATE      = ../src/afterstep/$(LIB_AFTERIMAGE) ../src/afterstep/$(LIB_AFTERBASE)  $(LIBS_AFTERIMAGE)
+ 
+ @MAKEFILECOMMONLIB@
+diff --git a/src/WinCommand/Makefile.in b/src/WinCommand/Makefile.in
+index 7e6ee1e..817d5cd 100644
+--- a/src/WinCommand/Makefile.in
++++ b/src/WinCommand/Makefile.in
+@@ -15,13 +15,13 @@ LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) \
+ @MAKEFILECOMMON@
+ 
+ WinCommand:	        $(OBJS_WINCOMMAND) $(LIBS_DEPEND)
+-		$(CC) $(OBJS_WINCOMMAND) $(LIBS_READLINE) $(LIBS_ALL) -o $(@)
++		$(CC) $(USER_LD_FLAGS) $(OBJS_WINCOMMAND) $(LIBS_READLINE) $(LIBS_ALL) -o $(@)
+ 
+ GWCommand.o:		GWCommand.c
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) @GTK_INCLUDES@ -c $*.c
+ 
+ GWCommand:	        $(OBJS_GWCOMMAND) $(LIBS_DEPEND)
+-		$(CC) $(OBJS_GWCOMMAND) $(LIB_ASGTK) $(LIBS_ALL) @GTK_LIBS@ $(LIBS_AFTERIMAGE) -o $(@)
++		$(CC) $(USER_LD_FLAGS) $(OBJS_GWCOMMAND) $(LIB_ASGTK) $(LIBS_ALL) @GTK_LIBS@ $(LIBS_AFTERIMAGE) -o $(@)
+ 
+ module.clean:
+ 		
+diff --git a/src/afterstep/Makefile.in b/src/afterstep/Makefile.in
+index 17668f9..f5cc26a 100644
+--- a/src/afterstep/Makefile.in
++++ b/src/afterstep/Makefile.in
+@@ -51,6 +51,8 @@ install:	install.bin install.alternative
+ 
+ uninstall:	uninstall.bin
+ 
++install.man:
++uninstall.man:
+ 
+ test_asdbus.o: dbus.c
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) -DTEST_AS_DBUS $(INCLUDES) $(EXTRA_INCLUDES) -c dbus.c -o test_asdbus.o

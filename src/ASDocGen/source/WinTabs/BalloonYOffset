@@ -1,0 +1,8 @@
+<varlistentry id="options.BalloonYOffset">
+	<term>BalloonYOffset <emphasis remap='I'>offset</emphasis></term>
+	<listitem>
+		<para>Specifies the vertical offset (in pixels) to use when
+		displaying balloons.</para>
+	</listitem>
+</varlistentry>
+

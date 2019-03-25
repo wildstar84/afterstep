@@ -1,0 +1,176 @@
+/* autoconf/config.h.in.  Generated from autoconf/configure.in by autoheader.  */
+
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
+/* Trace memory allocations and check for errors */
+#undef DEBUG_ALLOCS
+
+/* Trace some functions */
+#undef DEBUG_TRACE
+
+/* Trace different X calls */
+#undef DEBUG_TRACE_X
+
+/* Each desktop may have its own look/feel */
+#undef DIFFERENTLOOKNFEELFOREACHDESKTOP
+
+/* E-mail installation notification to AfterStep developers */
+#undef DO_SEND_POSTCARD
+
+/* enable fixed menu entries */
+#undef FIXED_DIR
+
+/* libdbus-1 v 0.22 or higher is available */
+#undef HAVE_DBUS1
+
+/* Define to 1 if you have the declaration of `environ', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ENVIRON
+
+/* GIOLIB v.2.0 or higher is available */
+#undef HAVE_GIOLIB
+
+/* GLIB v.2.0 or higher is available */
+#undef HAVE_GLIB
+
+/* Support for OpenGL extention */
+#undef HAVE_GLX
+
+/* Define to 1 if the system has the type `GSettings'. */
+#undef HAVE_GSETTINGS
+
+/* GTK++ v.2.0 or higher is available */
+#undef HAVE_GTK
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `popen' function. */
+#undef HAVE_POPEN
+
+/* Support for readline library for console input */
+#undef HAVE_READLINE
+
+/* self diagnostic SIGSEGV handling (as opposed to dumping core) */
+#undef HAVE_SIGSEGV_HANDLING
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/wait.h> header file. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `wait3' system call. Deprecated, you should no
+   longer depend upon `wait3'. */
+#undef HAVE_WAIT3
+
+/* Support for Xinerama multiscreen */
+#undef HAVE_XINERAMA
+
+/* Internationalized text support */
+#undef I18N
+
+/* Enables reuse of loaded font resource by modules */
+#undef MODULE_REUSE_LOADED_FONT
+
+/* Check availability of menu items at startup */
+#undef NO_AVAILABILITYCHECK
+
+/* Save windows and re-open next session */
+#undef NO_SAVEWINDOWS
+
+/* virtual screen support - several pages poer desktop */
+#undef NO_VIRTUAL
+
+/* Support for window list */
+#undef NO_WINDOWLIST
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Support for shaped windows */
+#undef SHAPE
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+/* Support for Shared memory images - unsafe in *bsd due to limited number of
+   segments */
+#undef XSHMIMAGE
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* "X Locale support enabled" */
+#undef X_LOCALE
+
+/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
+   `char[]'. */
+#undef YYTEXT_POINTER
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif

@@ -1,0 +1,26 @@
+LIBAFTERCONF_OBJS = \
+		$(LIBAFTERCONF_PATH)/AfterStep.c \
+		$(LIBAFTERCONF_PATH)/AlignBevel.c \
+		$(LIBAFTERCONF_PATH)/Animate.c \
+		$(LIBAFTERCONF_PATH)/ASetRoot.c \
+		$(LIBAFTERCONF_PATH)/ASMount.c \
+		$(LIBAFTERCONF_PATH)/Sound.c \
+		$(LIBAFTERCONF_PATH)/Base.c \
+		$(LIBAFTERCONF_PATH)/balloon.c \
+		$(LIBAFTERCONF_PATH)/Clean.c \
+		$(LIBAFTERCONF_PATH)/Color.c \
+		$(LIBAFTERCONF_PATH)/Database.c \
+		$(LIBAFTERCONF_PATH)/DesktopEntry.c \
+		$(LIBAFTERCONF_PATH)/Feel.c \
+		$(LIBAFTERCONF_PATH)/function.c \
+		$(LIBAFTERCONF_PATH)/Ident.c \
+		$(LIBAFTERCONF_PATH)/Look.c \
+		$(LIBAFTERCONF_PATH)/MyFrame.c \
+		$(LIBAFTERCONF_PATH)/MyStyle.c \
+		$(LIBAFTERCONF_PATH)/Pager.c \
+		$(LIBAFTERCONF_PATH)/Wharf.c \
+		$(LIBAFTERCONF_PATH)/WinList.c \
+		$(LIBAFTERCONF_PATH)/WinTabs.c
+
+LIBAFTERCONF_INCS = \
+		$(LIBAFTERCONF_PATH)/afterconf.h

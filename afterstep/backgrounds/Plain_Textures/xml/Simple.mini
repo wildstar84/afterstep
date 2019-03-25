@@ -1,0 +1,4 @@
+<tile tint="Base">
+		<img src="tiles/SimpleTexture" height="$minipixmap.height"/>
+</tile>
+

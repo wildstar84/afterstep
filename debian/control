@@ -1,0 +1,151 @@
+Source: afterstep
+Section: x11
+Priority: optional
+Maintainer: Robert Luberda <robert@debian.org>
+Standards-Version: 4.2.1
+Build-Depends: bison,
+               debhelper (>= 11),
+               flex,
+               freeglut3-dev,
+               gnome-session-bin,
+               imagemagick,
+               libdbus-1-dev,
+               libfltk1.1-dev (>= 1.1.3),
+               libfreetype6-dev,
+               libgtk2.0-dev,
+               libjpeg-dev,
+               libncurses-dev,
+               libpng-dev,
+               libreadline-dev (>= 6),
+               librplay3-dev (>= 3.3.2),
+               librsvg2-dev (>= 2.14),
+               libtiff5-dev,
+               libxinerama-dev,
+               libxt-dev (>= 4.3.0.dfsg.1),
+               sharutils,
+               zlib1g-dev (>= 1:1.1.4)
+Homepage: http://www.afterstep.org/
+Rules-Requires-Root: no
+Vcs-Git: https://salsa.debian.org/debian/afterstep.git
+Vcs-Browser: https://salsa.debian.org/debian/afterstep/
+
+Package: afterstep
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: afterstep-data (= ${source:Version}),
+         aterm | x-terminal-emulator,
+         imagemagick,
+         menu,
+         menu-xdg,
+         sensible-utils,
+         ucf,
+         ${misc:Depends},
+         ${perl:Depends},
+         ${shlibs:Depends}
+Suggests: asclock | wmitime, asmail, asmon, mc, wmcpuload, xscreensaver
+Recommends: gnome-themes-extra
+Multi-Arch: foreign
+Provides: x-window-manager
+Description: window manager with the NEXTSTEP look and feel
+ AfterStep is a window manager based on FVWM which attempts to emulate
+ the NEXTSTEP look and feel, while retaining the configurability of its
+ predecessor.  Note that this window manager makes extensive use of the
+ color palette.  If you have only an 8-bit color display, it will run
+ as packaged, but you may want to modify the configuration to use fewer
+ colors.
+ .
+ AfterStep is a continuation of the BowMan window manager project, but
+ the name was changed to reflect the desire that it do more than
+ simply emulate and become a valuable window manager in its own right.
+
+Package: afterstep-data
+Architecture: all
+Pre-Depends: ${misc:Pre-Depends}
+Depends: fonts-freefont-ttf,
+         sensible-utils,
+         ucf (>= 1.17),
+         ${misc:Depends},
+         ${perl:Depends},
+         ${shlibs:Depends}
+Multi-Arch: foreign
+Recommends: afterstep (= ${source:Version})
+Description: data files for AfterStep window manager
+ AfterStep is a window manager based on FVWM which attempts to emulate
+ the NEXTSTEP look and feel, while retaining the configurability of its
+ predecessor.  Note that this window manager makes extensive use of the
+ color palette.  If you have only an 8-bit color display, it will run
+ as packaged, but you may want to modify the configuration to use fewer
+ colors.
+ .
+ The package contains data and configuration files needed by AfterStep.
+
+Package: libafterstep1
+Architecture: any
+Section: libs
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: sensible-utils, ${misc:Depends}, ${perl:Depends}, ${shlibs:Depends}
+Description: shared libraries for the AfterStep window manager
+ AfterStep is a window manager based on FVWM which attempts to emulate
+ the NEXTSTEP look and feel, while retaining the configurability of its
+ predecessor.  Note that this window manager makes extensive use of the
+ color palette.  If you have only an 8-bit color display, it will run
+ as packaged, but you may want to modify the configuration to use fewer
+ colors.
+ .
+ This package contains runtime libraries needed by AfterStep.
+
+Package: libafterimage0
+Architecture: any
+Section: libs
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${perl:Depends}, ${shlibs:Depends}
+Description: imaging library designed for AfterStep - runtime files
+ libAfterImage is the imaging library implemented for AfterStep
+ X Window Manager. It has been generalized to be suitable for any
+ application in need of robust graphics engine.
+ .
+ It provides facilities for loading images from files of different
+ formats, compressed in memory storage of images, scaling,
+ tinting/shading, flipping and superimposition of arbitrary number of
+ images over each other. In addition it allows for linear gradients
+ drawing, and antialiased/smoothed text drawing using both  FreeType
+ library and X Window fonts.
+ .
+ This package contains the libAfterImage runtime library.
+
+Package: libafterimage-dev
+Architecture: any
+Section: libdevel
+Pre-Depends: ${misc:Pre-Depends}
+Depends: freeglut3-dev,
+         libafterimage0 (= ${binary:Version}),
+         libc6-dev | libc-dev,
+         libfreetype6-dev,
+         libice-dev,
+         libjpeg-dev,
+         libpng-dev,
+         librsvg2-dev,
+         libsm-dev,
+         libtiff5-dev,
+         libxext-dev,
+         libxinerama-dev,
+         zlib1g-dev (>= 1:1.1.4),
+         ${misc:Depends},
+         ${perl:Depends},
+         ${shlibs:Depends}
+Description: imaging library designed for AfterStep - development files
+ libAfterImage is the imaging library implemented for AfterStep
+ X Window Manager. It has been generalized to be suitable for any
+ application in need of robust graphics engine.
+ .
+ It provides facilities for loading images from files of different
+ formats, compressed in memory storage of images, scaling,
+ tinting/shading, flipping and superimposition of arbitrary number of
+ images over each other. In addition it allows for linear gradients
+ drawing, and antialiased/smoothed text drawing using both  FreeType
+ library and X Window fonts.
+ .
+ This package contains the header files and static library needed to
+ compile applications that use libAfterImage.

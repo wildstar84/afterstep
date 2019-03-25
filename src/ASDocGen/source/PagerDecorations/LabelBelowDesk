@@ -1,0 +1,7 @@
+<varlistentry id="options.LabelBelowDesk">
+	<term>LabelBelowDesk</term>
+	<listitem>
+		<para>This will place label below the desk instead of above the
+		desk.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,6 @@
+<varlistentry id="options.RandomPlacement">
+	<term>RandomPlacement</term>
+	<listitem>
+		<para>Windows will be placed randomply, in space unobstructed by windows that have AvoidCover attribute set.</para>
+	</listitem>
+</varlistentry>

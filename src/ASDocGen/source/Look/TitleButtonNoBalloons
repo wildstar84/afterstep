@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleButtonNoBalloons">
+	<term>TitleButtonNoBalloons</term>
+	<listitem>
+		<para>Do not show Ballons for TitleButtons.</para>
+	</listitem>
+</varlistentry>

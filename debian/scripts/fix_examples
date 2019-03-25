@@ -1,0 +1,34 @@
+#!/bin/sh
+# $Id: fix_examples 256 2010-03-25 23:08:00Z robert $
+set -e
+
+
+
+[ -d debian ] || cd ..
+[ -d debian ] || cd ..
+[ -d debian ] || { echo "Can't find debian directory" ; exit 1; }
+
+found=0
+while [ "$1" ]; do
+   [ "$1" != "libafterimage-dev" ] || found=1
+   shift
+done
+[ "$found" = "1" ] || exit 0
+
+DESTDIR=debian/libafterimage-dev
+DEVEXMPL=usr/share/doc/libafterimage-dev/examples
+
+
+for file in $DESTDIR/$DEVEXMPL/*.[ch]; do
+	mv "$file" debian/_tmp_exmpl_
+	sed -e 's/\(#include *\)"\.\.\/\(afterbase\.h\)"/\1<libAfterImage\/\2>/g' \
+	    -e 	's/\(#include *\)"\.\.\/\(afterimage\.h\)"/\1<libAfterImage\/\2>/g' \
+	    -e 	's/\(#include *\)"\.\.\/\(char2uni\.h\)"/\1<libAfterImage\/\2>/g' \
+	    <  debian/_tmp_exmpl_ > "$file"    
+	touch -r debian/_tmp_exmpl_ $file
+	rm -f debian/_tmp_exmpl_
+done	
+
+chmod 644 $DESTDIR/$DEVEXMPL/*
+rm -f $DESTDIR/$DEVEXMPL/*.man
+# vim: ts=3 et

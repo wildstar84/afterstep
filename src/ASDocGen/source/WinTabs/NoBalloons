@@ -1,0 +1,6 @@
+<varlistentry id="options.NoBalloons">
+	<term>NoBalloons</term>
+	<listitem>
+		<para>Do not show Balloons in WinTabs.</para>
+	</listitem>
+</varlistentry>

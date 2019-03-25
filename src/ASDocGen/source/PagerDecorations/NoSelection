@@ -1,0 +1,6 @@
+<varlistentry id="options.NoSelection">
+	<term>NoSelection</term>
+	<listitem>
+		<para>Turns highliting of the current page OFF</para>
+	</listitem>
+</varlistentry>

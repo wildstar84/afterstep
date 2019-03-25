@@ -1,0 +1,6 @@
+<varlistentry id="options.KillAllModulesByName">
+	<term>KillAllModulesByName</term>
+	<listitem>
+		<para>Kills AfterStep modules with a provided matching name.</para>
+	</listitem>
+</varlistentry>

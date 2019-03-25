@@ -1,0 +1,30 @@
+Release guide : 
+
+1) Change version numbers in :
+	autoconf/configure.in
+	libAfterBase/configure.in
+	libAfterImage/configure.in
+Make sure version numbers for libraries are changed as well if library has
+changed.
+2) Run: make config
+3) rm ChangeLog && make ChangeLog
+4) Commit changes to ChangeLogs
+5) Test release on your own computer, trying to find the problems you'll
+probably find 5 minutes after finishing all the steps in this Release Guide.
+6) Tag everything: git tag -a 2.0.5 -m 'AfterStep release v 2.0.5'
+7) Create a git clone of the repository outside afterstep-stable tree, name it
+AfterStep-2.0.5 and cd into it.
+8) tar zcpvf AfterStep-2.0.5.tar.gz AfterStep-2.0.5
+9) tar jcpvf AfterStep-2.0.5.tar.bz2 AfterStep-2.0.5
+10) Prepare noimages tarballs by: mv AfterStep-2.0.5 AfterStep-2.0.5-noimages
+&& cd AfterStep-2.0.5-noimages/afterstep && rm -rf desktop backgrounds
+11) Repeat steps 8 and 9 for the noimages version
+12) upload tarballs, ChangeLog and NEW files on ftp.afterstep.org
+13) upload tarballs on upload.sf.net/incoming/
+14) Add file release on Sourceforge.
+---   don't dump whole changelog!  (it gets emailed to people.)
+15) Announce release on freecode.com
+16) Announce release on AS-ML
+17) Update wao pages : index.php, download.php and news
+18) Kick back with a beer, relax, until #5 turns out to have been phrophetic
+in nature.

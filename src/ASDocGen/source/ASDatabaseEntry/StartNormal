@@ -1,0 +1,7 @@
+<varlistentry id="options.StartNormal">
+      <term><emphasis remap='I'>StartNormal</emphasis></term>
+      <listitem>
+<para>Disables the effects of <emphasis remap='I'>StartIconic</emphasis> setting - window will not be iconifyed upon startup. 
+This is the default</para>
+      </listitem>
+</varlistentry>

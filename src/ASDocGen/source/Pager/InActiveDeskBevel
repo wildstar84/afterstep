@@ -1,0 +1,7 @@
+<varlistentry id="options.InActiveDeskBevel">
+	<term>InActiveDeskBevel</term>
+	<listitem>
+		<para>Defines how border around Pager desk representation of the inactive desk(s) should be drawn.</para>
+		<para>See Also: <ulink url="Bevel#synopsis">Bevel flags</ulink> for further details.</para>
+	</listitem>
+</varlistentry>

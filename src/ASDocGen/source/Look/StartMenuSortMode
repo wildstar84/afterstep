@@ -1,0 +1,7 @@
+<varlistentry id="options.StartMenuSortMode">
+	<term>StartMenuSortMode <emphasis remap='I'>number</emphasis></term>
+	<listitem>
+		<para>Sort start menu entries by...
+		1=alphabetical order, 0=date</para>
+	</listitem>
+</varlistentry>

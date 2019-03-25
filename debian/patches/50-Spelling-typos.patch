@@ -1,0 +1,1038 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sat, 20 Feb 2016 10:59:20 +0100
+Subject: Spelling typos
+
+Fix various spelling typos found by lintian.
+---
+ ChangeLog                                           |  8 ++++----
+ NEW                                                 | 12 ++++++------
+ doc/Pager.xml                                       |  4 ++--
+ doc/afterstep.sgml                                  |  2 +-
+ doc/afterstep.xml                                   |  6 +++---
+ libAfterBase/ChangeLog                              |  2 +-
+ libAfterBase/layout.c                               |  2 +-
+ libAfterBase/regexp.c                               |  2 +-
+ libAfterConf/Wharf.c                                |  2 +-
+ libAfterImage/ChangeLog                             |  4 ++--
+ libAfterImage/apps/ascompose.c                      |  4 ++--
+ libAfterImage/apps/astext.c                         |  4 ++--
+ libAfterImage/apps/asview.c                         |  2 +-
+ libAfterImage/asfont.h                              |  2 +-
+ libAfterImage/asimagexml.c                          |  4 ++--
+ libAfterImage/imencdec.h                            |  4 ++--
+ libAfterImage/import.c                              |  2 +-
+ libAfterImage/libpng/pngwutil.c                     |  2 +-
+ libAfterImage/scanline.c                            |  2 +-
+ libAfterImage/transform.h                           |  4 ++--
+ libAfterStep/asapp.c                                |  4 ++--
+ libAfterStep/event.c                                |  2 +-
+ libAfterStep/parser.c                               |  4 ++--
+ libAfterStep/parser_fs.c                            |  2 +-
+ libAfterStep/shape.c                                |  4 ++--
+ src/ASDocGen/ASDocGen.c                             |  2 +-
+ src/ASDocGen/source/Align/_related                  |  2 +-
+ src/ASDocGen/source/Base/FontPath                   |  2 +-
+ src/ASDocGen/source/Bevel/_related                  |  2 +-
+ src/ASDocGen/source/FAQ/01-GeneralInfo              |  2 +-
+ src/ASDocGen/source/FAQ/02-Resources                |  2 +-
+ src/ASDocGen/source/Functions/PopUp                 |  2 +-
+ src/ASDocGen/source/GWCommand/_base_config          |  4 ++--
+ src/ASDocGen/source/Look/MenuHiTitleStyle           |  2 +-
+ src/ASDocGen/source/Look/MenuHiliteStyle            |  2 +-
+ src/ASDocGen/source/Look/MenuSubItemStyle           |  2 +-
+ src/ASDocGen/source/Look/_related                   |  2 +-
+ src/ASDocGen/source/MyBackground/_related           |  2 +-
+ src/ASDocGen/source/MyFrame/_related                |  2 +-
+ src/ASDocGen/source/MyStyle/_overview               |  2 +-
+ src/ASDocGen/source/MyStyle/_related                |  2 +-
+ src/ASDocGen/source/Pager/Style                     |  2 +-
+ src/ASDocGen/source/PagerDecorations/SelectionColor |  2 +-
+ src/ASDocGen/source/SupportedHints/_related         |  2 +-
+ src/ASDocGen/source/TbarLayout/_related             |  2 +-
+ src/ASDocGen/source/_overview                       |  4 ++--
+ src/ASDocGen/source/_standard_options               |  4 ++--
+ src/ASDocGen/source/afterstep/_base_config          | 12 ++++++------
+ src/Pager/Pager.man                                 |  4 ++--
+ src/Sound2/Sound.c                                  |  2 +-
+ src/WinTabs/WinTabs.c                               |  2 +-
+ src/afterstep/afterstep.c                           |  4 ++--
+ src/afterstep/aswindow.c                            |  2 +-
+ src/afterstep/dbus.c                                |  4 ++--
+ src/afterstep/events.c                              |  4 ++--
+ src/asetroot/asetroot.c                             |  2 +-
+ 56 files changed, 88 insertions(+), 88 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index c9f6f4d..a333052 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -106,7 +106,7 @@ CHANGELOG
+  * re-indented afterstep libs
+ 
+ [2013-02-08: Sasha Vasko]
+- * reformated/indented afterstep proper
++ * reformatted/indented afterstep proper
+  * Minor bugfixes in session shutdown code work workspace file writing and
+    timer setup.
+ 
+@@ -1329,7 +1329,7 @@ CHANGELOG
+ 
+ [2007-03-09: sasha]
+  * added handling of border width set through the database for WinList
+- * we do not want to map WinList untill we receive the complete list of windows
++ * we do not want to map WinList until we receive the complete list of windows
+  * fixed redrawing issue with WinList where canvas size does not change
+ 
+ [2007-03-08: sasha]
+@@ -2529,7 +2529,7 @@ CHANGELOG
+ [2005-11-01: sasha]
+  * implemented faster dir scanning for image list; added time and size to be
+    displayed on file list; added 3 new members to TermDef data struicture for
+-   future simplier config parsing
++   future simpler config parsing
+ 
+ [2005-10-31: sasha]
+  * added ability to load all files in ASGTKImageDir as well as have details
+@@ -7938,7 +7938,7 @@ CHANGELOG
+ 
+ [2001-04-03: sashav]
+  * Some tweaks to XImage writing code to speed things up - we were spending
+-   upto 30% of time writing XImages - unacceptable.
++   up to 30% of time writing XImages - unacceptable.
+  * fixed bug in line interpolation causing stripy artifacts in scaling up
+  * fixed bug in line interpolation causing stripy artifacts in scaling up
+  * mmx debugged
+diff --git a/NEW b/NEW
+index 3aa5cc8..038bde0 100644
+--- a/NEW
++++ b/NEW
+@@ -286,7 +286,7 @@ version 2.0 beta1
+              time when it gets loaded.
+              libAfterImage also provides support for TTF fonts ( using libfreetype )
+              and smoothed standard X raster fonts.
+-        1.2. Window hints handling has been rewriten and reorganized, and most of the
++        1.2. Window hints handling has been rewritten and reorganized, and most of the
+              Extended WM specs has been incorporated, as well, as better support for
+              Motif, ICCCM and old GNOME hints has been implemented.
+         1.3. All the GUI rendering code has been aggregated into libAfterStep
+@@ -303,7 +303,7 @@ version 2.0 beta1
+                   order. Tiles could be static icons ( cannot be pressed );
+                   blocks of buttons - each having two shapes - pressed and normal;
+                   Text labels; Empty space tiles.
+-                  There could be upto 256 tiles, each residing on one of the cells
++                  There could be up to 256 tiles, each residing on one of the cells
+                   in 16x16 grid. Several tiles could reside in single cell, in
+                   which case they get superimposed on top of each other.
+                 - bevel of the TBar. When TBar is rendered all of its tiles are
+@@ -709,7 +709,7 @@ version 2.0 beta1
+                 MenuHiTitleStyle "mystyle"
+                 ****************************************************************
+                         AfterStep now allows you to specify MyStyle to be used
+-		for titlebar of currently hilighted menu. AS soo as menu goes out
++		for titlebar of currently highlighted menu. AS soo as menu goes out
+ 		of focus its titlebar will be rendered using MenuTitleStyle.
+ 
+                 ****************************************************************
+@@ -718,7 +718,7 @@ version 2.0 beta1
+                         AfterStep now includes this new feature: when you select
+ 		an item from menu - this item will be marked as recently used,
+ 		and next time menu is opened it will show all the recently used
+-                items from its SUBMENU. For exmaple you do :
++                items from its SUBMENU. For example you do :
+ 
+                 Menu->Applications->rxvt
+ 
+@@ -1283,9 +1283,9 @@ version 2.0 beta1
+                                       1 - will allow only error messages;
+                                       5 - both errors and warnings(default).
+                                       10- maximum level of output - everything printed
+-           --window           <val> - Internal Use: Window in which action occured.
++           --window           <val> - Internal Use: Window in which action occurred.
+                                       interface part which has triggered our startup.
+-           --context          <val> - Internal Use: Context in which action occured.
++           --context          <val> - Internal Use: Context in which action occurred.
+                                       interface part which has triggered our startup.
+            --look             <val> - Read look config from requested file.
+                                       Use it if you want to use different look
+diff --git a/doc/Pager.xml b/doc/Pager.xml
+index e522024..77e6d55 100644
+--- a/doc/Pager.xml
++++ b/doc/Pager.xml
+@@ -383,7 +383,7 @@ will be used for the grids.</para>
+       <term>SelectionColor <emphasis remap='I'>color</emphasis></term>
+       <listitem>
+ <para>Turns ON highliting of the current page, and specifies color of
+-hilighting</para>
++highlighting</para>
+       </listitem>
+       </varlistentry>
+       <varlistentry>
+@@ -440,7 +440,7 @@ dimension of the geometry specification.</para>
+   <listitem>
+ <para>Sets the <emphasis remap='I'>style</emphasis> to be used for the desk <emphasis remap='I'>desk</emphasis> representation
+ in the <command>Pager</command>. Where <emphasis remap='I'>style</emphasis> can be the name of any style 
+-definition in the look file, and <emphasis remap='I'>desk</emphasis> is a number coresponding  to
++definition in the look file, and <emphasis remap='I'>desk</emphasis> is a number corresponding  to
+ the desktop number: 0,1,2,3,N.... Use it if you want to specify a
+ different style for <command>Pager</command> background other than the default; which
+ is the scaled down
+diff --git a/doc/afterstep.sgml b/doc/afterstep.sgml
+index 1d6dece..25ee876 100644
+--- a/doc/afterstep.sgml
++++ b/doc/afterstep.sgml
+@@ -172,7 +172,7 @@ applets at <url url="http://www.tigr.net/afterstep/as-apps/">.
+ <p>
+ AfterStep is lucky to have David Mihm (<tt/webmaster@afterstep.org/) as its man page author.
+ These simple pages tell you in clear consice words how to do what with AfterStep.
+-<em>Please</em> read the relevent man page before asking a question.  Also note that the
++<em>Please</em> read the relevant man page before asking a question.  Also note that the
+ Pager man page is 'man Pager' (note the capitalization).  The man pages can be read online
+ at <url url="http://www.afterstep.org/man/stable/">.
+ <p>
+diff --git a/doc/afterstep.xml b/doc/afterstep.xml
+index c675d4f..ee16f9c 100644
+--- a/doc/afterstep.xml
++++ b/doc/afterstep.xml
+@@ -1269,7 +1269,7 @@ following:</para>
+ 0: no borders
+ 1: borders around each title and each item
+ 2: borders around each title and all items
+-3: borders around each title, all items, and the hilighted item
++3: borders around each title, all items, and the highlighted item
+ </literallayout> <!-- .fi -->
+ 
+   </listitem>
+@@ -1541,7 +1541,7 @@ as the default.</para>
+   <varlistentry>
+   <term>MenuHiliteStyle "<emphasis remap='I'>style_name</emphasis>"</term>
+   <listitem>
+-<para>Specifies the <emphasis remap='I'>MyStyle</emphasis> to use for hilighted menu items.</para>
++<para>Specifies the <emphasis remap='I'>MyStyle</emphasis> to use for highlighted menu items.</para>
+ 
+   </listitem>
+   </varlistentry>
+@@ -2209,7 +2209,7 @@ Popup <emphasis remap='I'>"popup_name"</emphasis>
+ EndPopup
+ </literallayout> <!-- .fi -->
+ 
+-<para>Specfies the definition of a complex menu popup <emphasis remap='I'>"popup_name"</emphasis>, which
++<para>Specifies the definition of a complex menu popup <emphasis remap='I'>"popup_name"</emphasis>, which
+ can be bound to a mouse button or key using <emphasis remap='I'>"popup_name"</emphasis> to recall
+ this declaration.  <emphasis remap='I'>built-in_command</emphasis> specifies which command will be
+ performed, utilizing it's syntax from this list of Built-In
+diff --git a/libAfterBase/ChangeLog b/libAfterBase/ChangeLog
+index b8cea0f..ef61d6c 100644
+--- a/libAfterBase/ChangeLog
++++ b/libAfterBase/ChangeLog
+@@ -330,7 +330,7 @@ CHANGELOG
+ [2005-11-01: sasha]
+  * implemented faster dir scanning for image list; added time and size to be
+    displayed on file list; added 3 new members to TermDef data struicture for
+-   future simplier config parsing
++   future simpler config parsing
+ 
+ [2005-10-26: sasha]
+  * added some functionality to ASFileBrowser - its actually usable now
+diff --git a/libAfterBase/layout.c b/libAfterBase/layout.c
+index d362e7f..36797a5 100644
+--- a/libAfterBase/layout.c
++++ b/libAfterBase/layout.c
+@@ -648,7 +648,7 @@ collect_sizes( ASLayout *layout, int *layout_size, int *layout_fixed_size, Bool
+     for( i = 0 ; i < dim  ; ++i )
+         layout_fixed_size[i] = chains[i]?0:-1 ;
+     /* PASS 2 : we calculate fixed size for columns tarting with elements that has span on 1
+-     *          and increasing it untill it reaches up to DIM : */
++     *          and increasing it until it reaches up to DIM : */
+     for( max_span = 1; max_span <= dim  ; max_span++ )
+     {
+         for( i = dim-max_span ; i >= 0  ; --i )
+diff --git a/libAfterBase/regexp.c b/libAfterBase/regexp.c
+index 7c5ebd5..fa5f7b7 100644
+--- a/libAfterBase/regexp.c
++++ b/libAfterBase/regexp.c
+@@ -63,7 +63,7 @@ typedef struct reg_exp
+ 
+ 	short int     lead_len;					   /* -1 for '*' */
+ 	/* number of symbols : */
+-	unsigned char size;						   /* upto 255 characters in regexp */
++	unsigned char size;						   /* up to 255 characters in regexp */
+ 	/* symbol can be:
+ 	   - single character    : c
+ 	   - set of characters   : [ccccccc]
+diff --git a/libAfterConf/Wharf.c b/libAfterConf/Wharf.c
+index 73556d7..8536134 100644
+--- a/libAfterConf/Wharf.c
++++ b/libAfterConf/Wharf.c
+@@ -457,7 +457,7 @@ unsigned long WharfSpecialFunc (ConfigDef * config)
+ 	 * we are going to get entire line again at config->cursor
+ 	 * so lets skip 3 tokens of <name> <icon>, since those are not parts
+ 	 * of following function */
+-	print_trimmed_str ("skiping 2 tokens at", config->tdata);
++	print_trimmed_str ("skipping 2 tokens at", config->tdata);
+ 	cur = tokenskip (config->tdata, 2);
+ 	print_trimmed_str ("skipped to", cur);
+ 	if (*cur != '\0') {
+diff --git a/libAfterImage/ChangeLog b/libAfterImage/ChangeLog
+index 3a4c66c..2b265d8 100644
+--- a/libAfterImage/ChangeLog
++++ b/libAfterImage/ChangeLog
+@@ -761,7 +761,7 @@ CHANGELOG
+ [2005-11-01: sasha]
+  * implemented faster dir scanning for image list; added time and size to be
+    displayed on file list; added 3 new members to TermDef data struicture for
+-   future simplier config parsing
++   future simpler config parsing
+ 
+ [2005-10-18: sasha]
+  * changed TTF font renderer to use advance.x attribute of the glyph as the
+@@ -2950,7 +2950,7 @@ CHANGELOG
+ 
+ [2001-04-03: sashav]
+  * Some tweaks to XImage writing code to speed things up - we were spending
+-   upto 30% of time writing XImages - unacceptable.
++   up to 30% of time writing XImages - unacceptable.
+  * fixed bug in line interpolation causing stripy artifacts in scaling up
+  * fixed bug in line interpolation causing stripy artifacts in scaling up
+  * mmx debugged
+diff --git a/libAfterImage/apps/ascompose.c b/libAfterImage/apps/ascompose.c
+index 54ec306..a1fc2a0 100644
+--- a/libAfterImage/apps/ascompose.c
++++ b/libAfterImage/apps/ascompose.c
+@@ -208,8 +208,8 @@ void usage(void) {
+ 		"     --dont-clear    don't clear window before displaying next image\n"
+ 		" Note that when -I option is used in conjunction with input from\n" 
+ 		" string or a file - ascompose will endlesly loop through the contents\n"
+-		" untill it is killed - useful for slideshow type of activity.\n"
+-		" When input comes from STDIN, then ascompose will loop untill Ctrl+D\n"
++		" until it is killed - useful for slideshow type of activity.\n"
++		" When input comes from STDIN, then ascompose will loop until Ctrl+D\n"
+ 		" is received (EOF).\n"
+ 		"\n"
+ 		"  -C --clipboard     run ascompose waiting for data being copied into clipboard,\n" 
+diff --git a/libAfterImage/apps/astext.c b/libAfterImage/apps/astext.c
+index a0430fe..0629f50 100644
+--- a/libAfterImage/apps/astext.c
++++ b/libAfterImage/apps/astext.c
+@@ -15,7 +15,7 @@
+  * button.
+  *
+  * New steps described in this tutorial are :
+- * ASText.1. Openning and closing fonts.
++ * ASText.1. Opening and closing fonts.
+  * ASText.2. Approximating rendered text size.
+  * ASText.3. Rendering texturized text.
+  * ASText.4. Merging foreground and background with bevel.
+@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
+ /**************/
+ /****f* libAfterImage/tutorials/ASText.1 [7.1]
+  * SYNOPSIS
+- * Step 1. Openning and closing fonts.
++ * Step 1. Opening and closing fonts.
+  * DESCRIPTION
+  * Before any text can be rendered using libAfterImage - desired font
+  * has to be opened for use. Font opening process is two-step. At first
+diff --git a/libAfterImage/apps/asview.c b/libAfterImage/apps/asview.c
+index 40c07cd..8b908da 100644
+--- a/libAfterImage/apps/asview.c
++++ b/libAfterImage/apps/asview.c
+@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
+  *     asv = create_asvisual( dpy, screen, depth, NULL );
+  * NOTES
+  * If any Window or Pixmap is created based on particular ASVisual, then
+- * this ASVisual structure must not be destroyed untill all such
++ * this ASVisual structure must not be destroyed until all such
+  * Windows and Pixmaps are destroyed.
+  * SEE ALSO
+  * See create_asvisual() for details.
+diff --git a/libAfterImage/asfont.h b/libAfterImage/asfont.h
+index 1c852be..f8a111f 100644
+--- a/libAfterImage/asfont.h
++++ b/libAfterImage/asfont.h
+@@ -318,7 +318,7 @@ typedef struct ASTextAttributes
+  * Display in it. At that time Hash table of loaded fonts is initialized,
+  * and if needed FreeType library is initialized as well.
+  * ASFontManager object returned by this functions has to be open at all
+- * times untill text drawing is no longer needed.
++ * times until text drawing is no longer needed.
+  *********/
+ /****f* libAfterImage/asfont/destroy_font_manager()
+  * NAME
+diff --git a/libAfterImage/asimagexml.c b/libAfterImage/asimagexml.c
+index a536daa..90f0fa9 100644
+--- a/libAfterImage/asimagexml.c
++++ b/libAfterImage/asimagexml.c
+@@ -113,7 +113,7 @@ static char* cdata_str = XML_CDATA_STR;
+  *              available methods.
+  *  if        - conditional processing based on value of the variables
+  *  set       - sets value of the variable
+- *  printf    - formated printing of the value of the variable
++ *  printf    - formatted printing of the value of the variable
+  *
+  * Each tag generates new image as the result of the transformation -
+  * existing images are never modified and could be reused as many times
+@@ -2063,7 +2063,7 @@ handle_asxml_tag_color2alpha( ASImageXMLState *state, xml_elem_t* doc, xml_elem_
+  * height   Optional. Default is "100%".  Keep this many pixels tall.
+  * tint     Optional. Additionally tint an image to specified color.
+  *          Tinting can both lighten and darken an image. Tinting color
+- *          0 or #7f7f7f7f yeilds no tinting. Tinting can be performed on
++ *          0 or #7f7f7f7f yields no tinting. Tinting can be performed on
+  *          any channel, including alpha channel.
+  * NOTES
+  * This tag applies to the first image contained within the tag.  Any
+diff --git a/libAfterImage/imencdec.h b/libAfterImage/imencdec.h
+index 58246b8..86effac 100644
+--- a/libAfterImage/imencdec.h
++++ b/libAfterImage/imencdec.h
+@@ -229,7 +229,7 @@ typedef struct ASImageDecoder
+  * 	  24.8 format to 8 bit format.
+  * 3) Tiling of the output. If tiling_step is greater then 0, then each
+  * 	  scanlines will be copied into lines found tiling_step one from
+- * 	  another, upto the edge of the image.
++ * 	  another, up to the edge of the image.
+  * 4) Reverse order of output. Output image will be mirrored along y
+  * 	  axis if bottom_to_top is set to True.
+  * NOTES
+@@ -336,7 +336,7 @@ typedef struct ASImageOutput
+  * 3 steps :
+  * 1) start decoding by calling start_image_decoding.
+  * 2) call decode_image_scanline() method of returned structure, for
+- * each scanline upto desired height of the target image. Decoded data
++ * each scanline up to desired height of the target image. Decoded data
+  * will be returned in buffer member of the ASImageDecoder structure.
+  * 3) finish decoding and deallocated all the used memory by calling
+  * stop_image_decoding()
+diff --git a/libAfterImage/import.c b/libAfterImage/import.c
+index c80b9c3..daf872b 100644
+--- a/libAfterImage/import.c
++++ b/libAfterImage/import.c
+@@ -1910,7 +1910,7 @@ xcf2ASImage( const char * path, ASImageImportParams *params )
+ #ifdef LOCAL_DEBUG
+ 	print_xcf_image( xcf_im );
+ #endif
+-	{/* TODO : temporary workaround untill we implement layers merging */
++	{/* TODO : temporary workaround until we implement layers merging */
+ 		XcfLayer *layer = xcf_im->layers ;
+ 		while ( layer )
+ 		{
+diff --git a/libAfterImage/libpng/pngwutil.c b/libAfterImage/libpng/pngwutil.c
+index fef38ae..96bdfd7 100644
+--- a/libAfterImage/libpng/pngwutil.c
++++ b/libAfterImage/libpng/pngwutil.c
+@@ -466,7 +466,7 @@ png_write_IHDR(png_structp png_ptr, png_uint_32 width, png_uint_32 height,
+    interlace_type=PNG_INTERLACE_NONE;
+ #endif
+ 
+-   /* save off the relevent information */
++   /* save off the relevant information */
+    png_ptr->bit_depth = (png_byte)bit_depth;
+    png_ptr->color_type = (png_byte)color_type;
+    png_ptr->interlaced = (png_byte)interlace_type;
+diff --git a/libAfterImage/scanline.c b/libAfterImage/scanline.c
+index 08699a5..4187fee 100644
+--- a/libAfterImage/scanline.c
++++ b/libAfterImage/scanline.c
+@@ -548,7 +548,7 @@ Bool calculate_green_diff(ASIMStrip *strip, int line, int chan, int offset)
+ 	v_last = (int)src[x] - (int)green[x];
+ 	diff[x] = v_last;
+ 	/* some loop unrolling for optimization purposes - 
+-	   we don't want to store diff[x] untill the second pass */
++	   we don't want to store diff[x] until the second pass */
+ 	x +=2;
+ 	v = (int)src[x] - (int)green[x];
+ 	diff[x-1] = (v + v_last)/2;
+diff --git a/libAfterImage/transform.h b/libAfterImage/transform.h
+index e385083..f565347 100644
+--- a/libAfterImage/transform.h
++++ b/libAfterImage/transform.h
+@@ -77,7 +77,7 @@ extern "C" {
+  *********/
+ /****f* libAfterImage/transform/tile_asimage()
+  * NAME
+- * tile_asimage() - tiles/crops ASImage to desired size, while optionaly 
++ * tile_asimage() - tiles/crops ASImage to desired size, while optionally
+  * tinting it at the same time.
+  * SYNOPSIS
+  * ASImage *tile_asimage ( struct ASVisual *asv,
+@@ -361,7 +361,7 @@ extern "C" {
+  * magenta  - 300
+  * red      - 360
+  *
+- * All the hue values in parameters will be adjusted to fall withing
++ * All the hue values in parameters will be adjusted to fall within
+  * 0-360 range.
+  *********/
+ 
+diff --git a/libAfterStep/asapp.c b/libAfterStep/asapp.c
+index 5400b2f..a437e9a 100644
+--- a/libAfterStep/asapp.c
++++ b/libAfterStep/asapp.c
+@@ -350,10 +350,10 @@ CommandLineOpts as_standard_cmdl_options[STANDARD_CMDL_OPTS_NUM] = {
+ 				"Change verbosity of the AfterStep output",
+ 				"0 - will disable any output;\n1 - will allow only error messages;\n5 - both errors and warnings(default)",
+ 				handler_set_int, &(as_app_args.verbosity_level), 0, CMO_HasArgs},
+-/*11*/ {NULL, "window", "Internal Use: Window in which action occured",
++/*11*/ {NULL, "window", "Internal Use: Window in which action occurred",
+ 				"interface part which has triggered our startup",
+ 				handler_set_int, &(as_app_args.src_window), 0, CMO_HasArgs},
+-/*12*/ {NULL, "context", "Internal Use: Context in which action occured",
++/*12*/ {NULL, "context", "Internal Use: Context in which action occurred",
+ 				"interface part which has triggered our startup",
+ 				handler_set_int, &(as_app_args.src_context), 0, CMO_HasArgs},
+ /*13*/ {NULL, "look", "Read look config from requested file",
+diff --git a/libAfterStep/event.c b/libAfterStep/event.c
+index 8c7a449..d60ed4f 100644
+--- a/libAfterStep/event.c
++++ b/libAfterStep/event.c
+@@ -240,7 +240,7 @@ static inline Time stash_event_time (XEvent * xevent)
+ 	return 0;
+ }
+ 
+-/* here we will determine what screen event occured on : */
++/* here we will determine what screen event occurred on : */
+ inline ScreenInfo *query_event_screen (register XEvent * event)
+ {																/* stub since stable AS does not support multiscreen handling in one process */
+ 	return ASDefaultScr;
+diff --git a/libAfterStep/parser.c b/libAfterStep/parser.c
+index 9e5a3cf..b15783c 100644
+--- a/libAfterStep/parser.c
++++ b/libAfterStep/parser.c
+@@ -585,7 +585,7 @@ char *GetToNextLine (ConfigDef * config)
+    - sets tline to the beginning of the keyword (not MyName),
+    - copies arguments into the current_data
+    - sets current_data_len
+-   it will read data from the file as needed untill the end of file
++   it will read data from the file as needed until the end of file
+    or config->syntax.file_terminator or EOF is reached
+    Return: NULL if end of config reached, otherwise same as tline.
+  */
+@@ -769,7 +769,7 @@ int config2tree_storage (ConfigDef * config, ASTreeStorageModel ** tail)
+ 	PushStorage (config, tail);
+ 	/* get line */
+ 	while (!TopLevel) {
+-		while (GetNextStatement (config)) {	/* untill not end of text */
++		while (GetNextStatement (config)) {	/* until not end of text */
+ 			TermDef *pterm = NULL;
+ 			unsigned long flags = 0;
+ 
+diff --git a/libAfterStep/parser_fs.c b/libAfterStep/parser_fs.c
+index 154f6fc..dfc8f83 100644
+--- a/libAfterStep/parser_fs.c
++++ b/libAfterStep/parser_fs.c
+@@ -293,7 +293,7 @@ WriteFreeStorageElem (ConfigDef * config, struct WriteBuffer *t_buffer,
+ 
+ 	csyntax = config->syntax;
+ 	/* now lets approximate our memory size needed to accomodate complete config line : */
+-	/* ( allowing some slack just for simplier algorithm, since few bytes would not really matter ) */
++	/* ( allowing some slack just for simpler algorithm, since few bytes would not really matter ) */
+ 	/* first goes constants (denoted as C# below) : */
+ 	elem_buf_size += DISABLED_KEYWORD_SIZE	/* C1 */
+ 			+ 1												/* C2 */
+diff --git a/libAfterStep/shape.c b/libAfterStep/shape.c
+index 7c87a3c..6043a5e 100644
+--- a/libAfterStep/shape.c
++++ b/libAfterStep/shape.c
+@@ -40,7 +40,7 @@ void destroy_shape (ASVector ** pshape)
+ }
+ 
+ 
+-/* using int type here to avoid problems with signed/unsigned comparisonand for simplier and faster code */
++/* using int type here to avoid problems with signed/unsigned comparisonand for simpler and faster code */
+ static Bool
+ assimilate_rectangle (int new_x, int new_y, int new_width, int new_height,
+ 											ASVector * shape)
+@@ -201,7 +201,7 @@ assimilate_rectangle (int new_x, int new_y, int new_width, int new_height,
+ 	return changed;
+ }
+ 
+-/* using int type here to avoid problems with signed/unsigned comparisonand for simplier and faster code */
++/* using int type here to avoid problems with signed/unsigned comparisonand for simpler and faster code */
+ static Bool
+ subtract_rectangle (int new_x, int new_y, int new_width, int new_height,
+ 										ASVector * shape)
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index 8011ae5..079c3a2 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -738,7 +738,7 @@ gen_syntax_doc( const char *source_dir, const char *dest_dir, SyntaxDef *syntax,
+ 	{
+ 		int overview_size = 0 ;
+ 		int tmp ;
+-		/* we generate upto 4 files in PHP mode : overview, Base config, MyStyles and Config Options
++		/* we generate up to 4 files in PHP mode : overview, Base config, MyStyles and Config Options
+ 		 * Overview and Config Options are always present. Others may be ommited if source is missing 
+ 		 * If Overview is too small - say < 1024 bytes - it could be bundled with Config Options */	   
+ 		
+diff --git a/src/ASDocGen/source/Align/_related b/src/ASDocGen/source/Align/_related
+index 70f9a23..5390bbc 100644
+--- a/src/ASDocGen/source/Align/_related
++++ b/src/ASDocGen/source/Align/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/Base/FontPath b/src/ASDocGen/source/Base/FontPath
+index 2bd95b1..2ca1b1a 100644
+--- a/src/ASDocGen/source/Base/FontPath
++++ b/src/ASDocGen/source/Base/FontPath
+@@ -2,7 +2,7 @@
+ 	<term>FontPath <emphasis remap='I'>path[:path]</emphasis></term>
+ 	<listitem>
+ 		<para>Specifies the paths to locate the font files in.</para>
+-		<para>Suported are standard X11 fonts and Truetype fonts through
++		<para>Supported are standard X11 fonts and Truetype fonts through
+ 		the FreeType library.<para>
+ 	</listitem>
+ </varlistentry>
+diff --git a/src/ASDocGen/source/Bevel/_related b/src/ASDocGen/source/Bevel/_related
+index d511c70..0dffae4 100644
+--- a/src/ASDocGen/source/Bevel/_related
++++ b/src/ASDocGen/source/Bevel/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/FAQ/01-GeneralInfo b/src/ASDocGen/source/FAQ/01-GeneralInfo
+index 4946e0c..58f4fae 100644
+--- a/src/ASDocGen/source/FAQ/01-GeneralInfo
++++ b/src/ASDocGen/source/FAQ/01-GeneralInfo
+@@ -88,7 +88,7 @@ Almost anything can be changed.
+ 
+ <varlistentry><term>XML image scripting</term>
+ <listitem>AfterStep allows XML scripts to be used to assemble complex images for things like buttons, frame sides, etc, 
+-from other, simplier images or graphical primitives.
++from other, simpler images or graphical primitives.
+ </listitem></varlistentry>
+ 
+ <varlistentry><term>TrueType fonts support</term>
+diff --git a/src/ASDocGen/source/FAQ/02-Resources b/src/ASDocGen/source/FAQ/02-Resources
+index ece15bf..8089195 100644
+--- a/src/ASDocGen/source/FAQ/02-Resources
++++ b/src/ASDocGen/source/FAQ/02-Resources
+@@ -43,7 +43,7 @@ RPMs for many an applet could be found here :<ulink url="http://www.afterstep.or
+ <listitem>
+ <para>
+ AfterStep installation comes with set of man pages that attempt to cover all aspects of AfterStep configuration.
+-<emphasis>Please</emphasis> read the relevent man page before asking a question.  Also note that the
++<emphasis>Please</emphasis> read the relevant man page before asking a question.  Also note that the
+ Pager man page is 'man Pager' (note the capitalization).  
+ </para>
+ </listitem></varlistentry>
+diff --git a/src/ASDocGen/source/Functions/PopUp b/src/ASDocGen/source/Functions/PopUp
+index 5209860..d1ced68 100644
+--- a/src/ASDocGen/source/Functions/PopUp
++++ b/src/ASDocGen/source/Functions/PopUp
+@@ -10,7 +10,7 @@
+     EndPopup
+     </literallayout> 
+ 
+-    <para>Specfies the definition of a complex menu popup <emphasis remap='I'>"popup_name"</emphasis>, which
++    <para>Specifies the definition of a complex menu popup <emphasis remap='I'>"popup_name"</emphasis>, which
+     can be bound to a mouse button or key using <emphasis remap='I'>"popup_name"</emphasis> to recall
+     this declaration.  <emphasis remap='I'>built-in_command</emphasis> specifies which command will be
+     performed, utilizing it's syntax from this list of Built-In
+diff --git a/src/ASDocGen/source/GWCommand/_base_config b/src/ASDocGen/source/GWCommand/_base_config
+index f5208a7..3072a66 100644
+--- a/src/ASDocGen/source/GWCommand/_base_config
++++ b/src/ASDocGen/source/GWCommand/_base_config
+@@ -72,13 +72,13 @@
+ 	<varlistentry>
+ 	<term>     --window <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Window in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Window in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+ 	<term>     --context <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Context in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Context in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+diff --git a/src/ASDocGen/source/Look/MenuHiTitleStyle b/src/ASDocGen/source/Look/MenuHiTitleStyle
+index 555d099..f8830d2 100644
+--- a/src/ASDocGen/source/Look/MenuHiTitleStyle
++++ b/src/ASDocGen/source/Look/MenuHiTitleStyle
+@@ -2,7 +2,7 @@
+ 	<term>MenuHiTitleStyle <emphasis remap='I'>"style_name"</emphasis></term>
+ 	<listitem>
+ 		<para>AfterStep now allows you to specify a MyStyle to be used
+-		for the titlebar of the currently hilighted menu. AS soon as the menu goes out
++		for the titlebar of the currently highlighted menu. AS soon as the menu goes out
+ 		of focus its titlebar will be rendered using MenuTitleStyle.</para>
+ 	</listitem>
+ </varlistentry>
+diff --git a/src/ASDocGen/source/Look/MenuHiliteStyle b/src/ASDocGen/source/Look/MenuHiliteStyle
+index 74401eb..bc8ae8f 100644
+--- a/src/ASDocGen/source/Look/MenuHiliteStyle
++++ b/src/ASDocGen/source/Look/MenuHiliteStyle
+@@ -1,6 +1,6 @@
+ <varlistentry id="options.MenuHiliteStyle">
+ 	<term>MenuHiliteStyle <emphasis remap='I'>"style_name"</emphasis></term>
+ 	<listitem>
+-		<para>Specifies the MyStyle to use for hilighted menu items.</para>
++		<para>Specifies the MyStyle to use for highlighted menu items.</para>
+ 	</listitem>
+ </varlistentry>
+diff --git a/src/ASDocGen/source/Look/MenuSubItemStyle b/src/ASDocGen/source/Look/MenuSubItemStyle
+index 811bdaa..531a9de 100644
+--- a/src/ASDocGen/source/Look/MenuSubItemStyle
++++ b/src/ASDocGen/source/Look/MenuSubItemStyle
+@@ -4,7 +4,7 @@
+ 		<para>AfterStep now includes this new feature: when you select
+ 		an item from the menu - this item will be marked as recently used,
+ 		and next time the menu is opened it will show all the recently used
+-		items from its SUBMENU. For exmaple you do :
++		items from its SUBMENU. For example you do :
+ </para><para>
+ 		Menu->Applications->rxvt
+ </para><para>
+diff --git a/src/ASDocGen/source/Look/_related b/src/ASDocGen/source/Look/_related
+index feeda36..7774b89 100644
+--- a/src/ASDocGen/source/Look/_related
++++ b/src/ASDocGen/source/Look/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/MyBackground/_related b/src/ASDocGen/source/MyBackground/_related
+index bd53fc7..c6dfa7b 100644
+--- a/src/ASDocGen/source/MyBackground/_related
++++ b/src/ASDocGen/source/MyBackground/_related
+@@ -5,6 +5,6 @@
+  MyBackground
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/MyFrame/_related b/src/ASDocGen/source/MyFrame/_related
+index cfd1e3a..07c944e 100644
+--- a/src/ASDocGen/source/MyFrame/_related
++++ b/src/ASDocGen/source/MyFrame/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  MyFrame
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/MyStyle/_overview b/src/ASDocGen/source/MyStyle/_overview
+index acd0e57..e79286b 100644
+--- a/src/ASDocGen/source/MyStyle/_overview
++++ b/src/ASDocGen/source/MyStyle/_overview
+@@ -19,7 +19,7 @@ for focused and one for unfocused state.
+ Tiles could be static icons ( cannot be pressed );
+ blocks of buttons - each having two shapes - pressed and normal;
+ Text labels; Empty space tiles.
+-There could be upto 256 tiles, each residing on one of the cells in 8x8 grid. 
++There could be up to 256 tiles, each residing on one of the cells in 8x8 grid.
+ Several tiles could reside in single cell, in  which case they get superimposed on top of each other.
+ </para><para>               
+ - bevel of the TBar. When TBar is rendered all of its tiles are superimposed on top of its background, and resulting image will have a 3D bevel drawn on it, using colors from same MyStyle as used for background. 
+diff --git a/src/ASDocGen/source/MyStyle/_related b/src/ASDocGen/source/MyStyle/_related
+index 0b19a1e..38cfea4 100644
+--- a/src/ASDocGen/source/MyStyle/_related
++++ b/src/ASDocGen/source/MyStyle/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  MyStyle
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/Pager/Style b/src/ASDocGen/source/Pager/Style
+index 2d01da3..e33a14f 100644
+--- a/src/ASDocGen/source/Pager/Style
++++ b/src/ASDocGen/source/Pager/Style
+@@ -3,7 +3,7 @@
+ 	<listitem>
+ 		<para>Sets  the  style  to be used for the desk desk representation in
+ 		the Pager. Where style can be the name of any  style  definition
+-		in  the  look  file,  and  desk is a number coresponding  to the
++		in  the  look  file,  and  desk is a number corresponding  to the
+ 		desktop number: 0,1,2,3,N.... Use it if you want  to  specify  a
+ 		different  style  for  Pager  background other than the default;
+ 		which is the scaled down *PagerDesktopImage.</para>
+diff --git a/src/ASDocGen/source/PagerDecorations/SelectionColor b/src/ASDocGen/source/PagerDecorations/SelectionColor
+index c091871..6f219a1 100644
+--- a/src/ASDocGen/source/PagerDecorations/SelectionColor
++++ b/src/ASDocGen/source/PagerDecorations/SelectionColor
+@@ -2,6 +2,6 @@
+ 	<term>SelectionColor</term>
+ 	<listitem>
+ 		<para>Turns ON highliting of the current  page,  and  specifies
+-		color of hilighting</para>
++		color of highlighting</para>
+ 	</listitem>
+ </varlistentry>
+diff --git a/src/ASDocGen/source/SupportedHints/_related b/src/ASDocGen/source/SupportedHints/_related
+index 57653c5..96fe6d4 100644
+--- a/src/ASDocGen/source/SupportedHints/_related
++++ b/src/ASDocGen/source/SupportedHints/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- Suported hints
++ Supported hints
+  <ulink url="TbarLayout">Titlebar layout</ulink>
+ </section>
+diff --git a/src/ASDocGen/source/TbarLayout/_related b/src/ASDocGen/source/TbarLayout/_related
+index f72c0f5..8fde1a2 100644
+--- a/src/ASDocGen/source/TbarLayout/_related
++++ b/src/ASDocGen/source/TbarLayout/_related
+@@ -5,6 +5,6 @@
+  <ulink url="MyBackground">MyBackground</ulink>
+  <ulink url="MyFrame">MyFrame</ulink>
+  <ulink url="MyStyle">MyStyle</ulink>
+- <ulink url="SupportedHints">Suported hints</ulink>
++ <ulink url="SupportedHints">Supported hints</ulink>
+  Titlebar layout
+ </section>
+diff --git a/src/ASDocGen/source/_overview b/src/ASDocGen/source/_overview
+index 6272b93..15f4ec6 100644
+--- a/src/ASDocGen/source/_overview
++++ b/src/ASDocGen/source/_overview
+@@ -14,7 +14,7 @@
+              time when it gets loaded./para>
+ <para>             libAfterImage also provides support for TTF fonts ( using libfreetype )
+              and smoothed standard X raster fonts.</para>
+-<para>        1.2. Window hints handling has been rewriten and reorganized, and most of the
++<para>        1.2. Window hints handling has been rewritten and reorganized, and most of the
+              Extended WM specs has been incorporated, as well, as better support for
+              Motif, ICCCM and old GNOME hints has been implemented.</para>
+ <para>        1.3. All the GUI rendering code has been aggregated into libAfterStep
+@@ -31,7 +31,7 @@
+                   order. Tiles could be static icons ( cannot be pressed );
+                   blocks of buttons - each having two shapes - pressed and normal;
+                   Text labels; Empty space tiles.</para>
+-<para>                  There could be upto 256 tiles, each residing on one of the cells
++<para>                  There could be up to 256 tiles, each residing on one of the cells
+                   in 16x16 grid. Several tiles could reside in single cell, in
+                   which case they get superimposed on top of each other.</para>
+ <para>          - bevel of the TBar. When TBar is rendered all of its tiles are
+diff --git a/src/ASDocGen/source/_standard_options b/src/ASDocGen/source/_standard_options
+index f5208a7..3072a66 100644
+--- a/src/ASDocGen/source/_standard_options
++++ b/src/ASDocGen/source/_standard_options
+@@ -72,13 +72,13 @@
+ 	<varlistentry>
+ 	<term>     --window <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Window in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Window in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+ 	<term>     --context <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Context in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Context in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+diff --git a/src/ASDocGen/source/afterstep/_base_config b/src/ASDocGen/source/afterstep/_base_config
+index 16e83ba..f594b00 100644
+--- a/src/ASDocGen/source/afterstep/_base_config
++++ b/src/ASDocGen/source/afterstep/_base_config
+@@ -72,13 +72,13 @@
+ 	<varlistentry>
+ 	<term>     --window <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Window in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Window in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+ 	<term>     --context <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Context in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Context in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+@@ -206,13 +206,13 @@
+ 	<varlistentry>
+ 	<term>     --window <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Window in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Window in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+ 	<term>     --context <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Context in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Context in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+@@ -338,13 +338,13 @@
+ 	<varlistentry>
+ 	<term>     --window <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Window in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Window in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+ 	<term>     --context <replaceable>val</replaceable></term>
+ 	<listitem>
+-   <para>Internal Use: Context in which action occured. Interface part which has triggered our startup.   </para>
++   <para>Internal Use: Context in which action occurred. Interface part which has triggered our startup.   </para>
+    </listitem>
+ 	</varlistentry>
+ 	<varlistentry>
+diff --git a/src/Pager/Pager.man b/src/Pager/Pager.man
+index 90ea6dd..18e4555 100644
+--- a/src/Pager/Pager.man
++++ b/src/Pager/Pager.man
+@@ -242,7 +242,7 @@ will be used for the grids.
+ Turns OFF highliting of the current page
+ .IP "SelectionColor \fIcolor\fP"
+ Turns ON highliting of the current page, and specifies color of
+-hilighting
++highlighting
+ .IP "NoDeskLabel"
+ Turns OFF desk's labeling
+ .IP "LabelBelowDesk"
+@@ -270,7 +270,7 @@ dimension of the geometry specification.
+ .IP "*PagerStyle \fIdesk style\fP"
+ Sets the \fIstyle\fP to be used for the desk \fIdesk\fP representation
+ in the \fBPager\fP. Where \fIstyle\fP can be the name of any style 
+-definition in the look file, and \fIdesk\fP is a number coresponding  to
++definition in the look file, and \fIdesk\fP is a number corresponding  to
+ the desktop number: 0,1,2,3,N.... Use it if you want to specify a
+ different style for \fBPager\fP background other than the default; which
+ is the scaled down
+diff --git a/src/Sound2/Sound.c b/src/Sound2/Sound.c
+index 6ebbd25..dd3db5e 100644
+--- a/src/Sound2/Sound.c
++++ b/src/Sound2/Sound.c
+@@ -498,7 +498,7 @@ int as_snd2_segv_cb()
+ }
+ void as_snd2_error()
+ {
+-    // If we're here.. a fatal error occured.
++    // If we're here.. a fatal error occurred.
+     
+ }
+ 
+diff --git a/src/WinTabs/WinTabs.c b/src/WinTabs/WinTabs.c
+index 6e73066..329cc6c 100644
+--- a/src/WinTabs/WinTabs.c
++++ b/src/WinTabs/WinTabs.c
+@@ -395,7 +395,7 @@ main( int argc, char **argv )
+     map_canvas_window( WinTabsState.tabs_canvas, True );
+     set_root_clip_area(WinTabsState.main_canvas );
+ 
+-	/* delay mapping main canvas untill we actually swallowed something ! */
++	/* delay mapping main canvas until we actually swallowed something ! */
+ 	if( WinTabsState.pattern_wrexp == NULL || !get_flags(Config->flags, ASWT_HideWhenEmpty ))
+ 	{
+ 		map_canvas_window( WinTabsState.main_canvas, True );
+diff --git a/src/afterstep/afterstep.c b/src/afterstep/afterstep.c
+index f97b80d..f5d9921 100644
+--- a/src/afterstep/afterstep.c
++++ b/src/afterstep/afterstep.c
+@@ -209,11 +209,11 @@ int main (int argc, char **argv, char **envp)
+ 	}
+ 
+ 	if (ASDBus_fd >= 0) {
+-		show_progress ("Successfuly accured Session DBus connection.");
++		show_progress ("Successfully accured Session DBus connection.");
+ 		GnomeSessionClientID = asdbus_RegisterSMClient (SMClientID_string);
+ 		if (GnomeSessionClientID != NULL) {
+ 			show_progress
+-					("Successfuly registered with GNOME Session Manager with Client Path \"%s\".",
++					("Successfully registered with GNOME Session Manager with Client Path \"%s\".",
+ 					 GnomeSessionClientID);
+ 		}
+ 	}
+diff --git a/src/afterstep/aswindow.c b/src/afterstep/aswindow.c
+index 7d7f96f..a7d68c9 100644
+--- a/src/afterstep/aswindow.c
++++ b/src/afterstep/aswindow.c
+@@ -1830,7 +1830,7 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
+ 	if (Scr.NumberOfScreens > 1 && !do_hide_focus) {
+ 		Window pointer_root;
+ 		/* if pointer went onto another screen - we need to release focus
+-		 * and let other screen's manager manage it from now on, untill
++		 * and let other screen's manager manage it from now on, until
+ 		 * pointer comes back to our screen :*/
+ 		ASQueryPointerRoot (&pointer_root, &w);
+ 		if (pointer_root != Scr.Root) {
+diff --git a/src/afterstep/dbus.c b/src/afterstep/dbus.c
+index d311094..631bcf4 100644
+--- a/src/afterstep/dbus.c
++++ b/src/afterstep/dbus.c
+@@ -1011,7 +1011,7 @@ int main (int argc, char **argv)
+ 		show_error ("Failed to accure Session DBus connection.");
+ 		return 0;
+ 	}
+-	show_progress ("Successfuly accured Session DBus connection.");
++	show_progress ("Successfully accured Session DBus connection.");
+ 
+ 	change_func_code ("Restart", F_NOP);
+ 	if (!asdbus_GetCanShutdown())
+@@ -1033,7 +1033,7 @@ int main (int argc, char **argv)
+ 	show_progress ("gnome-session Autosave set to %d", 	get_gnome_autosave ());
+ 	if (GnomeSessionClientID != NULL)
+ 		show_progress
+-				("Successfuly registered with GNOME Session Manager with Client Path \"%s\".",
++				("Successfully registered with GNOME Session Manager with Client Path \"%s\".",
+ 				 GnomeSessionClientID);
+ 
+ 	if (GnomeSessionClientID != NULL) {
+diff --git a/src/afterstep/events.c b/src/afterstep/events.c
+index 19e5441..08f5aae 100644
+--- a/src/afterstep/events.c
++++ b/src/afterstep/events.c
+@@ -189,7 +189,7 @@ WaitEventLoop (ASEvent * event, int finish_event_type, long timeout,
+ 			done = True;
+ 			if (event->x.xbutton.window == Scr.Root)
+ 				event->x.xbutton.window = event->x.xbutton.subwindow;
+-			/* otherwise event will be reported as if it occured relative to
++			/* otherwise event will be reported as if it occurred relative to
+ 			   root window */
+ 		}
+ 		DigestEvent (event);
+@@ -434,7 +434,7 @@ void DigestEvent (ASEvent * event)
+ 
+ 		/* Since key presses and button presses are grabbed in the frame
+ 		 * when we have re-parented windows, we need to find out the real
+-		 * window where the event occured */
++		 * window where the event occurred */
+ 		if (!ASWIN_GET_FLAGS (asw, AS_Iconic)) {
+ 			if (w != asw->client_canvas->w)
+ 				if (xk->subwindow != None)
+diff --git a/src/asetroot/asetroot.c b/src/asetroot/asetroot.c
+index d91e0d0..9c2e61e 100644
+--- a/src/asetroot/asetroot.c
++++ b/src/asetroot/asetroot.c
+@@ -94,7 +94,7 @@ ASAtom Atoms[] =
+  {None, "_AS_STYLE", XA_INTEGER},
+  AS_BACKGROUND_ATOM_DEF,
+  {None, "WM_STATE", XA_INTEGER},	/*  it is actually of WM_STATE type,
+-					   but we don't know this atom untill
++					   but we don't know this atom until
+ 					   we get it from X */
+  {None, NULL, None}
+ };

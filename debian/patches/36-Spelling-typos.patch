@@ -1,0 +1,64 @@
+From: Robert Luberda <robert@debian.org>
+Date: Wed, 14 Aug 2013 22:54:46 +0200
+Subject: 36 Spelling typos
+
+Fix spelling typos found by lintian.
+---
+ ChangeLog                                 | 2 +-
+ libAfterImage/apps/asview.c               | 2 +-
+ libAfterImage/asfont.h                    | 2 +-
+ src/ASDocGen/source/ColorScheme/_overview | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 953efb4..c9f6f4d 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -5727,7 +5727,7 @@ CHANGELOG
+  * implemented feature allowing different base files for different screens
+  * Implemented changes that should hopefully fix 64 bit port of AfterSTep
+  * fixed handling of WharfBevel setting ( it was ignored ); Fixed handling of
+-   transparency in Wharf and other places, related to teh fact that tbar root
++   transparency in Wharf and other places, related to the fact that tbar root
+    position may not be up-to-date;
+  *  some changes to make code 64-bit safe
+  * Fixed transparency update in Pager , Wharf and hopefully in WinList as well,
+diff --git a/libAfterImage/apps/asview.c b/libAfterImage/apps/asview.c
+index a312bd0..40c07cd 100644
+--- a/libAfterImage/apps/asview.c
++++ b/libAfterImage/apps/asview.c
+@@ -287,7 +287,7 @@ int main(int argc, char* argv[])
+  *  p = asimage2pixmap( asv, DefaultRootWindow(dpy), im, NULL, False );
+  *  destroy_asimage( &im );
+  * NOTES
+- * We no longer need ASImage after we transfered it onto the Pixmap, so
++ * We no longer need ASImage after we transferred it onto the Pixmap, so
+  * we better destroy it to conserve resources.
+  * SEE ALSO
+  * asimage2pixmap(), destroy_asimage(), set_window_background_and_free()
+diff --git a/libAfterImage/asfont.h b/libAfterImage/asfont.h
+index 9bc7038..1c852be 100644
+--- a/libAfterImage/asfont.h
++++ b/libAfterImage/asfont.h
+@@ -390,7 +390,7 @@ void    destroy_font_manager( struct ASFontManager *fontman, Bool reusable );
+  * DESCRIPTION
+  * open_X11_font() attempts to load and query font using Xlib calls.
+  * On success it goes thgroughthe codemap of the font and renders all
+- * the glyphs available. Glyphs then gets transfered to the client's
++ * the glyphs available. Glyphs then gets transferred to the client's
+  * memory and encoded using RLE compression. At this time smoothing
+  * filters are applied on glyph pixmaps, if its size exceeds threshold.
+  * TODO
+diff --git a/src/ASDocGen/source/ColorScheme/_overview b/src/ASDocGen/source/ColorScheme/_overview
+index 91425be..91d2ee1 100644
+--- a/src/ASDocGen/source/ColorScheme/_overview
++++ b/src/ASDocGen/source/ColorScheme/_overview
+@@ -5,7 +5,7 @@ while providing additional flexibility while designing custom looks/themes.
+ </para><para>
+ AfterStep Colorscheme is a standard set of color names, that may have different color values assigned to them.
+ This color names are used in defining Look and in XML images. 
+-By assigning different color values to teh same color names it is possible to instantly change colors throughout entire Look, 
++By assigning different color values to the same color names it is possible to instantly change colors throughout entire Look,
+ without altering any images or configuration files.
+ </para><para>
+ Not all of the Colorscheme colors have to be explicitly defined. Only the Base color is important.

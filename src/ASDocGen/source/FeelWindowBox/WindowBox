@@ -1,0 +1,6 @@
+<varlistentry id="options.WindowBox">
+	<term>WindowBox <emphasis remap='I'>"windowbox_name"</emphasis></term>
+	<listitem>
+		<para>Starts a WindowBox definition. ~WindowBox ends it.</para>
+	</listitem>
+</varlistentry>

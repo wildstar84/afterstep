@@ -1,0 +1,34 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 27 Aug 2013 08:36:31 +0200
+Subject: 38 Disable handling pending events
+
+Do not call HandleEventsWhileFunctionsPending() as it breaks
+initial positions of WinList, Wharf and Pager modules (especially
+when *PagerGeometry is set to -1+1).
+
+This function was introduced in the following upstream commit:
+commit e93736c52b39a1a42ca3a18740ea8d075a85497b
+Author: Sasha Vasko <sasha@aftercode.net>
+Date:   Sat Feb 16 00:54:46 2013 -0600
+
+    Fixed startup code to wait for autostarted windows to finish mapping
+    before switching to normal running mode.
+    Fixed hard to trigger race condition capable of locking Afterstep
+    into select() from modules before we are actually ready to send.
+---
+ src/afterstep/afterstep.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/afterstep/afterstep.c b/src/afterstep/afterstep.c
+index a724d58..f97b80d 100644
+--- a/src/afterstep/afterstep.c
++++ b/src/afterstep/afterstep.c
+@@ -668,7 +668,7 @@ void DoAutoexec (Bool restarting)
+ 			func.name = &(screen_func_name[0]);
+ 	}
+ 	ExecuteFunction (&func, &event, -1);
+-	HandleEventsWhileFunctionsPending ();
++	//HandleEventsWhileFunctionsPending ();
+ }
+ 
+ /***********************************************************************

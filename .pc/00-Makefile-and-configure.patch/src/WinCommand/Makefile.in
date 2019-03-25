@@ -1,0 +1,31 @@
+OBJS_WINCOMMAND  = WinCommand.o
+
+OBJS_GWCOMMAND  = GWCommand.o
+
+OBJS            = $(OBJS_WINCOMMAND) $(OBJS_GWCOMMAND)
+
+PROG		= WinCommand @GTK_WIN_COMMAND@
+
+LIBS_PRIVATE      = $(LIB_AFTERCONF) $(LIB_AFTERSTEP) \
+			$(LIB_AFTERIMAGE) $(LIB_AFTERBASE) $(LIBS_AFTERIMAGE)
+			
+LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) \
+			$(LIB_AFTERCONF)
+
+@MAKEFILECOMMON@
+
+WinCommand:	        $(OBJS_WINCOMMAND) $(LIBS_DEPEND)
+		$(CC) $(OBJS_WINCOMMAND) $(LIBS_READLINE) $(LIBS_ALL) -o $(@)
+
+GWCommand.o:		GWCommand.c
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) @GTK_INCLUDES@ -c $*.c
+
+GWCommand:	        $(OBJS_GWCOMMAND) $(LIBS_DEPEND)
+		$(CC) $(OBJS_GWCOMMAND) $(LIB_ASGTK) $(LIBS_ALL) @GTK_LIBS@ $(LIBS_AFTERIMAGE) -o $(@)
+
+module.clean:
+		
+install:	install.bin
+
+uninstall:	uninstall.bin
+

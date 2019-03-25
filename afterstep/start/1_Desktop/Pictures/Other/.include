@@ -1,0 +1,17 @@
+SmallMiniPixmap Folder-Mona
+
+name Other Images
+
+Comment "Miscellaneous backgrounds & pictures."
+
+# xplanet images
+include include "/usr/share/xplanet/images" BackgroundForeign
+include include "/usr/local/share/xplanet/images" BackgroundForeign
+
+# odds-n-ends (add these back as-needed)
+include "/usr/share/backgrounds" BackgroundForeign
+include "/usr/share/wallpapers" BackgroundForeign
+include "/usr/local/share/backgrounds" BackgroundForeign
+include "/usr/local/share/wallpapers" BackgroundForeign
+
+command BackgroundForeign

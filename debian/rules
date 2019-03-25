@@ -1,0 +1,265 @@
+#!/usr/bin/make -f
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all
+
+SHELL                   := /bin/sh
+DH_AUTO_OPTIONS         := -v -Sautoconf
+DESTDIR                 := $(CURDIR)/debian/tmp
+CFLAGS                  := $(shell dpkg-buildflags --get CPPFLAGS) \
+                           $(shell dpkg-buildflags --get CFLAGS)   \
+                           $(shell getconf LFS_CFLAGS)
+LDFLAGS                 := -Wl,-z,defs -Wl,--as-needed             \
+                           $(shell dpkg-buildflags --get LDFLAGS)
+
+BUILD_DIR               := DEB-build-tree
+STAMP_DIR               := $(BUILD_DIR)/stamps
+BUILD_TREE              := $(BUILD_DIR)/build-dynamic
+BUILD_TREE_STATIC       := $(BUILD_DIR)/build-static
+STATIC_SUBDIRS          := libAfterBase libAfterImage
+
+GEN_DH_FILES            := debian/packages.d/gen_debhelper_files.pl
+DHINSTALL_LIBDIR        := usr/lib/$(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null || :)
+INSTALL_PROGRAM         := install -p -m 755
+
+pafterstep              := afterstep
+pafterstep_data         := afterstep-data
+plibafterstep           := libafterstep1
+plibafterimage          := libafterimage0
+plibafterimage_dev      := libafterimage-dev
+
+
+ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+  CC  := $(DEB_HOST_GNU_TYPE)-gcc
+  CXX := $(DEB_HOST_GNU_TYPE)-g++
+else
+  CC  := gcc
+  CXX := g++
+endif
+
+include /usr/share/dpkg/pkg-info.mk
+
+ifneq (,$(findstring dbg,$(DEB_VERSION)))
+    CONF_ADD += --enable-gdb
+endif
+
+ifneq (,$(findstring nodoc,$(DEB_BUILD_OPTIONS)))
+    export DEB_BUILD_PROFILES +=  nodoc
+    override SKIP_DOC := :
+else ifneq (,$(findstring nodoc,$(DEB_BUILD_PROFILES)))
+    export DEB_BUILD_OPTIONS  +=  nodoc
+    override SKIP_DOC := :
+else
+    override SKIP_DOC :=
+endif
+
+# Usage: call(common-configure,additional configure args,additional CFLAGS,additional LDFLAGS)
+define common-configure
+    CC=$(CC)                 \
+    CXX=$(CXX)               \
+    LDCONFIG="/bin/true"     \
+    CFLAGS="$(CFLAGS) $2"    \
+    CXXFLAGS="$(CFLAGS) $2"  \
+    LDFLAGS="$(LDFLAGS) $3"  \
+    dh_auto_configure $(DH_AUTO_OPTIONS) --   \
+    --with-imageloader="display -window root" \
+    --with-helpcommand="x-terminal-emulator -e man" \
+    --disable-different-looknfeels \
+    --enable-dependency-tracking \
+    --enable-savewindows \
+    --enable-fixeditems \
+    --with-desktops=4 \
+    --enable-xinerama \
+    --with-deskgeometry=2x2 \
+    --disable-mmx-optimization \
+    --with-svg \
+    --with-dbus1 \
+    --enable-i18n \
+    --without-gnome-session \
+    $(CONF_ADD) $1
+endef
+
+# Usage: call(common-build,additional make args)
+define common-build
+   dh_auto_build $(DH_AUTO_OPTIONS) --parallel -- \
+   SHELL="$(SHELL) -e" ASDOCGENOPTS="--build-date $(SOURCE_DATE_EPOCH) --user-dir $(CURDIR)/$(BUILD_DIR)/user-dir" \
+   AFTER_EXEC_COMMAND=/usr/bin/afterstep \
+   $1
+endef
+
+# Usage: call(common-install,additional make args)
+define common-install
+    $(MAKE) $1 DESTDIR=${DESTDIR} \
+    SHELL="$(SHELL) -e" \
+    LDCONFIG=/bin/true \
+    CP="cp -a" \
+    INSTALL_PROGRAM="$(INSTALL_PROGRAM)" \
+    INSTALL_DATA="install -p -m 644" \
+    INSTALL_SCRIPT="install -p -m 755" \
+    INSTALL_HEADER="install -p -m 644" \
+    INSTALL_LIB="install -p -m 644" \
+    INSTALL="install -p" \
+    AFTER_DOC_DIR=${DESTDIR}/usr/share/doc/$(pafterstep_data)
+endef
+
+%:
+	dh ${@}
+
+$(STAMP_DIR)/prepare.stamp:
+	@echo
+	@echo "***** Creating build directory for dynamic libs build  *****"
+	@echo
+	mkdir -p $(STAMP_DIR) $(BUILD_TREE)
+	cp -al [!dD]*  d[!e]*  $(BUILD_TREE)
+	ln -s $(CURDIR)/debian $(BUILD_TREE)/debian
+	#
+	@echo
+	@echo "***** Creating build directory for static libs build  *****"
+	@echo
+	cp -al $(BUILD_TREE) $(BUILD_TREE_STATIC)
+	#
+	touch "$@"
+
+$(STAMP_DIR)/configure-static.stamp: $(STAMP_DIR)/prepare.stamp
+	@echo
+	@echo "***** Configure static  *****"
+	@echo
+	cd $(BUILD_TREE_STATIC) &&          \
+	    $(call common-configure,--enable-staticlibs)
+	#
+	touch "$@"
+
+$(STAMP_DIR)/configure-dynamic.stamp: $(STAMP_DIR)/prepare.stamp
+	@echo
+	@echo "***** Configure dynamic  *****"
+	@echo
+	cd $(BUILD_TREE) &&                 \
+	    $(call common-configure,--disable-staticlibs,-fPIC,-rdynamic)
+	#
+	touch "$@"
+
+$(STAMP_DIR)/packages.stamp: $(patsubst %,debian/packages.d/%.in,$(shell dh_listpackages)) $(GEN_DH_FILES)
+	mkdir -p $(STAMP_DIR)
+	perl $(GEN_DH_FILES) generate $(BUILD_TREE) $(DHINSTALL_LIBDIR)
+	touch "$@"
+
+override_dh_autoreconf:
+	ln -svf autoconf/configure.in configure.ac
+	dh_autoreconf
+
+override_dh_auto_clean:
+	rm -f configure.ac
+	rm -rf  $(STAMP_DIR)
+	rm -rf  $(BUILD_DIR)
+	perl $(GEN_DH_FILES) clean $(BUILD_TREE)
+
+override_dh_auto_configure-indep: $(STAMP_DIR)/configure-dynamic.stamp
+
+override_dh_auto_configure-arch: $(STAMP_DIR)/configure-dynamic.stamp $(STAMP_DIR)/configure-static.stamp
+
+override_dh_auto_build-indep:
+	@echo
+	@echo "***** Make dynamic (indep)  *****"
+	@echo
+	cd $(BUILD_TREE) && $(call common-build,-C src/ASDocGen doc_html)
+
+override_dh_auto_build-arch:
+	@echo
+	@echo "***** Make static (arch)  *****"
+	@echo
+	cd $(BUILD_TREE_STATIC) && $(call common-build,subdirs="$(STATIC_SUBDIRS)")
+	#
+	@echo
+	@echo "***** Make dynamic (arch)  *****"
+	@echo
+	cd $(BUILD_TREE) && $(call common-build)
+
+override_dh_installdirs: $(STAMP_DIR)/packages.stamp
+	for i in `dh_listpackages`; do \
+	    echo $$i; dh_installdirs -v -p$$i -P${DESTDIR}; \
+	done
+	dh_installdirs
+
+override_dh_auto_install-indep: $(STAMP_DIR)/packages.stamp
+	@echo
+	@echo "***** Install dynamic (indep) *****"
+	@echo
+	cd $(BUILD_TREE) && \
+	    $(call common-install,install.share install.menu) && \
+	    $(SKIP_DOC) $(call common-install,install.data)
+	#
+	mkdir -p -m755 ${DESTDIR}/usr/share/pixmaps
+	convert -scale 32x32\! ${DESTDIR}/usr/share/afterstep/desktop/icons/logos/AfterStep \
+	    ${DESTDIR}/usr/share/pixmaps/AfterStep.xpm
+
+override_dh_auto_install-arch: $(STAMP_DIR)/packages.stamp
+	@echo
+	@echo "***** Install static (arch)  *****"
+	@echo
+	cd $(BUILD_TREE_STATIC) && \
+	    $(call common-install,subdirs="$(STATIC_SUBDIRS)" install.lib)
+	#
+	@echo
+	@echo "***** Install dynamic (arch) *****"
+	@echo
+	cd $(BUILD_TREE) && \
+	    $(call common-install,install.lib install.bin install.script install.desktop install.wmprops) && \
+	    $(SKIP_DOC) $(call common-install,install.man)
+
+# Note: this should be something like `override_dh_auto_install-common'
+# but debhelper does not allow for this
+override_dh_install: $(STAMP_DIR)/packages.stamp
+	@echo
+	@echo "***** Install dynamic (common) *****"
+	@echo
+	cd $(BUILD_TREE)/src/ASDocGen && \
+	    $(SKIP_DOC) $(call common-install,install.doc_html)
+	#
+	$(SKIP_DOC) mkdir -p ${DESTDIR}/usr/share/doc/$(plibafterimage_dev)
+	$(SKIP_DOC) mv -T ${DESTDIR}/usr/share/doc/$(pafterstep_data)/html/API \
+	    ${DESTDIR}/usr/share/doc/$(plibafterimage_dev)/html
+	#
+	# The .so files cannot be passed to dh_install -X...
+	for lib in libAfterConf libAfterStep libASGTK; do  \
+	  rm -f $(DESTDIR)/$(DHINSTALL_LIBDIR)/$${lib}.so; \
+	done
+	dh_install
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_installchangelogs: $(STAMP_DIR)/packages.stamp
+	dh_installchangelogs -p$(pafterstep)     -p$(pafterstep_data)    \
+	                     -p$(plibafterstep)  $(BUILD_TREE)/ChangeLog
+	dh_installchangelogs -p$(plibafterimage) -p$(plibafterimage_dev) $(BUILD_TREE)/libAfterImage/ChangeLog
+
+override_dh_makeshlibs:
+	dh_makeshlibs -p$(plibafterstep) -V
+	dh_makeshlibs -p$(plibafterimage) -V
+
+override_dh_shlibdeps:
+	dh_shlibdeps -L$(plibafterstep) -L$(plibafterimage) -l${DESTDIR}/$(DHINSTALL_LIBDIR)
+
+override_dh_compress:
+	$(SKIP_DOC) sh debian/scripts/fix_examples `dh_listpackages`
+	sh debian/scripts/fix_conffiles `dh_listpackages`
+	# the menu method is installed into ucf dir by fix_conffiles above
+	rm -f debian/afterstep/etc/menu-methods/afterstep
+	dh_compress
+
+override_dh_md5sums:
+	sh debian/scripts/fix_autogen `dh_listpackages`
+	dh_md5sums
+
+override_dh_installwm:
+	dh_installwm -p$(pafterstep) --priority=50 /usr/bin/afterstep
+
+
+.PHONY: override_dh_autoreconf override_dh_auto_clean \
+        override_dh_auto_configure-indep override_dh_auto_configure-arch \
+        override_dh_auto_build-indep override_dh_auto_build-arch \
+        override_dh_installdirs override_dh_auto_install-indep override_dh_auto_install-arch \
+        override_dh_install override_dh_installchangelogs override_dh_makeshlibs \
+        override_dh_shlibdeps override_dh_compress override_dh_md5sums \
+        override_dh_installwm

@@ -1,0 +1,262 @@
+#
+# Copyright (c) 1998, Guylhem AZNAR <guylhem@oeil.qc.ca>
+#
+
+@MAKEFILEDEFINES@
+
+# We want to build both static and dynamic libs, as some service apps may need
+# static library as they gets run at compile time (ASDocGen for example)
+# but we only install whats selected
+all:            $(LIB_STATIC) @LIBPROG@ $(INSTALLONBUILD) $(LIB_APPS)
+
+install.bin:	$(LIB_APPS)
+		@for p in $(LIB_APPS); do \
+		  echo $(INSTALL_PROGRAM) $$p $(AFTER_BIN_DIR); \
+		  $(INSTALL_PROGRAM) $$p $(AFTER_BIN_DIR); \
+		done
+
+install.lib:	@LIBPROG@ @LIBINSTALL@ install.inc
+
+install.static:
+		@( \
+		if test -d $(LIBDIR) && test -w $(LIBDIR); then \
+		    echo "$(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR)"; \
+		    $(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR); \
+		    if test `uname` = "Linux"; then \
+			if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+		    	    echo "" > /dev/null; \
+			elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+		    	    echo "" > /dev/null; \
+			else \
+		    	    echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+		    	    echo "$(LIB_STATIC), you may need to add it or set LD_LIBRARY_PATH."; \
+			fi; \
+			if test -w /etc; then \
+			    echo "$(LDCONFIG)"; \
+			    $(LDCONFIG); \
+			fi; \
+		    fi ;\
+		fi \
+		)
+
+install.man:
+install.data:
+
+install.script:
+
+install.dyn:	uninstall.dyn
+		@(  echo "$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR)"; \
+		$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR); \
+		$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR); \
+		$(LN_S) -f $(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED); \
+		 if test `uname` = "Linux"; then \
+		   if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+		     echo "" > /dev/null; \
+		   elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+		     echo "" > /dev/null; \
+		   else \
+		     echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+		     echo "$(LIB_SHARED), you may need to add it or set LD_LIBRARY_PATH."; \
+		   fi; \
+		   echo "$(LDCONFIG)"; \
+		   $(LDCONFIG); \
+		 fi \
+		)
+
+install.cyg:	uninstall.cyg
+		@( echo "$(INSTALL_LIB) $(LIB_SHARED_CYG) $(AFTER_BIN_DIR)"; \
+		$(INSTALL_LIB) $(LIB_SHARED_CYG) $(AFTER_BIN_DIR); \
+		echo "$(INSTALL_LIB) $(LIB_SHARED_CYG) $(LIBDIR)"; \
+		$(INSTALL_LIB) $(LIB_SHARED_CYG) $(LIBDIR); \
+		echo "$(INSTALL_LIB) $(LIB_SHARED_CYG_AR) $(LIBDIR)"; \
+		$(INSTALL_LIB) $(LIB_SHARED_CYG_AR) $(LIBDIR); \
+		)
+
+install.inc:
+		@( \
+			if [ -f $(CONFIG_SCRIPT) ] ; then \
+				echo "$(INSTALL_SCRIPT) $(CONFIG_SCRIPT) $(AFTER_BIN_DIR)"; \
+                      $(INSTALL_SCRIPT) $(CONFIG_SCRIPT) $(AFTER_BIN_DIR); \
+            fi; \
+            if [ -d $(AFTER_INC_DIR) ]; then \
+		    	echo "$(RMF) $(AFTER_INC_DIR)/*"; \
+		    	$(RMF) $(AFTER_INC_DIR)/*; \
+		 	else \
+		    	if [ -d $(INCLUDEDIR) ]; then \
+		       		echo "$(MKDIR) $(AFTER_INC_DIR)"; \
+		       		if $(MKDIR) $(AFTER_INC_DIR); then \
+		          		echo " ">/dev/null; \
+		       		else \
+		    	  		echo "failed to create include directory: $(AFTER_INC_DIR)"; \
+		       		fi; \
+		    	else \
+		       		echo "$(MKDIR) $(INCLUDEDIR)"; \
+		       		if $(MKDIR) $(INCLUDEDIR); then \
+		          		echo "$(MKDIR) $(AFTER_INC_DIR)"; \
+		          		if $(MKDIR) $(AFTER_INC_DIR) >/dev/null; then \
+		      		       	echo " ">/dev/null; \
+		          		else \
+		             		echo "failed to create include directory: $(AFTER_INC_DIR)"; \
+			  			fi; \
+		       		else \
+		          		echo "failed to create include directory: $(INCLUDEDIR)"; \
+		       		fi; \
+		    	fi; \
+		 	fi; \
+		 	if [ -d $(AFTER_INC_DIR) ]; then \
+		    	echo "installing $(LIB_NAME) headers using command - "; \
+		    	echo "    \"$(INSTALL_HEADER) <header> $(AFTER_INC_DIR)\" :"; \
+		    	for file in $(LIB_INCS) ; do  \
+					echo -n "$$file "; \
+					$(INSTALL_HEADER) $$file $(AFTER_INC_DIR); \
+		    	done; \
+		    	echo ""; echo "Done."; \
+		 	fi \
+		)
+
+# uninstallation targets : 
+#
+STATIC_LIB_FILES=$(LIBDIR)/$(LIB_STATIC)
+DYN_LIB_FILES=$(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED) $(LIBDIR)/$(LIB_SHARED).$(LIBVER)
+CYGWIN_LIB_FILES=$(AFTER_BIN_DIR)/$(LIB_SHARED_CYG) $(LIBDIR)/$(LIB_SHARED_CYG) $(LIBDIR)/$(LIB_SHARED_CYG_AR)
+
+uninstall.static:
+		@for i in $(STATIC_LIB_FILES); do \
+			if [ -f $$i ] ; then echo $(RMF) $$i; $(RMF) $$i; fi; \
+		done
+
+uninstall.dyn:
+		@for i in $(DYN_LIB_FILES); do \
+			if [ -f $$i ] ; then echo $(RMF) $$i; $(RMF) $$i; fi; \
+		done
+		
+uninstall.cyg:
+		@for i in $(CYGWIN_LIB_FILES); do \
+			if [ -f $$i ] ; then echo $(RMF) $$i; $(RMF) $$i; fi; \
+		done
+
+
+uninstall.inc:
+		@if [ -f $(AFTER_BIN_DIR)\$(CONFIG_SCRIPT) ] ; then \
+			echo "$(RMF) $(AFTER_BIN_DIR)\$(CONFIG_SCRIPT)"; \
+            $(RMF) $(AFTER_BIN_DIR)\$(CONFIG_SCRIPT); \
+         fi; \
+         if [ -d $(AFTER_INC_DIR) ]; then \
+		    echo "$(RMF) $(AFTER_INC_DIR)/*"; \
+		    $(RMF) $(AFTER_INC_DIR)/*; \
+		 fi; \
+		 if [ -d $(INCLUDEDIR)/$(LIB_DIR_NAME) ]; then \
+		    echo "$(RMF) $(INCLUDEDIR)/$(LIB_DIR_NAME)"; \
+		    $(RMF) $(INCLUDEDIR)/$(LIB_DIR_NAME); \
+		 fi
+
+uninstall.bin:
+		@for i in $(LIB_APPS); do \
+			if [ -f $(AFTER_BIN_DIR)\$$i ] ; then echo $(RMF) $(AFTER_BIN_DIR)\$$i; $(RMF) $(AFTER_BIN_DIR)\$$i; fi; \
+		done
+
+uninstall.lib:		@LIBUNINSTALL@ uninstall.inc
+
+uninstall.man:
+
+uninstall.script:
+
+
+clean:
+		$(RMF) show_flags_cc $(LIB_SHARED) $(LIB_SHARED_CYG) $(LIB_SHARED_CYG_AR) $(LIB_STATIC) $(LIB_APPS) *.so.* *.so *.o *~ *% *.bak \#* core
+
+distclean:
+		$(RMF) $(LIB_SHARED) $(LIB_SHARED_CYG) $(LIB_SHARED_CYG_AR) $(LIB_STATIC) $(LIB_APPS) *.o *.so.* *~ *% *.bak \#* *.orig core Makefile
+
+
+indent:
+		@SRCS=`echo "$(LIB_OBJS) " | sed "s/.o /.c /g"`; \
+		if test "x$$SRCS" == "x"; then exit; fi; \
+		for i in $$SRCS; do \
+#		  if (indent -di14 -ts4 -i4 -l120 -lc80 -bad -nbbb -bli0 -c48 -cd48 -ce -cli1 -ncs -nbs -nbbo -hnl < $$i > /tmp/$$i); then \
+		  if (indent -kr -ts2 -ut -bs -hnl -i2 -lc80 -lps -nbc -nbfda -ncs -nprs -pcs -pi2 -saf -sai -saw -ss < $$i > /tmp/$$i); then \
+		    echo "indent $$i"; \
+		    mv /tmp/$$i $$i; \
+		  fi; \
+		done
+
+deps:
+		echo -n > .depend ; \
+		buf="" ; \
+		SRCS=`echo "$(LIB_OBJS) " | sed "s/.o /.c /g"`; \
+		echo -n $(LIB_NAME)_OBJS = > .shared ; \
+		for file in $$SRCS; do \
+		  echo " \\" >> .shared ; \
+		  echo -n '		$$('$(LIB_NAME)_PATH')'/$$file >> .shared ; \
+		  if test "x$$buf" != "x"; then \
+		      echo $$buf >>.depend ; \
+		      echo >>.depend ; \
+		  fi; \
+		  buf="./"`echo "$$file " | sed "s/.c /.o /g"`: ; \
+		  for d in `grep "#include \"" < $$file | awk -F \" '{print $$2}'`; do \
+		      if test "x$$buf" != "x"; then \
+		         echo $$buf \\ >>.depend ; \
+		      fi; \
+		      echo -n "		" >>.depend ; \
+		      buf="$$d "; \
+		  done; \
+		done; \
+		if test "x$$buf" != "x"; then \
+		  echo $$buf >>.depend ; \
+		fi; \
+		echo "">> .shared ; \
+		echo "">> .shared ; \
+		echo -n $(LIB_NAME)_INCS = >> .shared ; \
+		for f in $(LIB_INCS); do \
+		  echo " \\" >> .shared ; \
+		  echo -n '		$$('$(LIB_NAME)_PATH')'/$$f >> .shared ; \
+		done; \
+		echo "" >> .shared ;
+
+show_flags_cc: $(LIB_SOURCES) $(LIB_INCS) Makefile
+		@touch show_flags_cc ; \
+		echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
+
+$(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS) Makefile
+		$(RMF) $(LIB_STATIC)
+		$(AR) $(LIB_STATIC) $(LIB_OBJS)
+		$(RANLIB) $(LIB_STATIC)
+
+%.o : %.c Makefile |show_flags_cc 
+		@echo " $*.c"
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+
+.c.s:
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+
+#
+# include dependency files if they exist
+#
+# this is merely a precaution, but as it does not work with ansi make
+# we took it out
+#ifneq ($(wildcard .depend),)
+include .depend
+#endif
+
+$(LIB_SHARED_CYG): $(LIB_OBJS) $(LIB_INCS) Makefile
+	$(CC) -shared -o $(LIB_SHARED_CYG) \
+    		-Wl,--out-implib=$(LIB_SHARED_CYG_AR) \
+    		-Wl,--export-all-symbols -Wl,--enable-auto-import \
+    		-Wl,--whole-archive ${LIB_OBJS} \
+    		$(USER_LD_FLAGS) -Wl,--no-whole-archive $(LIBS_ALL)
+
+$(LIB_SHARED): $(LIB_SHARED).$(LIBVERMAJOR)
+	$(LN_S) -f $(LIB_SHARED).$(LIBVERMAJOR) $(LIB_SHARED)
+
+$(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
+	$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIB_SHARED).$(LIBVERMAJOR)
+
+$(LIB_SHARED).$(LIBVER): $(LIB_OBJS) $(LIB_INCS) Makefile
+	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
+	 $(LIB_OBJS)
+
+install:	install.lib install.bin
+
+
+uninstall:	uninstall.lib uninstall.bin
+

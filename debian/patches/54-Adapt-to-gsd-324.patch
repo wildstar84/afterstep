@@ -1,0 +1,24 @@
+From: Jeremy Bicha <jbicha@ubuntu.com>
+Date: Thu, 27 Jul 2017 20:51:01 +0000
+Subject: Adapt to gnome-settings-daemon 3.24
+
+afterstep includes a GNOME Flashback session file for easy log in to a
+GNOME Flashback session using afterstep. gnome-settings-daemon 3.24
+has split itself into separate binaries and the gnome-session file
+will no longer work.
+---
+ AfterStep.session | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AfterStep.session b/AfterStep.session
+index cde6720..b7aedfa 100644
+--- a/AfterStep.session
++++ b/AfterStep.session
+@@ -1,6 +1,6 @@
+ [GNOME Session]
+ Name=AfterStep
+-RequiredComponents=gnome-settings-daemon;
++RequiredComponents=org.gnome.SettingsDaemon.A11ySettings;org.gnome.SettingsDaemon.Clipboard;org.gnome.SettingsDaemon.Color;org.gnome.SettingsDaemon.Datetime;org.gnome.SettingsDaemon.Housekeeping;org.gnome.SettingsDaemon.Keyboard;org.gnome.SettingsDaemon.MediaKeys;org.gnome.SettingsDaemon.Mouse;org.gnome.SettingsDaemon.Power;org.gnome.SettingsDaemon.PrintNotifications;org.gnome.SettingsDaemon.Rfkill;org.gnome.SettingsDaemon.ScreensaverProxy;org.gnome.SettingsDaemon.Sharing;org.gnome.SettingsDaemon.Smartcard;org.gnome.SettingsDaemon.Sound;org.gnome.SettingsDaemon.Wacom;org.gnome.SettingsDaemon.XSettings;
+ RequiredProviders=windowmanager;
+ DefaultProvider-windowmanager=AfterStep
+ #Please change to your preference. Supported names are:

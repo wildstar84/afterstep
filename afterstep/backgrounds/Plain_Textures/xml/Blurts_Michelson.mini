@@ -1,0 +1,4 @@
+<tile tint="Base">
+		<img src="tiles/BlurtsMichelson" height="$minipixmap.height"/>
+</tile>
+

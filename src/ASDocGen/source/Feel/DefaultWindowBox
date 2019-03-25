@@ -1,0 +1,8 @@
+<varlistentry id="options.DefaultWindowBox">
+	<term>DefaultWindowBox <emphasis remap='I'>"windowbox_name"</emphasis></term>
+	<listitem>
+		<para>Window boxes are processed in order they were listed in config. If
+        suitable windowbox could not be found for the window in the database file - then windowbox
+        named in DefaultWindowBox will be forced.</para>
+	</listitem>
+</varlistentry>

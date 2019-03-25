@@ -1,0 +1,23 @@
+OBJS_ASCOLOR    = ascolor.o
+
+OBJS_ASIMBROWSER = asimbrowser.o
+
+OBJS		= $(OBJS_ASCOLOR)
+
+PROG		= ascolor
+
+LIBS_PRIVATE      = $(LIB_AFTERCONF) $(LIB_AFTERSTEP) \
+					$(LIB_AFTERIMAGE) $(LIB_AFTERBASE) $(LIBS_AFTERIMAGE)
+LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) $(LIB_AFTERCONF)
+
+@MAKEFILECOMMON@
+
+ascolor:        $(OBJS_ASCOLOR) $(LIBS_DEPEND)
+		$(CC) $(OBJS_ASCOLOR) $(LIBS_ALL) -o $(@)
+
+module.clean:
+		
+
+install:	install.bin
+
+uninstall:	uninstall.bin

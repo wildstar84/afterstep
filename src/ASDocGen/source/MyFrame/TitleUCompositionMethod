@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleUCompositionMethod">
+	<term>TitleUCompositionMethod</term>
+	<listitem>
+		<para>Alias for TitleUnfocusedCompositionMethod.</para>
+	</listitem>
+</varlistentry>

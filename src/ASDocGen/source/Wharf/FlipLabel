@@ -1,0 +1,6 @@
+<varlistentry id="options.FlipLabel">
+	<term>FlipLabel</term>
+	<listitem>
+		<para>Will cause Wharf to draw vertical label text.</para>
+	</listitem>
+</varlistentry>

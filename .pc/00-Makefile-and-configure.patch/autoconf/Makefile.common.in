@@ -1,0 +1,183 @@
+#
+# Copyright (c) 1998, Guylhem AZNAR <guylhem@oeil.qc.ca>
+#
+
+@MAKEFILEDEFINES@
+
+all:            $(PROG)
+
+install.bin:	$(PROG)
+		@for p in $(PROG); do \
+		  echo $(INSTALL_PROGRAM) $$p $(AFTER_BIN_DIR); \
+		  $(INSTALL_PROGRAM) $$p $(AFTER_BIN_DIR); \
+		done
+
+uninstall.bin:
+		@for p in $(PROG); do \
+			echo "$(RMF) $(AFTER_BIN_DIR)/$$p"; \
+			$(RMF) $(AFTER_BIN_DIR)/$$p; \
+		done
+
+clean:		module.clean
+		$(RMF) show_flags_cc $(PROG) $(PROG).exe *.o *~ *% *.bak \#* core log
+
+distclean:	clean
+		$(RMF) *.orig Makefile
+
+install.lib:	@LIBPROG@ @LIBINSTALL@
+
+install.man:
+install.data:
+
+
+install.script:
+		@for i in $(SCRIPTS); do \
+		  echo $(INSTALL_SCRIPT) $$i $(AFTER_BIN_DIR); \
+		  $(INSTALL_SCRIPT) $$i $(AFTER_BIN_DIR); \
+		done
+
+uninstall.script:
+		@for i in $(SCRIPTS); do \
+		  echo $(RMF) $(AFTER_BIN_DIR)/$$i; \
+		  $(RMF) $(AFTER_BIN_DIR)/$$i; \
+		done
+
+indent:
+		@SRCS=`echo "$(OBJS) " | sed "s/.o /.c /g"`; \
+		if test "x$$SRCS" == "x"; then exit; fi; \
+		for i in $$SRCS; do \
+#		  if (indent -di14 -ts4 -i4 -l100 -lc80 -bad -nbbb -bli0 -c48 -cd48 -ce -cli1 -ncs -nbs -nbbo -hnl < $$i > /tmp/$$i); then \
+		  if (indent -kr -ts2 -ut -bs -hnl -i2 -lc80 -lps -nbc -nbfda -ncs -nprs -pcs -pi2 -saf -sai -saw -ss < $$i > /tmp/$$i); then \
+		    echo "indent $$i"; \
+		    mv /tmp/$$i $$i; \
+		  fi; \
+		done
+
+
+deps:
+		echo -n > .depend ; \
+		buf="" ; \
+		for f in `find . -name "*.h"` ; do \
+		  if test "x$$buf" != "x"; then \
+		      echo $$buf >>.depend ; \
+		      echo "" >>.depend ; \
+		  fi; \
+		  buf="$$f:"; \
+		  for d in `grep "#include \"" <$$f | awk -F \" '{print $$2}'`; do \
+		      if test "x$$buf" != "x"; then \
+		         echo $$buf \\ >>.depend ; \
+		      fi; \
+		      echo -n "		" >>.depend ; \
+		      buf="$$d "; \
+		  done; \
+		done; \
+		if test "x$$buf" != "x"; then \
+		  echo $$buf >>.depend ; \
+		  buf="" ; \
+		  echo "" >>.depend ; \
+		fi ; \
+		for file in `find . -name "*.c"` ; do \
+		  if test "x$$buf" != "x"; then \
+		      echo $$buf >>.depend ; \
+		      echo >>.depend ; \
+		  fi; \
+		  buf="."`echo $$file | awk -F . '{print $$2}'`".o:" ; \
+		  for d in `grep "#include \"" < $$file | awk -F \" '{print $$2}'`; do \
+		      if test "x$$buf" != "x"; then \
+		         echo $$buf \\ >>.depend ; \
+		      fi; \
+		      echo -n "		" >>.depend ; \
+		      buf="$$d "; \
+		  done; \
+		done; \
+		if test "x$$buf" != "x"; then \
+		  echo $$buf >>.depend ; \
+		fi
+
+.SUFFIXES:	.c .cxx .h .fl .man .o .z .s $(EXEEXT)
+
+show_flags_cc: $(OBJS)
+		@touch show_flags_cc ; \
+		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"; \
+		echo "and Libraries :$(LIBS_ALL)"
+
+.c.o:
+		@echo " $*.c"
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+
+.cxx.o:
+		$(CXX) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.cxx
+
+.c.s:
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+
+.lo:	$*.c
+
+#
+# include dependency files if they exist
+#
+# this is merely a precaution, but as it does not work with ansi make
+# we took it out
+#ifneq ($(wildcard .depend),)
+#include .depend
+#endif
+
+LIBAFTERBASE_PATH  = ../../libAfterBase
+LIBAFTERIMAGE_PATH = ../../libAfterImage
+LIBAFTERSTEP_PATH  = ../../libAfterStep
+LIBAFTERCONF_PATH  = ../../libAfterConf
+LIBASGTK_PATH      = ../../libASGTK
+
+@LIBAFTERBASEFILES@
+@LIBAFTERIMAGEFILES@
+@LIBAFTERSTEPFILES@
+@LIBAFTERCONFFILES@
+@LIBASGTKFILES@
+
+$(LIBAFTERBASE_PATH)/libAfterBase.a: $(LIBAFTERBASE_OBJS) $(LIBAFTERBASE_INCS)
+		cd $(LIBAFTERBASE_PATH)/; ${MAKE} libAfterBase.a
+
+$(LIBAFTERIMAGE_PATH)/libAfterImage.a: $(LIBAFTERIMAGE_OBJS) $(LIBAFTERIMAGE_INCS)
+		cd $(LIBAFTERIMAGE_PATH)/; ${MAKE} libAfterImage.a
+
+$(LIBAFTERSTEP_PATH)/libAfterStep.a: $(LIBAFTERSTEP_OBJS) $(LIBAFTERSTEP_INCS)
+		cd $(LIBAFTERSTEP_PATH)/; ${MAKE} libAfterStep.a
+
+$(LIBAFTERCONF_PATH)/libAfterConf.a: $(LIBAFTERCONF_OBJS) $(LIBAFTERCONF_INCS)
+		cd $(LIBAFTERCONF_PATH)/; ${MAKE} libAfterConf.a
+
+$(LIBAFTERBASE_PATH)/libAfterBase.dll.a: $(LIBAFTERBASE_OBJS) $(LIBAFTERBASE_INCS)
+		cd $(LIBAFTERBASE_PATH)/; ${MAKE} cygAfterBase.dll
+
+$(LIBAFTERIMAGE_PATH)/libAfterImage.dll.a: $(LIBAFTERIMAGE_OBJS) $(LIBAFTERIMAGE_INCS)
+		cd $(LIBAFTERIMAGE_PATH)/; ${MAKE} cygAfterImage.dll
+
+$(LIBAFTERSTEP_PATH)/libAfterStep.dll.a: $(LIBAFTERSTEP_OBJS) $(LIBAFTERSTEP_INCS)
+		cd $(LIBAFTERSTEP_PATH)/; ${MAKE} cygAfterStep.dll
+
+$(LIBAFTERCONF_PATH)/libAfterConf.dll.a: $(LIBAFTERCONF_OBJS) $(LIBAFTERCONF_INCS)
+		cd $(LIBAFTERCONF_PATH)/; ${MAKE} cygAfterConf.dll
+
+$(LIBASGTK_PATH)/libASGTK.dll.a: $(LIBASGTK_OBJS) $(LIBASGTK_INCS)
+		cd $(LIBASGTK_PATH)/; ${MAKE} cygASGTK.dll
+
+
+$(LIBAFTERBASE_PATH)/libAfterBase.so: $(LIBAFTERBASE_OBJS) $(LIBAFTERBASE_INCS)
+		cd $(LIBAFTERBASE_PATH)/; ${MAKE} libAfterBase.so
+
+$(LIBAFTERIMAGE_PATH)/libAfterImage.so: $(LIBAFTERIMAGE_OBJS) $(LIBAFTERIMAGE_INCS)
+		cd $(LIBAFTERIMAGE_PATH)/; ${MAKE} libAfterImage.so
+
+$(LIBAFTERSTEP_PATH)/libAfterStep.so: $(LIBAFTERSTEP_OBJS) $(LIBAFTERSTEP_INCS)
+		cd $(LIBAFTERSTEP_PATH)/; ${MAKE} libAfterStep.so
+
+$(LIBAFTERCONF_PATH)/libAfterConf.so: $(LIBAFTERCONF_OBJS) $(LIBAFTERCONF_INCS)
+		cd $(LIBAFTERCONF_PATH)/; ${MAKE} libAfterConf.so
+
+$(LIBASGTK_PATH)/libASGTK.so: $(LIBASGTK_OBJS) $(LIBASGTK_INCS)
+		cd $(LIBASGTK_PATH)/; ${MAKE} libASGTK.so
+
+
+#
+# End of Make.common
+#

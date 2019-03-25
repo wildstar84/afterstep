@@ -1,0 +1,199 @@
+PROG=
+
+@MAKEFILECOMMON@
+
+#CREATE_SHAREDIR_LIST= desktop backgrounds
+
+IMAGE_DIR_LIST= backgrounds backgrounds/Gradient_Textures backgrounds/Plain_Textures \
+				backgrounds/Mirrored_Tiles \
+				desktop/bars desktop/buttons desktop/icons \
+				desktop/icons/dots desktop/icons/large desktop/icons/logos \
+				desktop/icons/mini desktop/icons/normal desktop/tiles desktop/icons/128x128
+
+MISC_FILES_DIR_LIST= desktop/cursors desktop/fonts desktop/sounds
+
+CONFIG_DIR_LIST= applications colorschemes feels looks scripts themes
+
+CONFIG_FILE_LIST= CREDITS animate asmount autoexec banner base database \
+			pager sound \
+		  standard_categories \
+		  kcsrc_template gtkrc-2.0_template gtkrc_template \
+		  wharf winlist wintabs
+
+#this is to suppress unneeded messages
+nothing:
+		@echo ""
+
+remove_old:
+		@if [ -d $(AFTER_SHAREDIR)_old ] ; then \
+			echo $(RMF) -r $(AFTER_SHAREDIR)_old; \
+			$(RMF) -r $(AFTER_SHAREDIR)_old; \
+		fi
+
+install.data_reinstall:		remove_old
+	@$(RMF) no_data_reinstall ; \
+	if [ -d $(AFTER_SHAREDIR) ] ; then \
+	   echo $(MV) $(AFTER_SHAREDIR) $(AFTER_SHAREDIR)_old; \
+	   $(MV) $(AFTER_SHAREDIR) $(AFTER_SHAREDIR)_old; \
+	   if [ -d $(AFTER_SHAREDIR)_old/desktop -a -d $(AFTER_SHAREDIR)_old/desktop/tiles  ] ; then \
+		no_data_reinstall=$(NO_DATA_REINSTALL); \
+	   fi; \
+	   if [ -n "$$no_data_reinstall" ]; then \
+		touch no_data_reinstall; \
+	   fi; \
+	 else \
+	   echo "no previous installation detected"; \
+	 fi
+
+share_dirs: 
+	 $(MKDIR) -p $(AFTER_SHAREDIR)
+	 $(MKDIR) -p $(AFTER_DOC_DIR)
+
+install.data:  share_dirs
+	@if [ -f no_data_reinstall ]; then \
+		no_data_reinstall="yes"; \
+		$(RMF) no_data_reinstall ; \
+	 else \
+		no_data_reinstall="" ; \
+	 fi ;\
+	 if [ -d desktop -a -d backgrounds -a -z "$$no_data_reinstall" ]; then \
+	    $(MKDIR) -p $(AFTER_SHAREDIR)/desktop; \
+	    for D in ${IMAGE_DIR_LIST}; do \
+		$(MKDIR) -p $(AFTER_SHAREDIR)/$$D; \
+		echo "Installing images from $$D to $(AFTER_SHAREDIR)/$$D "; \
+		if [ -d $$D/xml ] ; then \
+			list=`ls -A $$D/xml/ `; \
+			for I in $$list; do \
+				if [ -f $$D/xml/$$I ] ; then \
+					echo -n "."; \
+			    		$(INSTALL_DATA) $$D/xml/$$I $(AFTER_SHAREDIR)/$$D/$$I; \
+				fi; \
+			done ; \
+		fi; \
+		if [ -d $$D/$(IMAGE_FORMAT) ] ; then \
+			list=`ls -A $$D/$(IMAGE_FORMAT)/`; \
+			for I in $$list; do \
+				if [ -f $$D/$(IMAGE_FORMAT)/$$I ] ; then \
+					echo -n "."; \
+					$(INSTALL_DATA) $$D/$(IMAGE_FORMAT)/$$I $(AFTER_SHAREDIR)/$$D/$$I; \
+				fi; \
+			done ; \
+		fi; \
+		if [ -r $$D/jpg ] ; then \
+			list=`ls -A $$D/jpg/`; \
+			for I in $$list; do \
+				if [ -f $$D/jpg/$$I ] ; then \
+					echo -n "."; \
+				    	$(INSTALL_DATA) $$D/jpg/$$I $(AFTER_SHAREDIR)/$$D/$$I; \
+				fi; \
+			done ; \
+		fi; \
+		echo ""; \
+	    done ;\
+	    $(INSTALL_DATA) desktop/icons/CREDITS $(AFTER_SHAREDIR)/desktop/icons/; \
+	    for D in ${MISC_FILES_DIR_LIST}; do \
+		echo "$(MKDIR) -p $(AFTER_SHAREDIR)/$$D"; \
+		$(MKDIR) -p $(AFTER_SHAREDIR)/$$D; \
+		echo "Installing config files from $$D to $(AFTER_SHAREDIR)/$$D "; \
+		for I in $$D/*; do \
+			if [ -f $$I ] ; then \
+				echo -n "."; \
+			    	$(INSTALL_DATA) $$I $(AFTER_SHAREDIR)/$$I; \
+			fi; \
+		done; \
+		echo ""; \
+	    done ;\
+	else \
+		if [ -d $(AFTER_SHAREDIR)_old/backgrounds ]; then \
+			echo "$(CP) -r $(AFTER_SHAREDIR)_old/backgrounds $(AFTER_SHAREDIR)/"; \
+			$(CP) -r $(AFTER_SHAREDIR)_old/backgrounds $(AFTER_SHAREDIR)/;  \
+		fi; \
+		if [ -d $(AFTER_SHAREDIR)_old/desktop ]; then \
+			echo "$(CP) -r $(AFTER_SHAREDIR)_old/desktop $(AFTER_SHAREDIR)/"; \
+			$(CP) -r $(AFTER_SHAREDIR)_old/desktop $(AFTER_SHAREDIR)/; \
+		fi; \
+		if [ -d $(AFTER_SHAREDIR)_old/doc/html ]; then \
+			$(MKDIR) -p $(AFTER_DOC_DIR); \
+			echo "$(CP) -r $(AFTER_SHAREDIR)_old/doc/html $(AFTER_DOC_DIR)/"; \
+			$(CP) -r $(AFTER_SHAREDIR)_old/doc/html $(AFTER_DOC_DIR)/; \
+		fi; \
+	 fi	
+	 $(INSTALL_DATA) ../libAfterImage/apps/rose512.jpg $(AFTER_SHAREDIR)/desktop/tiles/rose512.jpg
+	 $(INSTALL_DATA) ../libAfterImage/apps/fore.xpm $(AFTER_SHAREDIR)/desktop/tiles/fore.xpm
+	 $(INSTALL_DATA) ../libAfterImage/apps/back.xpm $(AFTER_SHAREDIR)/desktop/tiles/back.xpm
+
+install.config:
+	@for D in ${CONFIG_DIR_LIST} non-configurable; do \
+		echo "$(MKDIR) -p $(AFTER_SHAREDIR)/$$D"; \
+		$(MKDIR) -p $(AFTER_SHAREDIR)/$$D; \
+		echo "Installing config files from $$D to $(AFTER_SHAREDIR)/$$D "; \
+		for I in $$D/*; do \
+			if [ -f $$I ] ; then \
+					echo -n "."; \
+			    	$(INSTALL_DATA) $$I $(AFTER_SHAREDIR)/$$I; \
+			fi; \
+		done; \
+		echo ""; \
+		$(RMF) $(AFTER_SHAREDIR)/$$D/*.in ; \
+	done
+	@echo "$(MKDIR) -p $(AFTER_SHAREDIR)/non-configurable"; \
+	 $(MKDIR) -p $(AFTER_SHAREDIR)/non-configurable; \
+	 echo "Copying default config files:"; \
+	 echo "Look: $(AFTER_SHAREDIR)/looks/look.DEFAULT"; \
+	 $(CP) $(AFTER_SHAREDIR)/looks/look.DEFAULT $(AFTER_SHAREDIR)/non-configurable/0_look ; \
+	 echo "Feel: $(AFTER_SHAREDIR)/feels/feel.DEFAULT"; \
+	 $(CP) $(AFTER_SHAREDIR)/feels/feel.DEFAULT $(AFTER_SHAREDIR)/non-configurable/0_feel ; \
+	 echo "Background: $(AFTER_SHAREDIR)/backgrounds/Default"; \
+	 $(CP) $(AFTER_SHAREDIR)/backgrounds/Default $(AFTER_SHAREDIR)/non-configurable/0_background; \
+	 echo "Color Scheme: $(AFTER_SHAREDIR)/colorschemes/colorscheme.Stormy_Skies"; \
+	 $(CP) $(AFTER_SHAREDIR)/colorschemes/colorscheme.Stormy_Skies $(AFTER_SHAREDIR)/non-configurable/0_colorscheme
+	@echo "Installing config files into $(AFTER_SHAREDIR)/ using command - "; \
+	echo "    \"$(INSTALL_DATA) <file> $(AFTER_SHAREDIR)\" :"; \
+	for f in ${CONFIG_FILE_LIST}; do \
+		echo -n "$$f "; \
+		$(INSTALL_DATA) $$f $(AFTER_SHAREDIR)/$$f; \
+	done; \
+	echo ""; echo "Done."
+	 $(FIND) $(AFTER_SHAREDIR) -name CVS -print | $(XARGS) $(RMF) -r
+	 $(FIND) $(AFTER_SHAREDIR) -name .cvsignore -print | $(XARGS) $(RMF)
+
+
+install.clean_trash:
+	 $(RMF) $(AFTER_SHAREDIR)/non-configurable/*.in
+	 $(FIND) $(AFTER_SHAREDIR) -name '*.in' -print | $(XARGS) $(RMF) -r
+	 $(FIND) $(AFTER_SHAREDIR) -name '*.orig' -print | $(XARGS) $(RMF) -r
+	 $(FIND) $(AFTER_SHAREDIR) -name CVS -print | $(XARGS) $(RMF) -r
+	 $(FIND) $(AFTER_SHAREDIR) -name .cvsignore -print | $(XARGS) $(RMF)
+
+install.menu: share_dirs
+	$(RMF) -r $(AFTER_SHAREDIR)/start
+	$(RMF) -r $(AFTER_SHAREDIR)/start
+	$(MKDIR) -p $(AFTER_SHAREDIR)/start
+	$(FIND) start -type d -exec $(INSTALL_SCRIPT) -d $(AFTER_SHAREDIR)/{} \;
+	$(FIND) start -type f -exec $(INSTALL_DATA) {} $(AFTER_SHAREDIR)/{} \;
+	$(RMF) $(AFTER_SHAREDIR)/start/.include.in
+	$(INSTALL_DATA) start/.include $(AFTER_SHAREDIR)/start/.include
+	$(FIND) $(AFTER_SHAREDIR)/start -name '*.in' -print | $(XARGS) $(RMF) -r
+	$(RMF) $(AFTER_SHAREDIR)/start/1_Desktop/Feel/.include.in
+	$(RMF) $(AFTER_SHAREDIR)/start/1_Desktop/Color_Scheme/.include.in
+	$(RMF) $(AFTER_SHAREDIR)/start/1_Desktop/Look/.include.in
+	$(RMF) $(AFTER_SHAREDIR)/start/1_Desktop/Theme/.include.in
+	$(RMF) $(AFTER_SHAREDIR)/start/1_Desktop/Pictures/.include.in
+	$(RMF) $(AFTER_SHAREDIR)/start/2_Modules/Pager.in
+	$(FIND) $(AFTER_SHAREDIR)/start -name CVS -print | $(XARGS) $(RMF) -r
+	$(FIND) $(AFTER_SHAREDIR)/start -name .cvsignore -print | $(XARGS) $(RMF)
+
+install.man:
+
+
+install: install.data_reinstall install.data install.config install.menu install.clean_trash
+
+uninstall:		remove_old
+		@if [ -d $(AFTER_SHAREDIR) ]; then
+			echo $(RMF) -r $(AFTER_SHAREDIR); \
+			$(RMF) -r $(AFTER_SHAREDIR); \
+		fi
+
+module.clean: 
+	$(RMF) no_data_reinstall
+

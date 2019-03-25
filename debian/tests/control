@@ -1,0 +1,3 @@
+Test-Command: /usr/bin/afterstep --version
+Features: test-name=check-installability
+Depends: @

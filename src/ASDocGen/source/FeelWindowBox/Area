@@ -1,0 +1,6 @@
+<varlistentry id="options.Area">
+	<term>Area <emphasis remap='I'>WxH+X+Y</emphasis></term>
+	<listitem>
+		<para>This defines the confining region of a WindowBox.</para>
+	</listitem>
+</varlistentry>

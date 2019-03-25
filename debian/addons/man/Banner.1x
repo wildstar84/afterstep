@@ -1,0 +1,31 @@
+.\" $Id: Banner.1x,v 1.1 2005-02-20 18:37:30 robert Exp $
+.\" vim:ft=nroff
+.TH BANNER 1x "February 20th, 2005"
+.SH NAME
+\fBBanner\fP - the AfterStep Logo module
+
+.SH SYNOPSIS
+.B Banner
+
+.SH DESCRIPTION
+.PP
+The 
+.B Banner 
+module displays an AfterStep Logo on the
+screen for 20 seconds.
+.PP
+Although  
+.B Banner 
+can  be  run  from  the  command line, it is normally
+spawned by afterstep in the autoexec file, in the following manner:
+
+            Module    "I"  Banner
+            Wait      "I"  Banner
+
+.SH SEE ALSO
+.BR afterstep (1x)
+
+.SH AUTHOR
+This manual page was written by Robert Luberda <robert@debian.org>,
+based on the old afterstep's Banner manual page,
+for the Debian GNU/Linux system (but may be used by others).

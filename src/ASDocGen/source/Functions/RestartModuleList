@@ -1,0 +1,6 @@
+<varlistentry id="options.RestartModuleList">
+	<term>RestartModuleList</term>
+	<listitem>
+		<para>Restarts all AfterStep modules.</para>
+	</listitem>
+</varlistentry>

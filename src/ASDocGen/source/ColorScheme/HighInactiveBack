@@ -1,0 +1,6 @@
+<varlistentry id="options.HighInactiveBack">
+	<term>HighInactiveBack</term>
+	<listitem>
+		<para>Used for inactive menu item's background. Should be similar, but somewhat brighter them HighInactive color.</para>
+	</listitem>
+</varlistentry>

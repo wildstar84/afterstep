@@ -1,0 +1,8 @@
+<varlistentry id="options.TermCommand">
+    <term>TermCommand <emphasis remap='I'>number command</emphasis></term>
+     <listitem>
+	<para>Selects terminal emulator to be used by AfterStep when using the
+	ExecInTerm command, where the first matching one will be used.</para>
+	<para>The default number/command combination is: 0 - x-terminal-emulator, 1-aterm, 2-rxvt, 3-eterm, 4-xterm</para>
+     </listitem>
+</varlistentry>

@@ -1,0 +1,2 @@
+KillAllModulesByName "Stop All Running Modules"  *
+SmallMiniPixmap "normal/PlayerStop"

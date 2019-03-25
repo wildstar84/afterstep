@@ -1,0 +1,148 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: 06 AsDocGen
+
+Split afterstep' and libafterimage-dev documentation.
+---
+ src/ASDocGen/ASDocGen.c  | 12 ++++++------
+ src/ASDocGen/Makefile.in |  2 ++
+ src/ASDocGen/datadoc.c   |  7 ++++++-
+ src/ASDocGen/docfile.c   | 17 ++++++++++-------
+ src/ASDocGen/docfile.h   |  2 ++
+ 5 files changed, 26 insertions(+), 14 deletions(-)
+
+diff --git a/src/ASDocGen/ASDocGen.c b/src/ASDocGen/ASDocGen.c
+index 31d7a70..f8d38e9 100644
+--- a/src/ASDocGen/ASDocGen.c
++++ b/src/ASDocGen/ASDocGen.c
+@@ -975,23 +975,23 @@ gen_index( const char *dest_dir, const char *file, ASDocType doc_type, Bool user
+ 			if( doc_type == DocType_PHP )
+ 			{	
+ 				fprintf( state.dest_fp, PHPXrefFormat, "visualdoc","Developer documentation index","API/index", "" );
+-				fprintf( state.dest_fp, PHPXrefFormat, "graphics","Installed data files catalogue","index", "" );
++//				fprintf( state.dest_fp, PHPXrefFormat, "graphics","Installed data files catalogue","index", "" );
+ 			}else if( doc_type == DocType_HTML )
+ 			{	
+- 				fprintf( state.dest_fp,  "<A href=\"API/index.html\">Developer documentation index</A>&nbsp;&nbsp;\n" );
+-				fprintf( state.dest_fp,  "<A href=\"data/index.html\">Installed data files catalogue</A>\n" );			   
++				fprintf( state.dest_fp,  "<A href=\"../../libafterimage-dev/html/index.html\">Developer documentation index</A>&nbsp;&nbsp;\n" );
++//				fprintf( state.dest_fp,  "<A href=\"data/index.html\">Installed data files catalogue</A>\n" );
+ 			}
+ 		}else
+ 		{	  
+ 			if( doc_type == DocType_PHP )
+ 			{
+ 				fprintf( state.dest_fp, PHPXrefFormat, "visualdoc","User documentation index","index", "" );
+-				fprintf( state.dest_fp, PHPXrefFormat, "graphics","Installed data files catalogue","index", "" );
++//				fprintf( state.dest_fp, PHPXrefFormat, "graphics","Installed data files catalogue","index", "" );
+ 			}
+ 			else if( doc_type == DocType_HTML )
+ 			{
+- 				fprintf( state.dest_fp,  "<A href=\"../index.html\">User documentation index</A>&nbsp;&nbsp;\n" );
+-				fprintf( state.dest_fp,  "<A href=\"../data/index.html\">Installed data files catalogue</A>\n" );
++				fprintf( state.dest_fp,  "<A href=\"../../afterstep/html/index.html\">User documentation index</A>&nbsp;&nbsp;\n" );
++//				fprintf( state.dest_fp,  "<A href=\"../../afterstep/html/data/index.html\">Installed data files catalogue</A>\n" );
+ 			}
+ 		}
+ 		fprintf( state.dest_fp, "<hr>\n<p><UL class=\"dense\">\n" );
+diff --git a/src/ASDocGen/Makefile.in b/src/ASDocGen/Makefile.in
+index ff4b636..df31793 100644
+--- a/src/ASDocGen/Makefile.in
++++ b/src/ASDocGen/Makefile.in
+@@ -7,6 +7,8 @@ LIBS_PRIVATE      = $(LIB_AFTERCONF_STATIC) $(LIB_AFTERSTEP_STATIC) \
+ LIBS_DEPEND     = $(LIB_AFTERBASE_STATIC) $(LIB_AFTERIMAGE_STATIC) $(LIB_AFTERSTEP_STATIC) \
+ 				  $(LIB_AFTERCONF_STATIC)
+ 
++export LD_LIBRARY_PATH := ../../libAfterBase:../../libAfterConf:../../libAfterImage:../../libAfterStep:$(LD_LIBRARY_PATH)
++
+ @MAKEFILECOMMON@
+ 
+ 
+diff --git a/src/ASDocGen/datadoc.c b/src/ASDocGen/datadoc.c
+index 2b3ea63..0b676f3 100644
+--- a/src/ASDocGen/datadoc.c
++++ b/src/ASDocGen/datadoc.c
+@@ -124,6 +124,8 @@ make_data_file_info( ASImageListEntry *df, ASXMLInterpreterState *parent_state,
+ #if 1
+ 	ASXMLInterpreterState state;
+ 	ASData2xmlState		  xml_state ;
++	char * p;
++
+ 
+ 	xml_elem_t* varlist ;
+ 	xml_elem_t* ptr ;
+@@ -170,7 +172,10 @@ make_data_file_info( ASImageListEntry *df, ASXMLInterpreterState *parent_state,
+ 		sprintf( &tmp[0], "%dx%d", df->preview->width, df->preview->height );
+ 		add_file_info_item( varlist, "Size : ", &tmp[0] );
+ 	}
+-	add_file_info_item( varlist, "Full path : ", df->fullfilename );
++	if ((p = strstr(df->fullfilename, DEB_TMP)))
++		add_file_info_item( varlist, "Full path : ", p + sizeof(DEB_TMP) - 2 );
++	else
++		add_file_info_item( varlist, "Full path : ", df->fullfilename );
+ 	if( df->type < ASIT_Unknown)
+ 		add_file_info_item( varlist, "Type : ", img_type_names[df->type]);
+ 	
+diff --git a/src/ASDocGen/docfile.c b/src/ASDocGen/docfile.c
+index a7c70bb..0df91b1 100644
+--- a/src/ASDocGen/docfile.c
++++ b/src/ASDocGen/docfile.c
+@@ -34,9 +34,9 @@ const char *HTMLHeaderFormat = "<A name=\"page_top\"></A>\n"
+ 							   "<A href=\"index.html\">%s</A>&nbsp;&nbsp;<A href=\"Glossary.html\">%s</A><p>\n" ;
+ 
+ const char *HTMLHeaderFormatAPI = "<A name=\"page_top\"></A>\n"
+-							   "<A href=\"../preface.html\">Preface</A>&nbsp;&nbsp;"
+-							   "<A href=\"../visualselect.html\">Introduction</A>&nbsp;&nbsp;"
+-							   "<A href=\"../index.html\">Main index</A>&nbsp;&nbsp;"
++							   "<A href=\"../../afterstep/html/preface.html\">Preface</A>&nbsp;&nbsp;"
++							   "<A href=\"../../afterstep/html/visualselect.html\">Introduction</A>&nbsp;&nbsp;"
++							   "<A href=\"../../afterstep/html/index.html\">Main index</A>&nbsp;&nbsp;"
+ 							   "<A href=\"index.html\">%s</A>&nbsp;&nbsp;<A href=\"Glossary.html\">%s</A><p>\n" ;
+ 
+ const char *HTMLHeaderFormatNoIndex = "<A name=\"page_top\"></A>\n"
+@@ -172,10 +172,10 @@ write_doc_header( ASXMLInterpreterState *state )
+ 			fprintf( state->dest_fp, ".\\\" t\n"
+ 									 ".\\\" @(#)%s.%d		%s\n", state->doc_name, CurrentManType, CurrentDateShort);
+ #ifndef AFTERIMAGE_DOCS
+-			fprintf( state->dest_fp, ".TH %s 1 \"AfterStep v.%s\" \"%s\" \"AfterStep X11 window manager\"\n", state->doc_name, VERSION, CurrentDateLong );
++			fprintf( state->dest_fp, ".TH %s %dx \"AfterStep v.%s\" \"%s\" \"AfterStep X11 window manager\"\n", state->doc_name, CurrentManType, VERSION, CurrentDateLong );
+ #else
+ #include "../../libAfterImage/config.h"
+-			fprintf( state->dest_fp, ".TH %s 1 \"libAfterImage v.%s\" \"%s\" \"libAfterImage image manipulation library\"\n", state->doc_name, PACKAGE_VERSION, CurrentDateLong );
++			fprintf( state->dest_fp, ".TH %s %dx \"libAfterImage v.%s\" \"%s\" \"libAfterImage image manipulation library\"\n", state->doc_name, CurrentManType, PACKAGE_VERSION, CurrentDateLong );
+ #endif			
+ 			fprintf( state->dest_fp, ".UC\n"
+ 									 ".SH NAME\n"
+@@ -303,6 +303,7 @@ start_doc_file( const char * dest_dir, const char *doc_path, const char *doc_pos
+ 	char *dest_path;
+ 	char *ptr ;
+ 	FILE *dest_fp ;
++	char *p;
+ 	Bool dst_dir_exists = True;
+ 
+ 	sprintf( dest_file, "%s%s.%s", doc_path, doc_postfix?doc_postfix:"", ASDocTypeExtentions[doc_type] ); 
+@@ -354,8 +355,10 @@ start_doc_file( const char * dest_dir, const char *doc_path, const char *doc_pos
+ 	memset( state, 0x00, sizeof(ASXMLInterpreterState));
+ 	state->flags = ASXMLI_FirstArg ;
+ 	state->doc_name = doc_path?doc_path:AfterStepName ;
+-	state->display_name = display_name?display_name:AfterStepName ;
+-	state->display_purpose = display_purpose?display_purpose:"X11 window manager" ;
++	p = strstr(display_name?display_name:"", DEB_TMP);
++	state->display_name = p?p + sizeof(DEB_TMP) - 2 : display_name?display_name:AfterStepName ;
++	p = strstr(display_purpose?display_purpose:"", DEB_TMP);
++	state->display_purpose = p?p + sizeof(DEB_TMP) - 2 : display_purpose?display_purpose:"X11 window manager" ;
+ 	state->dest_fp = dest_fp ;
+ 	state->dest_file = dest_file ;
+ 	state->dest_dir = dest_dir ;
+diff --git a/src/ASDocGen/docfile.h b/src/ASDocGen/docfile.h
+index 2ac11a4..b7e505e 100644
+--- a/src/ASDocGen/docfile.h
++++ b/src/ASDocGen/docfile.h
+@@ -14,5 +14,7 @@ Bool start_doc_file(const char * dest_dir, const char *doc_path, const char *doc
+ 					ASFlagType doc_class_mask, ASDocClass doc_class );
+ void end_doc_file( struct ASXMLInterpreterState *state );
+ 
++#define DEB_TMP  "/debian/tmp/"
++
+ #endif
+ 

@@ -1,0 +1,6 @@
+<varlistentry id="options.ReverseOrder">
+	<term>ReverseOrder</term>
+	<listitem>
+		<para>This will reverse order in which Cascade and Tile strategies are applied, making it Right-to-left, bottom-to-top.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,39 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: 10 afterstep start
+
+Debian menu include file.
+---
+ afterstep/start/0_Debian/.include | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 afterstep/start/0_Debian/.include
+
+diff --git a/afterstep/start/0_Debian/.include b/afterstep/start/0_Debian/.include
+new file mode 100644
+index 0000000..ae9eae8
+--- /dev/null
++++ b/afterstep/start/0_Debian/.include
+@@ -0,0 +1,23 @@
++#
++# Debian submenu melting configuration file
++#
++
++# apply an AfterStep function to all of the items in this menu
++#command Background
++
++# include another directory's contents in this menu
++include "/var/lib/afterstep/menu/Debian"
++
++# keep this directory's name so it can be used in a PopUp function
++# (this is ignored for the toplevel directory; the toplevel dir's
++# name is always "0")
++keepname
++
++# use a special mini pixmap for this menu
++minipixmap mini/Debian
++
++# change the name of the menu
++#name Debian
++
++# change the order in which this menu will appear its parent menu
++#order 0

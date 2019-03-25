@@ -1,0 +1,37 @@
+afterstep (2.2.11-3) unstable; urgency=low
+
+    Starting from this version both upstream (Applications) and Debian menus
+    are displayed.
+
+    The method of generation Debian menu has changed and now menu-xdg is used
+    for this purpose. Please make sure your /etc/menu-methods/afterstep gets
+    updated during the upgrade.
+
+ -- Robert Luberda <robert@debian.org>  Sun, 06 Mar 2011 20:39:25 +0100
+
+afterstep (2.2.11-1) experimental; urgency=low
+
+    Menu thumbnails images are now cached which allow afterstep to
+    start much faster than it used to. 
+
+ -- Robert Luberda <robert@debian.org>  Sun, 23 Jan 2011 21:23:43 +0100
+
+afterstep (2.00.01-1) unstable; urgency=low
+  
+    AfterStep 2.0 had been almost entirely rewritten since version 1.8, 
+    it includes many new features, but unfortunately some AfterStep modules 
+    (like Script, Sound, Form, etc.) are missing for now.
+    Detailed list of changes can be found in /usr/share/doc/afterstep/NEW.gz
+    and /usr/share/doc/afterstep/html/as20new.html files.
+
+
+    AfterStep 2.0 may not work properly with outdated configuration files.
+    Please let dpkg overwrite the afterstep configuration 
+    files in /etc/X11/afterstep.
+
+
+    AfterStep 2.0 uses ~/.afterstep instead of ~/GNUStep/Library/AfterStep
+    for users' configuration files.
+    Please refer to /usr/share/doc/afterstep/UPGRADE for details.
+
+ -- Robert Luberda <robert@debian.org>  Wed, 23 Mar 2005 18:43:40 +0100

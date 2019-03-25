@@ -1,0 +1,103 @@
+.\" vim: ft=nroff
+.TH ASCOLOR "1x" "March 2015" "AfterStep version 2.2.12" "User Commands"
+.SH NAME
+ascolor \- create color schemes for AfterStep
+.SH SYNOPSIS
+.B ascolor
+.RI [\-b|\-\-base\-color " color" ]
+.RI [\-a|\-\-angle " angle" ]
+.RI [\-f|\-\-file " file" ]
+.RI [\-s|\-\-string " xmlstring" ]
+.RI [\-i|\-\-save\-image " file" ]
+.RI [\-t|\-\-type " type" ]
+.RI [\-c|\-\-compress " level" ]
+.RI [\-o|\-\-output " file" ]
+.RI [\-n|\-\-no\-display]
+.RI [\-r|\-\-root\-window]
+.RI [\-h|\-\-help]
+.RI [\-v|\-\-version]
+.RI [\-V|\-\-verbose]
+.RI [\-D|\-\-debug]
+.SH DESCRIPTION
+.B ascolor
+is a simple GUI to create color schemes for AfterStep.
+.B ascolor
+writes the result into a file named color scheme in current directory or
+in the directory given with \fB\-o\fR option (see below).
+.PP
+There are 4 parameters to the color scheme: Angle, Hue, Saturation and Value.
+Pressing arrow keys in
+.B ascolor
+window will change the currently selected parameter.
+To select parameter press
+.IR 'a' ", " 'h' ", " 's' " or " 'v'
+keys.
+.PP
+.B ascolor
+will also create
+.I .mini
+file suitable to be used as minipixmap
+in the AfterStep menu.
+.PP
+Rename and copy both
+.I colorscheme
+and
+.I .mini
+files into
+.I ~/.afterstep/colorschemes
+directory and refresh AfterStep menu. New entry should show up.
+Select it to apply new color scheme.
+.SH OPTIONS
+.TP
+\fB\-b\fR \fB\-\-base_color\fR color
+base color to use
+.TP
+\fB\-a\fR \fB\-\-angle\fR angle
+initial angle
+.TP
+\fB\-f\fR \fB\-\-file\fR file
+an XML file to use as input
+.TP
+\fB\-s\fR \fB\-\-string\fR xmlstring
+an XML string to use as input
+.TP
+\fB\-i\fR \fB\-\-save\-image\fR file
+save image to given file
+.TP
+\fB\-t\fR \fB\-\-type\fR type
+type of image to save
+.TP
+\fB\-c\fR \fB\-\-compress\fR level
+compression level of image
+.TP
+\fB\-o\fR \fB\-\-output\fR file
+output to file
+.TP
+\fB\-n\fR \fB\-\-no\-display\fR
+do not display the GUI
+.TP
+\fB\-r\fR \fB\-\-root\-window\fR
+draw result image on root window
+.TP
+\fB\-z\fR \fB\-\-default\-scheme\fR
+use color and angle from default scheme
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display this help and exit
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version and exit
+.TP
+\fB\-V\fR \fB\-\-verbose\fR
+increase verbosity
+.TP
+\fB\-D\fR \fB\-\-debug\fR
+show debug messages
+.SH SEE ALSO
+.BR afterstep (1x).
+.SH AUTHOR
+This manual page was written by Robert Luberda <robert@debian.org>,
+using
+.BR help2man (1)
+program,
+for the Debian GNU/Linux system (but may be used by others).

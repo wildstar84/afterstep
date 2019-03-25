@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleFSaturation">
+	<term>TitleFSaturation</term>
+	<listitem>
+		<para>Alias for TitleFocusedSaturation.</para>
+	</listitem>
+</varlistentry>

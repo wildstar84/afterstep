@@ -1,0 +1,4 @@
+<tile tint="BaseLight">
+	  	<img src="tiles/PsychiatristsImminently" height="$minipixmap.height"/>
+</tile>
+

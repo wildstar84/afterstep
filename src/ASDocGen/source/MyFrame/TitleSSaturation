@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleSSaturation">
+	<term>TitleSSaturation</term>
+	<listitem>
+		<para>Alias for TitleStickySaturation.</para>
+	</listitem>
+</varlistentry>

@@ -1,0 +1,38 @@
+From: Sasha Vasko <sasha@aftercode.net>
+Date: Mon, 22 Jul 2013 15:31:39 -0500
+Subject: readded Propaganda submenu with new location
+
+---
+ afterstep/start/1_Desktop/Pictures/Propaganda_Images/.include | 9 +++++++++
+ configure.h.in                                                | 2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+ create mode 100644 afterstep/start/1_Desktop/Pictures/Propaganda_Images/.include
+
+diff --git a/afterstep/start/1_Desktop/Pictures/Propaganda_Images/.include b/afterstep/start/1_Desktop/Pictures/Propaganda_Images/.include
+new file mode 100644
+index 0000000..6713b48
+--- /dev/null
++++ b/afterstep/start/1_Desktop/Pictures/Propaganda_Images/.include
+@@ -0,0 +1,9 @@
++RecentSubmenuItems 0
++SmallMiniPixmap Folder-JFK
++keepname
++
++include "/usr/share/backgrounds/Propaganda" BackgroundForeign
++include "~/Pictures/Propaganda" BackgroundForeign
++
++Comment "Propaganda tiles & images. If you do not see anything here - then please download the archive from ftp://ftp.afterstep.org/backgrounds and place into ~/Pictures."
++
+diff --git a/configure.h.in b/configure.h.in
+index a4c5d4c..27da421 100644
+--- a/configure.h.in
++++ b/configure.h.in
+@@ -106,7 +106,7 @@
+ #define STANDARD_CATEGORIES_FILE 	"standard_categories" 
+ #define AFTERSTEP_APPS_DIR		"applications" 
+ #define AFTERSTEP_CACHE_FILE	AFTER_NONCF "/AfterStepCategories"
+-#define GNOME_APPS_PATH		"~/.gnome2/vfolders/applications/:$GNOMEDIR/share/applications:/usr/share/applications"
++#define GNOME_APPS_PATH		"~/.gnome2/vfolders/applications/:$GNOMEDIR/share/applications:/usr/share/applications:/usr/local/share/applications"
+ #define GNOME_ICONS_PATH	"~/.icons/gnome/48x48/apps/:$XDG_DATA_DIRS/icons/gnome/48x48/apps/:$GNOMEDIR/share/pixmaps:/usr/share/pixmaps:/usr/share/icons:/usr/share/icons/hicolor/48x48/apps:/usr/share/icons/hicolor/32x32/apps:/usr/share/icons/gnome/48x48/apps"
+ #define GNOME_CACHE_FILE	AFTER_NONCF "/GNOMECategories"
+ #define KDE_APPS_PATH		"$KDEDIR/share/applnk:$KDEDIR/share/applications:/usr/share/applnk:/usr/share/applications"

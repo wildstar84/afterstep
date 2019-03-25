@@ -1,0 +1,7 @@
+<composite op="tint">
+  <gradient width="$minipixmap.width" height="$minipixmap.height"
+  colors="BaseDark BaseLight" angle="45"/>
+
+	<img src="tiles/NordicPowderPirate" height="$minipixmap.height"/>
+</composite>
+

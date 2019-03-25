@@ -1,0 +1,23 @@
+#
+# Debian submenu melting configuration file
+#
+
+# apply an AfterStep function to all of the items in this menu
+#command Background
+
+# include another directory's contents in this menu
+include "/var/lib/afterstep/menu/Debian"
+
+# keep this directory's name so it can be used in a PopUp function
+# (this is ignored for the toplevel directory; the toplevel dir's
+# name is always "0")
+keepname
+
+# use a special mini pixmap for this menu
+minipixmap mini/Debian
+
+# change the name of the menu
+#name Debian
+
+# change the order in which this menu will appear its parent menu
+#order 0

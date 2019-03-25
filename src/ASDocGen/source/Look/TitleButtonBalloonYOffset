@@ -1,0 +1,8 @@
+<varlistentry id="options.TitleButtonBalloonYOffset">
+	<term>TitleButtonBalloonYOffset <emphasis remap='I'>offset</emphasis></term>
+	<listitem>
+		<para>Specifies the horizontal offset (in pixels) to use when displaying balloons.</para>
+	</listitem>
+</varlistentry>
+
+

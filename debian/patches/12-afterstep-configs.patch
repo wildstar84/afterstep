@@ -1,0 +1,147 @@
+From: Robert Luberda <robert@debian.org>
+Date: Tue, 7 Mar 2006 23:03:00 +0100
+Subject: 12 afterstep configs
+
+Debianise config files.
+---
+ afterstep/audio.in    |  2 +-
+ afterstep/autoexec.in |  4 ++--
+ afterstep/database    |  2 +-
+ afterstep/pager.in    |  2 +-
+ afterstep/wharf       | 19 +++++++++----------
+ afterstep/winlist     |  2 +-
+ 6 files changed, 15 insertions(+), 16 deletions(-)
+
+diff --git a/afterstep/audio.in b/afterstep/audio.in
+index 909b79a..931fa34 100644
+--- a/afterstep/audio.in
++++ b/afterstep/audio.in
+@@ -12,7 +12,7 @@
+ #*AudioPlayCmd                  builtin-stdout
+ # see ./configure --with-soundplayer to set your player proggy
+ # here only args should go. (completely ommit if no args)
+-*AudioPlayCmd                   @AUDIO_PLAY_CMD@
++*AudioPlayCmd                   builtin-cat
+ 
+ *AudioDelay                     1
+ *Audio  startup                 meepmeep.au
+diff --git a/afterstep/autoexec.in b/afterstep/autoexec.in
+index 913bc64..1cce021 100644
+--- a/afterstep/autoexec.in
++++ b/afterstep/autoexec.in
+@@ -30,8 +30,8 @@ Function "WorkspaceModules"
+ 	Module  "I"     Wharf
+ 	Wait    "I"     Wharf
+ 	Module  "I"     Pager 0 @with_desktops_1@
+-	Module  "I:WinTabs:TermTabs"  WinTabs --myname TermTabs --pattern "*term*" --exclude-pattern "mc*" --geometry +5+100 --title "term tabs"
+-	Wait    "I:WinTabs:TermTabs"  TermTabs
++	Module  "I"     WinTabs --myname TermTabs --pattern "*term*" --exclude-pattern "mc*" --exclude-pattern "Ice*" --geometry +5+100 --title "term tabs"
++	Wait    "I"     WinTabs
+ EndFunction
+ 
+ Function "InitFunction"
+diff --git a/afterstep/database b/afterstep/database
+index ec51184..06dff0c 100644
+--- a/afterstep/database
++++ b/afterstep/database
+@@ -35,7 +35,7 @@ Style 	"*WharfWithdrawn"        ShortLiving
+ Style 	"*WharfSubfolder*"       AllowCover
+ Style 	"AskWharf"      Handles
+ Style   "Banner"        NoTitle, Sticky, Layer 2, WindowListSkip, NoHandles
+-Style   "WinTabs"       Title, Layer 0, Slippery, Handles, AllowCover 
++Style   "WinTabs"       Title, Layer 0, Slippery, Handles, AllowCover, WindowListHit
+ 
+ Style   "NEdit"         Title, Slippery, Layer 0, Handles, AllowCover 
+ 
+diff --git a/afterstep/pager.in b/afterstep/pager.in
+index 7ba8d9c..a829c0b 100644
+--- a/afterstep/pager.in
++++ b/afterstep/pager.in
+@@ -35,7 +35,7 @@ BalloonBorderHilite	Right,Bottom
+ 
+ *PagerDecoration  DeskBorderWidth 1, DeskBorderColor BaseDark, GridColor Inactive2Dark, SelectionColor HighActiveLight
+ 
+-*PagerGeometry       -1+27
++*PagerGeometry       -1+1
+ 
+ # PagerStyle is used to define look of Pager's desk window.
+ # Relevant look must be defined in your look file or in this file
+diff --git a/afterstep/wharf b/afterstep/wharf
+index d9c5066..85b6e32 100644
+--- a/afterstep/wharf
++++ b/afterstep/wharf
+@@ -57,7 +57,7 @@
+ #-------------------------------------------------------------------------------
+ # Buttons
+ #
+-*WharfFullPush
++#*WharfFullPush
+ #*WharfNoPush
+ #*WharfNoBorder
+ 
+@@ -71,7 +71,7 @@
+ #*WharfForceSize
+ *WharfRows		1
+ #*WharfColumns		1
+-*WharfGeometry		+1+1
++*WharfGeometry		+5+31
+ *WharfBevel		Bottom,Right,NoOutline,Extra
+ 
+ #Use this setting to set what is show in the balloon :
+@@ -186,7 +186,6 @@
+ #
+ *Wharf AudioPlayer logos/Xmms Exec "X Multi Media System" xmms &
+ *Wharf AudioPlayer - Swallow "wmxmms2" wmxmms2 -c blue &
+-*Wharf AudioPlayer - Swallow "wmxmms" wmxmms --single &
+ *Wharf AudioPlayer - Swallow "ascd" ascd &
+ *MonitorWharf AudioPlayer - Swallow "wmusic" wmusic -w &
+ 
+@@ -231,7 +230,7 @@
+ #-------------------------------------------------------------------------------
+ # Buttons
+ #
+-*MonitorWharfFullPush
++#*MonitorWharfFullPush
+ #*MonitorWharfNoPush
+ *MonitorWharfBevel		Right,NoOutline
+ 
+@@ -263,8 +262,8 @@
+ *MonitorWharf ~Folder
+ 
+ 
+-*MonitorWharf xeyes - Swallow "xeyes" xeyes -geometry -100-100 &
+-*MonitorWharf xeyes - PopUp   "r" Window
++#*MonitorWharf xeyes - Swallow "xeyes" xeyes -geometry -100-100 &
++#*MonitorWharf xeyes - PopUp   "r" Window
+ 
+ # some of the following maybe auto-disabled depending on the environment:
+ *MonitorWharf QuitFolder normal/RedLight,dots/3_dots Folder
+@@ -281,11 +280,11 @@
+ *MonitorWharf loadmonitor - Swallow "wmavgload" wmavgload -shape -led red &
+ *MonitorWharf loadmonitor - Swallow "wmcpuload" wmcpuload -bl -w &
+ *MonitorWharf loadmonitor - Swallow "wmload" wmload -shape -led red &
+-*MonitorWharf loadinstantmonitor - Swallow "wmfire" wmfire -f 2 &
++#*MonitorWharf loadinstantmonitor - Swallow "wmfire" wmfire -f 2 &
+ *MonitorWharf asmon  - Swallow "asmon" asmon &
+-*MonitorWharf wmtop  - Swallow "wmtop" wmtop &
+-*MonitorWharf netmonitor - Swallow "wmnet" wmnet --driver=devstats &
+-*MonitorWharf netmonitor - Swallow "wmnd" wmnd -i eth0 &
++#*MonitorWharf wmtop  - Swallow "wmtop" wmtop &
++#*MonitorWharf netmonitor - Swallow "wmnet" wmnet --driver=devstats &
++#*MonitorWharf netmonitor - Swallow "wmnd" wmnd -i eth0 &
+ *MonitorWharf asmail - Swallow "asmail" asmail -geometry +0+0 &
+ 
+ # One of the clocks - first available :
+diff --git a/afterstep/winlist b/afterstep/winlist
+index 9f757e8..dc8152d 100644
+--- a/afterstep/winlist
++++ b/afterstep/winlist
+@@ -53,7 +53,7 @@
+ # location in relation to the label. If label is a key '5' on keypad
+ # then keys 1 to 9 will represent icon's position, while 0 is the default.
+ #*WinListIconLocation 0
+-#*WinListIconSize   32x32
++*WinListIconSize   16x16
+ # This is another flag for convinience - it is always overriden by IconSize
+ # note that its On by default.
+ #*WinListScaleIconToTextHeight 

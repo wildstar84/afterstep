@@ -1,0 +1,201 @@
+#include "config.h"
+
+#define AFTERSTEP_INTERNALS
+
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#elif defined(__FreeBSD__)
+# include <sys/cdefs.h>
+# include <sys/syslimits.h>
+#endif
+
+/* we don't do interhost network communications ! WE use Unix domain sockets! */
+#define SAME_HOST
+
+/* Maximal length of config. file lines ; attention : the more you define
+ * the more memory it uses.  It's safe to leave 255 for long lines.
+ */
+#define MAXLINELENGTH 1024  /* path could be longer then 255 chars */
+
+			 /* ################### */
+			 /* Available libraries */
+			 /* ################### */
+
+/* #define @HAVEXPM@*/
+/* #define @HAVEJPEG@*/
+/* #define @HAVEPNG@*/
+/* #define @HAVESHAPE@*/
+/* #define @HAVEXINE@ */
+
+/* #if @have_xpm_write@ == 1*/
+/* #define HAVE_XPM_WRITE*/
+/* #else*/
+/* #undef HAVE_XPM_WRITE */
+/* #endif*/
+
+
+			/* ######################### */
+			/* Global configured options */
+			/* ######################### */
+
+#define DEFAULT_WINDOW_WAIT_TIMEOUT		1000  /* mlsec */
+
+#define VERSION					"@version@"
+#define CANONICAL_BUILD			"@build@"
+#define CANONICAL_BUILD_OS		"@build_os@"
+#define CANONICAL_BUILD_CPU		"@build_cpu@"
+#define CANONICAL_BUILD_VENDOR	"@build_vendor@"
+#define AFTER_BIN_DIR	"@bindir@"
+#define AFTER_MAN_DIR	"@mandir@/man1"
+#define AFTER_DOC_DIR	"@datarootdir@/doc/afterstep"
+#define DEFAULT_ICON_DIR "@x_includes@/X11/bitmaps"
+#define DEFAULT_PIXMAP_DIR "@x_includes@/X11/pixmaps"
+#define DEFAULT_TTF_DIR "@x_libraries@/X11/fonts/TTF"
+#define AFTER_SHAREDIR	"@datarootdir@/afterstep"
+#define AFTER_DIR       "@with_afterdir@"
+#define AFTER_NONCF     "non-configurable"
+#define AFTER_LOCALE	"@with_locale@"
+
+		      /* ############################## */
+		      /* In home or share directories : */
+		      /* ############################## */
+
+#define START_DIR       "start"
+#define BACK_DIR        "backgrounds"
+#define LOOK_DIR        "looks"
+#define THEME_DIR       "themes"
+#define WEBCACHE_DIR    "webcache"
+#define THUMBNAILS_DIR  "thumbnails"
+#define COLORSCHEME_DIR "colorschemes"
+#define THEME_FILE_DIR  "installed_themes"
+#define FEEL_DIR        "feels"
+#define DESKTOP_DIR     "desktop"
+#define FONT_DIR        "desktop/fonts"
+#define ICON_DIR        "desktop/icons"
+#define TILE_DIR        "desktop/tiles"
+#define BARS_DIR        "desktop/bars"
+#define BUTTONS_DIR     "desktop/buttons"
+#define MYSTYLES_DIR    "desktop/styles"
+#define COMP_FILE	"compatibility"                  /* with -f oldrc */
+#define BASE_FILE       "base"                           /* scrdepth */
+#define ASETROOT_FILE   "asetroot"                   /* legacy background configuration */
+#define THEME_OVERRIDE_FILE       "theme-override"
+#define DEFAULT_BACK_NAME   "default_background_%d"
+#define BACK_FILE       AFTER_NONCF "/%d_background" /* desk */
+#define LOOK_FILE       AFTER_NONCF "/%d_look" /* desk */
+#define FEEL_FILE       AFTER_NONCF "/%d_feel" /* desk */
+#define THEME_FILE      AFTER_NONCF "/%d_theme" /* desk */
+#define COLORSCHEME_FILE AFTER_NONCF "/%d_colorscheme" /* desk */
+#define AFTER_SAVE      AFTER_NONCF "/workspace_state"
+#define AFTER_FUNC_REMAP      AFTER_NONCF "/remapped_functions"
+#define MENU_FILE	AFTER_NONCF "/startmenu"
+#define GTKRC_TEMPLATE_FILE     "gtkrc_template"         /* gtkrc prototype */
+#define GTKRC20_TEMPLATE_FILE   "gtkrc-2.0_template"     /* gtkrc prototype */
+/* #define GTKRC_FILE      "~/.gtkrc"		 */        /* compiled and ready to use gtkrc */
+/* #define GTKRC20_FILE    "~/.gtkrc-2.0"	 */	         /* compiled and ready to use gtkrc */
+#define KSCRC_TEMPLATE_FILE   "kcsrc_template"           /* KDE colourscheme prototype */
+#define AS_KCSRC_FILE	"AfterStep.kcsrc"
+#define KCSRC_FILE      AFTER_NONCF "/AfterStep.kcsrc"    /* compiled and ready to use kcsrc */
+#define KDECS_DIR	"$KDEHOME/share/apps/kdisplay/color-schemes"	 /* main kde config file referencing compiled kcsrc  */
+#define KDEGLOBALS_FILE "$KDEHOME/share/config/kdeglobals"	 /* main kde config file referencing compiled kcsrc  */
+#define AUTOEXEC_FILE   "autoexec"
+#define DATABASE_FILE   "database"
+#define DEFAULT_USER_LOOK  "look.Mine"
+#define DEFAULT_USER_FEEL  "feel.Mine"
+
+#define STANDARD_CATEGORIES_FILE 	"standard_categories" 
+#define AFTERSTEP_APPS_DIR		"applications" 
+#define AFTERSTEP_CACHE_FILE	AFTER_NONCF "/AfterStepCategories"
+#define GNOME_APPS_PATH		"~/.gnome2/vfolders/applications/:$GNOMEDIR/share/applications:/usr/share/applications:/usr/local/share/applications"
+#define GNOME_ICONS_PATH	"~/.icons/gnome/48x48/apps/:$XDG_DATA_DIRS/icons/gnome/48x48/apps/:$GNOMEDIR/share/pixmaps:/usr/share/pixmaps:/usr/share/icons:/usr/share/icons/hicolor/48x48/apps:/usr/share/icons/hicolor/32x32/apps:/usr/share/icons/gnome/48x48/apps"
+#define GNOME_CACHE_FILE	AFTER_NONCF "/GNOMECategories"
+#define KDE_APPS_PATH		"$KDEDIR/share/applnk:$KDEDIR/share/applications:/usr/share/applnk:/usr/share/applications"
+#define KDE_ICONS_PATH		"~/.icons/kde/48x48/apps/:$XDG_DATA_DIRS/icons/kde/48x48/apps/:$KDEDIR/share/icons/default.kde/48x48/apps:$KDEDIR/share/icons/hicolor/48x48/apps:$KDEDIR/share/icons/locolor/48x48/apps:/usr/share/pixmaps"
+#define KDE_CACHE_FILE		AFTER_NONCF "/KDECategories"
+#define OTHER_APPS_PATH     "/etc/X11/applnk:/usr/share/applications:/usr/local/share/applications"
+#define OTHER_ICONS_PATH    "/usr/share/pixmaps:/usr/local/share/pixmaps:/usr/share/icons:/usr/share/icons/hicolor/48x48/apps:/usr/share/icons/hicolor/32x32/apps"
+#define OTHER_CACHE_FILE	AFTER_NONCF "/OtherCategories"
+
+
+#define DEFAULT_CAPTURE_WINDOW_FILE		"~/capture_window"
+#define DEFAULT_CAPTURE_FRAMEDWINDOW_FILE	"~/capture_framedwindow"
+#define DEFAULT_CAPTURE_SCREEN_FILE		"~/capture_screen"
+#define DONT_REPLACE_SCREENSHOT_FILES 1        /* undefine this to enabline replacing existing files with screenshots(dangerous) */
+
+#define DEFAULT_COLORSCHEME_BASE	0xFF34404C   /* base color of the default colorscheme ( The Stormy Skies ) */
+
+			      /* ############# */
+			      /* Look settings */
+			      /* ############# */
+
+#define XIMAGELOADER    "@with_imageloader@"
+#define SOUNDPLAYER     "@with_soundplayer@"
+#define HELPCOMMAND	"@with_helpcommand@"
+#define DEFAULTSTARTMENUSORT @with_startsort@
+#define ANIM_STEP       5
+#define ANIM_STEP_MAIN  5
+#define ANIM_DELAY      2
+
+			      /* ############# */
+			      /* Look options  */
+			      /* ############# */
+
+/* #if @enable_audit@ == 1*/
+/* #define DEBUG_ALLOCS*/
+/* #else*/
+/* #undef  DEBUG_ALLOCS*/
+/* #endif					*/
+
+			      /* ############## */
+			      /* Action strings */
+			      /* ############## */
+
+/* Please don't translate the strings into the language which you use for your
+ * pop-up menus since this is default : some decisions about where a function
+ * is prohibited (based on mwm-function-hints) is based on a string comparison
+ * between the menu item and the strings below
+ */
+
+#define MOVE_STRING      "move"
+#define RESIZE_STRING1   "size"
+#define RESIZE_STRING2   "resize"
+#define MINIMIZE_STRING  "minimize"
+#define MINIMIZE_STRING2 "iconify"
+#define MAXIMIZE_STRING  "maximize"
+#define CLOSE_STRING1    "close"
+#define CLOSE_STRING2    "delete"
+#define CLOSE_STRING3    "destroy"
+#define CLOSE_STRING4    "quit"
+
+			/* #################### */
+			/* OS dependant defines */
+			/* #################### */
+
+/* Really, no one but me should need this */
+/* #define BROKEN_SUN_HEADERS */
+
+/* Some logical checks */
+#ifdef HAVE_UNAME
+#undef HAVE_GETHOSTNAME
+#endif
+
+/* Even if limits.h is included, allow PATH_MAX to sun unices */
+#ifndef PATH_MAX
+#ifdef _POSIX_PATH_MAX
+#define PATH_MAX _POSIX_PATH_MAX
+#else
+#define PATH_MAX 255
+#endif
+#endif
+
+/* Allows gcc users to use inline, doesn't cause problems for others. */
+#ifndef __GNUC__
+#define  AFTER_INLINE  /* nothing */
+#else
+#if defined(__GNUC__) && !defined(inline)
+#define AFTER_INLINE __inline__
+#else
+#define AFTER_INLINE inline
+#endif /* __GNUC__ && !(inline) */
+#endif /* !(__GNUC__) */
+

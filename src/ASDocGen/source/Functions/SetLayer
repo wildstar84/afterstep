@@ -1,0 +1,6 @@
+<varlistentry id="options.SetLayer">
+    <term>SetLayer <emphasis remap='I'>layer</emphasis></term>
+    <listitem>
+	<para>Moves the target window to layer <emphasis remap='I'>layer</emphasis>.</para>
+    </listitem>
+</varlistentry>

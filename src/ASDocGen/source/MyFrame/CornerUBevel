@@ -1,0 +1,7 @@
+<varlistentry id="options.CornerUBevel">
+	<term>CornerUBevel</term>
+	<listitem>
+		<para>Alias for CornerUnfocusedBevel.</para>
+		<para>See Also: <ulink url="Bevel#synopsis">Bevel flags</ulink> for further details.</para>
+	</listitem>
+</varlistentry>

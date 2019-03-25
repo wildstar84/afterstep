@@ -1,0 +1,496 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Contact: Sasha Vasko <sasha at aftercode.net>
+Source: http://www.afterstep.org/
+
+Files: *
+Copyright: 1998-2012, Sasha Vasko <sasha at aftercode.net>
+License: GPL-2+
+
+Files: libAfterBase/ashash.c
+Copyright: 2000, Andrew Ferguson <andrew@owsla.cjb.net>
+  1998, Sasha Vasko <sasha@aftercode.net>
+License: LGPL-2.1+
+
+Files: libAfterBase/aslist.c
+  libAfterBase/asvector.c
+  libAfterBase/mystring.c
+  libAfterBase/os.c
+  libAfterBase/output.c
+  libAfterBase/parse.c
+  libAfterBase/regexp.c
+  libAfterBase/safemalloc.c
+  libAfterBase/selfdiag.c
+  libAfterBase/sleep.c
+  libAfterBase/trace.c
+  libAfterBase/xwrap.c
+Copyright: 1999-2001, 2004, 2008, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1+
+
+Files: libAfterBase/audit.c
+Copyright: 2001, Sasha Vasko <sasha at aftercode.net>
+  2001, Andrew Ferguson <andrew@owsla.cjb.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: LGPL-2.1+
+
+Files: libAfterBase/fs.c
+Copyright: 1999, Sasha Vasko <sasha at aftercode.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+  1998, Pierre Clerissi <pierre.clerissi@gmail.com>
+License: LGPL-2.1+
+
+Files: libAfterBase/layout.c
+Copyright: 1998-2003, 2005, 2006, 2008, 2012, Sasha Vasko <sasha at aftercode.net>
+License: GPL-2+
+
+Files: libAfterBase/socket.c
+Copyright: 1999, Ethan Fischer <allanon@crystaltokyo.com>
+  1999, 2001, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1+
+
+Files: libAfterBase/timer.c
+Copyright: 1999, Ethan Fisher <allanon@crystaltokyo.com>
+License: LGPL-2.1+
+
+Files: libAfterBase/xml.c
+Copyright: 2001, 2003, Sasha Vasko <sasha@aftercode.net>
+  2001, Ethan Fisher <allanon@crystaltokyo.com>
+  2001, Eric Kowalski <eric@beancrock.net>
+License: GPL-2+
+
+Files: libAfterBase/xprop.c
+Copyright: 2000, Sasha Vasko <sasha at aftercode.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: LGPL-2.1+
+
+Files: libAfterConf/AfterStep.c
+  libAfterConf/AlignBevel.c
+  libAfterConf/Animate.c
+  libAfterConf/Audio.c
+  libAfterConf/Base.c
+  libAfterConf/Clean.c
+  libAfterConf/Ident.c
+  libAfterConf/Look.c
+  libAfterConf/MyFrame.c
+  libAfterConf/Sound.c
+  libAfterConf/balloon.c
+Copyright: 2000, Andrew Ferguson <andrew@owsla.cjb.net>
+  1998, Sasha Vasko <sasha at aftercode.net>
+License: GPL-2+
+
+Files: libAfterConf/Database.c
+Copyright: 1999, Ethan Fischer <allanon@crystaltokyo.com>
+  1998, Sasha Vasko <sasha at aftercode.net>
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: libAfterImage/afterbase.c
+  libAfterImage/ascmap.c
+  libAfterImage/asfont.c
+  libAfterImage/asstorage.c
+  libAfterImage/asvisual.c
+  libAfterImage/blender.c
+  libAfterImage/bmp.c
+  libAfterImage/draw.c
+  libAfterImage/export.c
+  libAfterImage/scanline.c
+  libAfterImage/ungif.c
+  libAfterImage/xcf.c
+  libAfterImage/ximage.c
+  libAfterImage/xpm.c
+Copyright: 1999-2001, 2004, 2008, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1+
+
+Files: libAfterImage/aftershow/*
+Copyright: 2000, 2001, 2004, 2008, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1
+
+Files: libAfterImage/apps/ascompose.c
+Copyright: 2001, 2003, Sasha Vasko <sasha@aftercode.net>
+  2001, Ethan Fisher <allanon@crystaltokyo.com>
+  2001, Eric Kowalski <eric@beancrock.net>
+License: GPL-2+
+
+Files: libAfterImage/asimage.c
+Copyright: 2004, Valeriy Onuchin <Valeri dot Onoutchine at cern dot ch>
+  2000-2004, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1
+
+Files: libAfterImage/asimagexml.c
+Copyright: 2001, 2003, Sasha Vasko <sasha@aftercode.net>
+  2001, Ethan Fisher <allanon@crystaltokyo.com>
+  2001, Eric Kowalski <eric@beancrock.net>
+License: GPL-2+
+
+Files: libAfterImage/char2uni.c
+Copyright: 1999-2001, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: libAfterImage/imencdec.c
+  libAfterImage/test_mmx.c
+  libAfterImage/transform.c
+Copyright: 2000, 2001, 2004, 2008, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1
+
+Files: libAfterImage/import.c
+Copyright: 2004, Maxim Nikulin <nikulin at gorodok.net>
+  2001, 2004, Sasha Vasko <sasha at aftercode.net>
+License: LGPL-2.1+
+
+Files: libAfterImage/pixmap.c
+Copyright: 1999, Sasha Vasko <sasha at aftercode.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: libAfterImage/zlib/*
+Copyright: 1995-2005, Mark Adler
+License: Zlib
+
+Files: libAfterImage/zlib/compress.c
+  libAfterImage/zlib/deflate.h
+  libAfterImage/zlib/gzio.c
+  libAfterImage/zlib/trees.c
+  libAfterImage/zlib/uncompr.c
+  libAfterImage/zlib/zconf.h
+  libAfterImage/zlib/zutil.c
+  libAfterImage/zlib/zutil.h
+  libAfterImage/zlib/deflate.c
+Copyright: 1995-2005, Jean-loup Gailly
+License: Zlib
+
+Files: libAfterImage/zlib/zlib.h
+Copyright: 1995-2005, Jean-loup Gailly and Mark Adler
+License: Zlib
+
+Files: libAfterStep/ascommand.c
+  libAfterStep/operations.c
+Copyright: 2005, Fabian Yamaguchi <fabiany at gmx.net>
+License: GPL-2+
+
+Files: libAfterStep/balloon.c
+Copyright: 1998-2000, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: libAfterStep/freestor.c
+  libAfterStep/functions.c
+  libAfterStep/parser.c
+  libAfterStep/parser_fs.c
+Copyright: 2000, Andrew Ferguson <andrew@owsla.cjb.net>
+  1998, Sasha Vasko <sasha at aftercode.net>
+License: GPL-2+
+
+Files: libAfterStep/module.c
+Copyright: 1999, Sasha Vasko <sasha at aftercode.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: libAfterStep/mystyle.c
+Copyright: 2002, Sasha Vasko <sasha@aftercode.net>
+  1998, 1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: libAfterStep/mystyle_property.c
+Copyright: 2002, Sasha Vasko <sasha at aftercode dot net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: libAfterStep/outline.c
+Copyright: 1999, 2001, Sasha Vasko <sasha at aftercode.net>
+  1998, Rafal Wierzbicki (rubber bands) <rafal@mcss.mcmaster.ca>
+License: GPL-2+
+
+
+Files: src/Animate/*
+Copyright: 1997, Frank Scheelen <scheelen@worldonline.nl>
+  1996, Kaj Groner <kajg@mindspring.com>
+  1996, Alfredo Kengi Kojima (kojima@inf.ufrgs.br)
+License: GPL-2+
+
+Files: src/Arrange/*
+Copyright: 2005, Fabian Yamaguchi <fabiany at gmx.net>
+  2004, Sasha Vasko <sasha at aftercode.net>
+License: GPL-2+
+
+Files: src/Audio/*
+Copyright: 2000, Sasha Vasko <sasha at aftercode.net>
+  1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1994, Szijarto Szabolcs <saby@sch.bme.hu>
+  1994, Robert Nation
+  1994, Mark Scott <mscott@mcd.mot.com>
+  1994, Mark Boyns <boyns@sdsu.edu>
+License: GPL-2+
+
+Files: src/Clean/Clean.c
+Copyright: 1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1993, 1994, Robert Nation
+License: GPL-2+
+
+Files: src/Form/*
+Copyright: 1998, Sasha Vasko <sasha at aftercode.net>
+  1998, Makoto Kato <m_kato@ga2.so-net.ne.jp>
+  1996, Takanori Kubota
+  1996, Michael Beam
+  1995, Thomas Zuwei Feng
+License: GPL-2+
+
+Files: src/Gnome/*
+Copyright: 1999, Rafal Wierzbicki <rafal@mcss.mcmaster.ca>
+License: GPL-2+
+
+Files: src/Ident/*
+Copyright: 2004, Sasha Vasko <sasha@aftercode.net>
+  1999, Rafal Wierzbicki <rafal@mcss.mcmaster.ca>
+  1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1994, Robert Nation
+  1994, Nobutaka Suzuki
+License: GPL-2+
+
+Files: src/Pager/Pager.c
+Copyright: 1998, Michal Vitecek <fuf@fuf.sh.cvut.cz>
+  1998, Makoto Kato <m_kato@ga2.so-net.ne.jp>
+  1998, Eric Tremblay <deltax@pragma.net>
+  1998, Doug Alcorn <alcornd@earthlink.net>
+  1998, 2002, Sasha Vasko <sasha at aftercode.net>
+  1997, ric@giccs.georgetown.edu
+  1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1996, Rainer M. Canavan (canavan@Zeus.cs.bonn.edu)
+  1996, Dan Weeks
+  1994, Rob Nation
+License: GPL-2+
+
+Files: src/Script/Script.c
+Copyright: 1998, Sasha Vasko <sasha at aftercode.net>
+  1998, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1996, Frederic Cordier <cordier@cui.unige.ch>
+License: GPL-2+
+
+Files: src/Scroll/GrabWindow.c
+Copyright: 1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1993, 1994, Robert Nation
+License: GPL-2+
+
+Files: src/Scroll/Scroll.c
+Copyright: 1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1994, Robert Nation
+  1994, Nobutaka Suzuki <nobuta-s@is.aist-nara.ac.jp>
+License: GPL-2+
+
+Files: src/Sound/*
+Copyright: 1998, Sasha Vasko <sasha at aftercode.net>
+  1996, Alfredo Kojima
+License: GPL-2+
+
+Files: src/Sound2/*
+Copyright: 2007, 2008, Jeremy sG <sg at hacksess>
+License: GPL-2+
+
+Files: src/Wharf/*
+Copyright: 1998, Michal Vitecek <M.Vitecek@sh.cvut.cz>
+  1998, Guylhem Aznar
+  1998, Ethan Fischer
+  1998, 2002, Sasha Vasko <sasha at aftercode.net>
+  1996, mj@dfv.rwth-aachen.de
+  1996, Kaj Groner
+  1996, Frank Fejes
+  1996, Beat Christen
+  1996, Alfredo K. Kojima
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/Wharf/OffiX/*
+Copyright: 1996, César Crusius
+License: LGPL-2+
+
+Files: src/WinCommand/*
+Copyright: 2005, Fabian Yamaguchi <fabiany at gmx.net>
+License: GPL-2+
+
+Files: src/afterstep/colormaps.c
+Copyright: 1994, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/configure.c
+Copyright: 1998, Rafal Wierzbicki <rafal@mcss.mcmaster.ca>
+  1998, Nat Makarevitch <nat@linux-france.com>
+  1998, Mike Venaccio <venaccio@aero.und.edu>
+  1998, Michal Vitecek <fuf@fuf.sh.cvut.cz>
+  1998, Ethan Fischer <allanon@crystaltokyo.com>
+  1998, Chris Ridd <c.ridd@isode.com>
+  1998, 2002, 2003, Sasha Vasko <sasha at aftercode.net>
+  1997, Raphael Goulais <velephys@hol.fr>
+  1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1996, Frank Fejes
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/cover.c
+  src/afterstep/functions.c
+  src/afterstep/housekeeping.c
+Copyright: 2000, 2001, 2003, Sasha Vasko <sasha at aftercode.net>
+  1999, Ethan Fisher <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: src/afterstep/decorations.c
+Copyright: 2003, Sasha Vasko
+  1996, Frank Fejes
+  1996, Alfredo Kojima
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/dirtree.c
+Copyright: 1998-2000, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: src/afterstep/events.c
+Copyright: 2003, Sasha Vasko
+  1995, Bo Yang
+  1993, Robert Nation
+  1993, Frank Fejes
+License: GPL-2+
+
+Files: src/afterstep/icons.c
+Copyright: 2005, Fabian Yamaguchi <fabiany at gmx.net>
+  1998, Sasha Vasko <sasha at aftercode.net>
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/menuitem.c
+Copyright: 2002, Jan Fedak <jack at mobil dot cz>
+  1998, Rafal Wierzbicki <rafal@mcss.mcmaster.ca>
+  1998, Nat Makarevitch <nat@linux-france.com>
+  1998, Mike Venaccio <venaccio@aero.und.edu>
+  1998, Michal Vitecek <fuf@fuf.sh.cvut.cz>
+  1998, Ethan Fischer <allanon@crystaltokyo.com>
+  1998, Chris Ridd <c.ridd@isode.com>
+  1998, 2003, Sasha Vasko <sasha at aftercode.net>
+  1997, Raphael Goulais <velephys@hol.fr>
+  1997, Guylhem Aznar <guylhem@oeil.qc.ca>
+  1996, Frank Fejes
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/menus.c
+Copyright: 2002, Sasha Vasko
+  1998, Guylhem Aznar
+  1998, 1999, Ethan Fischer
+  1996, Frank Fejes
+  1996, Alfredo Kojima
+  1995, Bo Yang
+  1993, Rob Nation
+License: GPL-2+
+
+Files: src/afterstep/misc.c
+Copyright: 1995, Bo Yang
+  1993, Rob Nation
+License: GPL-2+
+
+Files: src/afterstep/module.c
+Copyright: 1999, Ethan Fischer <allanon@crystaltokyo.com>
+  1998, Guylhem Aznar
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/pager.c
+Copyright: 2003, Sasha Vasko <sasha@ aftercode.net>
+  1999, Ethan Fischer <allanon@crystaltokyo.com>
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/afterstep/placement.c
+Copyright: 2005, Fabian Yamaguchi
+  2004, 2005, Sasha Vasko
+  1996, Frank Fejes
+  1995, Bo Yang
+  1993, Robert Nation
+License: GPL-2+
+
+Files: src/ascp/*
+Copyright: 2001, 2003, Sasha Vasko <sasha@aftercode.net>
+  2001, Ethan Fisher <allanon@crystaltokyo.com>
+  2001, Eric Kowalski <eric@beancrock.net>
+License: GPL-2+
+
+Files: src/asetroot/*
+Copyright: 1998, Sasha Vasko <sasha at aftercode.net>
+  1998, Rafal Wierzbicki <rafal@mcss.mcmaster.ca>
+License: GPL-2+
+
+Files: tools/ascommand.pl
+Copyright: 1998-2000, Ethan Fischer <allanon@crystaltokyo.com>
+License: GPL-2+
+
+Files: tools/cvs2cl.as.pl
+Copyright: 2001-2003, Martyn J. Pearce <fluffy@cpan.org>
+  1999, Karl Fogel <kfogel@red-bean.com>
+License: GPL-2+
+
+Files: debian/*
+Copyright: 2002-2015, Robert Luberda <robert@debian.org>
+  2000 Steven R. Baker <srbaker@debian.org>
+  2000 Taketoshi Sano <sano@debian.org>
+  1998-2002, Jonathon D Nelson <jnelson@boa.org>
+  1998 Joel Rosdahl <joel@debian.org>
+  1996, 1997 Neil A. Rubin <nar5@po.cwru.edu>
+License: GPL-2+
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 dated June, 1991, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 of the GNU General
+ Public License can be found in '/usr/share/common-licenses/GPL-2'.
+
+License: LGPL-2+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Library General Public License as published by the
+ Free Software Foundation; version 2 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 of the GNU Library
+ General Public License can be found in `/usr/share/common-licenses/LGPL-2'.
+
+License: LGPL-2.1
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; version 2.1 of the License
+ .
+ On Debian systems, the complete text of version 2.1 of the GNU Lesser
+ General Public License can be found in `/usr/share/common-licenses/LGPL-2.1'.
+
+License: LGPL-2.1+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; version 2.1 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2.1 of the GNU Lesser
+ General Public License can be found in `/usr/share/common-licenses/LGPL-2.1'.
+
+License: Zlib
+ The zlib License
+ .
+ This software is provided 'as-is', without any express or implied
+ warranty. In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ .
+   1. The origin of this software must not be misrepresented; you must
+      not claim that you wrote the original software. If you use this
+      software in a product, an acknowledgment in the product
+      documentation would be appreciated but is not required.
+ .
+   2. Altered source versions must be plainly marked as such, and must
+      not be misrepresented as being the original software.
+ .
+   3. This notice may not be removed or altered from any source
+      distribution.

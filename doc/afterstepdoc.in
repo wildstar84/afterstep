@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# GPL
+#
+# Copyright (C) 1998, Cristian Gafton <gafton@redhat.com>
+#               1998, Lars Torben Wilson <torben@netmill.com>
+#
+# If netscape isn't available, run lynx in a xiterm
+# First try standard path, then local, then other possible paths
+#
+
+exec sensible-browser "file://@datarootdir@/doc/afterstep/html/index.html"

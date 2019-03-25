@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleFocusedStyle">
+	<term>TitleFocusedStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>MyStyle to apply to titlebar if window is in focused state.</para>
+	</listitem>
+</varlistentry>

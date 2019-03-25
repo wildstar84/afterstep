@@ -1,0 +1,11 @@
+<varlistentry id="options.Align">
+	<term>Align</term>
+	<listitem>
+		<para>Defines how Pager's desk title should be aligned on desk titlebar.
+		See <ulink url="Align#synopsis">Align options</ulink> for further details.</para>
+		<example>
+		<literallayout>*PagerAlign  Center </literallayout>
+		<para># places title in the center both vertically and horizontally</para>
+		</example>
+	</listitem>
+</varlistentry>

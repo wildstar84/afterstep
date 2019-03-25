@@ -1,0 +1,7 @@
+<varlistentry id="options.ForceSize">
+	<term>ForceSize <emphasis remap='I'>Size</emphasis></term>
+	<listitem>
+		<para>If specified, will force pixmaps to Size instead of the default
+		of 64x64. This has no effect on the Size of the displayed icons (they will be croped if larger).</para>
+	</listitem>
+</varlistentry>

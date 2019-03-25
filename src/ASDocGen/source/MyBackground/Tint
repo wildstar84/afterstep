@@ -1,0 +1,7 @@
+<varlistentry id="options.Tint">
+	<term>Tint <emphasis remap='I'>color</emphasis></term>
+	<listitem>
+		<para>Will  tint  image  with specified color. Gray60 will make image
+                    lighter, while Gray40 will make image darker. Tinting
+                    it two way !</listitem>
+</varlistentry>

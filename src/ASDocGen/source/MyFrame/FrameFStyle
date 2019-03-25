@@ -1,0 +1,6 @@
+<varlistentry id="options.FrameFStyle">
+	<term>FrameFStyle <emphasis remap='I'>MyStyle</emphasis></term>
+	<listitem>
+		<para>Alias for FrameFocusedStyle.</para>
+	</listitem>
+</varlistentry>

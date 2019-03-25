@@ -1,0 +1,226 @@
+From: Robert Luberda <robert@debian.org>
+Date: Sun, 22 Mar 2015 19:01:22 +0100
+Subject: 46 Show compiler flags
+
+Do not hide compiler flags to fix the warning given by build log scaner
+at https://qa.debian.org/bls/bytag/W-compiler-flags-hidden.html
+---
+ autoconf/Makefile.common.in     |  6 ++----
+ autoconf/Makefile.common.lib.in |  5 ++---
+ libAfterBase/Makefile.in        |  5 ++---
+ libAfterImage/Makefile.in       |  7 ++-----
+ libAfterImage/apps/Makefile.in  | 30 ++++++++++++++----------------
+ src/ASDocGen/Makefile.in        |  4 ++--
+ src/ASMount/Makefile.in         |  2 +-
+ src/afterstep/Makefile.in       |  2 +-
+ 8 files changed, 26 insertions(+), 35 deletions(-)
+
+diff --git a/autoconf/Makefile.common.in b/autoconf/Makefile.common.in
+index 390e322..065ce07 100644
+--- a/autoconf/Makefile.common.in
++++ b/autoconf/Makefile.common.in
+@@ -100,13 +100,11 @@ deps:
+ .SUFFIXES:	.c .cxx .h .fl .man .o .z .s $(EXEEXT)
+ 
+ show_flags_cc: $(OBJS)
+-		@touch show_flags_cc ; \
+-		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"; \
+-		echo "and Libraries :$(LIBS_ALL)"
++		@touch show_flags_cc
+ 
+ .c.o:
+ 		@echo " $*.c"
+-		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
++		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+ 
+ .cxx.o:
+ 		$(CXX) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.cxx
+diff --git a/autoconf/Makefile.common.lib.in b/autoconf/Makefile.common.lib.in
+index b802b23..5320100 100644
+--- a/autoconf/Makefile.common.lib.in
++++ b/autoconf/Makefile.common.lib.in
+@@ -188,8 +188,7 @@ deps:
+ 		echo "" >> .shared ;
+ 
+ show_flags_cc: $(LIB_SOURCES) $(LIB_INCS) Makefile
+-		@touch show_flags_cc ; \
+-		echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
++		@touch show_flags_cc
+ 
+ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS) Makefile
+ 		$(RMF) $(LIB_STATIC)
+@@ -198,7 +197,7 @@ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS) Makefile
+ 
+ %.o : %.c Makefile |show_flags_cc 
+ 		@echo " $*.c"
+-		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
++		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+ 
+ .c.s:
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+diff --git a/libAfterBase/Makefile.in b/libAfterBase/Makefile.in
+index 3dc63b7..7aa6253 100644
+--- a/libAfterBase/Makefile.in
++++ b/libAfterBase/Makefile.in
+@@ -301,8 +301,7 @@ deps:
+ 		echo "" >> .shared ;
+ 
+ show_flags_cc:	$(LIB_SOURCES) $(LIB_INCS)  Makefile
+-		@touch show_flags_cc ; \
+-		echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
++		@touch show_flags_cc
+ 
+ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS)
+ 		$(RMF) $(LIB_STATIC)
+@@ -311,7 +310,7 @@ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS)
+ 
+ %.o : %.c Makefile | show_flags_cc 
+ 		@echo " $*.c"
+-		@$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
++		$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+ 
+ .c.s:
+ 		$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+diff --git a/libAfterImage/Makefile.in b/libAfterImage/Makefile.in
+index 9f0d18e..f558e04 100644
+--- a/libAfterImage/Makefile.in
++++ b/libAfterImage/Makefile.in
+@@ -350,11 +350,9 @@ apps: 	@APPSDEPS@
+ 		@(if test -d apps; then cd apps; $(MAKE); fi )
+ 
+ show_flags_cc:	$(LIB_OBJS) $(LIB_INCS) config.h
+-		@touch show_flags_cc ; \
+-		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
++		@touch show_flags_cc
+ 
+ $(LIB_STATIC):	show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h  Makefile
+-		@echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
+ 		$(RMF) $(LIB_STATIC)
+ 		$(AR) $(LIB_STATIC) $(LIB_OBJS)
+ 		$(RANLIB) $(LIB_STATIC)
+@@ -380,7 +378,7 @@ test_mmx:	test_mmx.o
+ 
+ .c.o:  Makefile
+ 		@echo " $*.c"
+-		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c -o $@
++		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c -o $@
+ 
+ .c.s:
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+@@ -395,7 +393,6 @@ include .depend
+ #endif
+ 
+ $(LIB_SHARED_CYG):  show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h  Makefile
+-	@echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
+ 	$(CC) -shared -o $(LIB_SHARED_CYG) \
+     		-Wl,--out-implib=$(LIB_SHARED_CYG_AR) \
+     		-Wl,--export-all-symbols -Wl,--enable-auto-import \
+diff --git a/libAfterImage/apps/Makefile.in b/libAfterImage/apps/Makefile.in
+index f60d719..bcaab48 100644
+--- a/libAfterImage/apps/Makefile.in
++++ b/libAfterImage/apps/Makefile.in
+@@ -135,49 +135,47 @@ deps:
+ 		fi
+ 
+ asview: asview.o common.o @LIBPROG@
+-		@$(CC) asview.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asview
++		$(CC) asview.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asview
+ 
+ asview_gl: asview_gl.o common.o $(LIB_STATIC)
+-		@$(CC) asview_gl.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -lGL -lGLU -o asview_gl
++		$(CC) asview_gl.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -lGL -lGLU -o asview_gl
+ 
+ asscale: asscale.o common.o @LIBPROG@
+-		@$(CC) asscale.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asscale
++		$(CC) asscale.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asscale
+ 
+ astile: astile.o common.o @LIBPROG@
+-		@$(CC) astile.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o astile
++		$(CC) astile.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o astile
+ 
+ asmerge: asmerge.o common.o @LIBPROG@
+-		@$(CC) asmerge.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asmerge
++		$(CC) asmerge.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asmerge
+ 
+ asgrad: asgrad.o common.o @LIBPROG@
+-		@$(CC) asgrad.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asgrad
++		$(CC) asgrad.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asgrad
+ 
+ asflip: asflip.o common.o @LIBPROG@
+-		@$(CC) asflip.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asflip
++		$(CC) asflip.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asflip
+ 
+ asi18n: asi18n.o common.o @LIBPROG@
+-		@$(CC) asi18n.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asi18n
++		$(CC) asi18n.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asi18n
+ 
+ astext: astext.o common.o @LIBPROG@
+-		@$(CC) astext.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o astext
++		$(CC) astext.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o astext
+ 
+ ascheckttf: ascheckttf.o @LIBPROG@
+-		@$(CC) ascheckttf.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o ascheckttf
++		$(CC) ascheckttf.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o ascheckttf
+ 
+ ascompose: ascompose.o common.o @LIBPROG@
+-		@$(CC) ascompose.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o ascompose
++		$(CC) ascompose.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o ascompose
+ 
+ asvector: asvector.o common.o @LIBPROG@
+-		@$(CC) asvector.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asvector
++		$(CC) asvector.o common.o $(LIBRARIES) $(EXTRA_LIBRARIES) -o asvector
+ 
+ show_flags_cc:	asview.c asscale.c astile.c asmerge.c asgrad.c asflip.c asi18n.c astext.c ascompose.c asvector.c ascheckttf.c common.c @LIBPROG@ Makefile
+-		@touch show_flags_cc ; \
+-		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"; \
+-		echo "and Libraries :$(LIBRARIES) $(EXTRA_LIBRARIES)"; 
++		@touch show_flags_cc
+ 
+ .c.o: 	show_flags_cc Makefile
+ 		@echo " $*"
+-		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
++		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+ 
+ .c.s:
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+diff --git a/src/ASDocGen/Makefile.in b/src/ASDocGen/Makefile.in
+index df31793..4476478 100644
+--- a/src/ASDocGen/Makefile.in
++++ b/src/ASDocGen/Makefile.in
+@@ -14,8 +14,8 @@ export LD_LIBRARY_PATH := ../../libAfterBase:../../libAfterConf:../../libAfterIm
+ 
+ 
+ do_compile:    $(OBJS) $(LIBS_DEPEND) Makefile show_flags_cc
+-		@$(CC) $(OBJS) $(LIBS_ALL) -o ASDocGen; \
+-		 touch do_compile
++		$(CC) $(OBJS) $(LIBS_ALL) -o ASDocGen
++		@touch do_compile
+ 
+ doc_man:	do_compile
+ 		@echo -n "Generating man pages ..." ; ./ASDocGen -l log.man -t nroff ; echo "Done" ; touch doc_man
+diff --git a/src/ASMount/Makefile.in b/src/ASMount/Makefile.in
+index 4f79718..5993190 100644
+--- a/src/ASMount/Makefile.in
++++ b/src/ASMount/Makefile.in
+@@ -16,7 +16,7 @@ module.clean:
+ 
+ 
+ ASMount:	        $(OBJS_ASMOUNT) $(LIBS_DEPEND)
+-		@$(CC) $(OBJS_ASMOUNT) $(LIBS_ALL) -o $(@)
++		$(CC) $(OBJS_ASMOUNT) $(LIBS_ALL) -o $(@)
+ 
+ install:	install.bin
+ 
+diff --git a/src/afterstep/Makefile.in b/src/afterstep/Makefile.in
+index f5cc26a..6a67913 100644
+--- a/src/afterstep/Makefile.in
++++ b/src/afterstep/Makefile.in
+@@ -22,7 +22,7 @@ LIBS_DEPEND     = $(LIB_AFTERBASE) $(LIB_AFTERIMAGE) $(LIB_AFTERSTEP) \
+ @MAKEFILECOMMON@
+ 
+ $(PROG):	$(OBJS) $(LIBS_DEPEND) Makefile show_flags_cc
+-		@$(CC) $(OBJS) $(LIBS_ALL) -o $(@)
++		$(CC) $(OBJS) $(LIBS_ALL) -o $(@)
+ 
+ AfterStepConfig.o:	configure.c
+ 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) -DAFTERSTEP_CONFIG_TEST $(INCLUDES) $(EXTRA_INCLUDES) -c configure.c -o AfterStepConfig.o

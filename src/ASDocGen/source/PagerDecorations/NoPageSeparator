@@ -1,0 +1,6 @@
+<varlistentry id="options.NoPageSeparator">
+	<term>NoPageSeparator</term>
+	<listitem>
+		<para>Turns OFF grid separating pages</para>
+	</listitem>
+</varlistentry>

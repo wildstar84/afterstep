@@ -1,0 +1,6 @@
+<varlistentry id="options.MinColWidth">
+	<term>MinColWidth <emphasis remap='I'>width</emphasis></term>
+	<listitem>
+		<para>Minimum width of the column</para>
+	</listitem>
+</varlistentry>

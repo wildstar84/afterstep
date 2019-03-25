@@ -1,0 +1,6 @@
+<varlistentry id="options.Desk">
+	<term>Desk <emphasis remap='I'>desk</emphasis></term>
+	<listitem>
+		<para>Limits the effects of this WindowBox to the specified desk.</para>
+	</listitem>
+</varlistentry>

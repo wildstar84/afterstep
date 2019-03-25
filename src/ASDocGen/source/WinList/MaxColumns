@@ -1,0 +1,6 @@
+<varlistentry id="options.MaxColumns">
+	<term>MaxColumns <emphasis remap='I'>count</emphasis></term>
+	<listitem>
+		<para>Maximum number of columns in WinList.</para>
+	</listitem>
+</varlistentry>

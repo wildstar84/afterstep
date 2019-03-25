@@ -1,0 +1,56 @@
+.\" $Id: ascommand.1x,v 1.3 2006-05-28 12:13:09 robert Exp $
+.\" vim: ft=nroff
+.TH ASCOMMAND 1x "May 28th, 2006"
+.SH NAME
+ascommand \- send commands to AfterStep
+.SH SYNOPSIS
+.B ascommand 
+.RI [\-f " file" ] 
+.RI [\-h] 
+.RI [\-i] 
+.RI [\-v] 
+.RI [\-w " id" ] 
+.RI [\-\-] 
+.RI [ command ]
+.SH DESCRIPTION
+This manual page documents briefly the
+.B ascommand
+command.
+This manual page was written for the Debian distribution
+because the original program does not have a manual page.
+.PP
+.B ascommand 
+is a program, which sends commands to the AfterStep Window Manager.
+.SH OPTIONS
+.TP
+\fB\-f\fR \fB\-\-file\fR
+input commands from file (\- means stdin)
+.TP
+\fB\-h\fR \fB\-\-help\fR
+this help
+.HP
+\fB\-i\fR \fB\-\-interactive\fR starts interactive communication with AfterStep
+.TP
+\fB\-v\fR \fB\-\-version\fR
+print version information
+.TP
+\fB\-w\fR \fB\-\-window\-id\fR
+window id to send to AfterStep (in hex)
+.TP
+\fB\-\-\fR
+end parsing of command line options
+.TP
+command
+command to send to AfterStep
+.PP
+If \fB\-f\fR \- or \fB\-i\fR is specified, ascommand will read commands from standard input,
+and print results on standard output.  \fB\-i\fR is noisier than \fB\-f\fR \-.
+.SH SEE ALSO
+.BR afterstep (1x).
+.SH AUTHOR
+This manual page was written by Robert Luberda <robert@debian.org>,
+using
+.BR help2man (1)
+program,
+for the Debian GNU/Linux system (but may be used by others).
+

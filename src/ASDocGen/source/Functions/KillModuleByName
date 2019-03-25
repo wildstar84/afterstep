@@ -1,0 +1,6 @@
+<varlistentry id="options.KillModuleByName">
+	<term>KillModuleByName <emphasis>"name" modulename</emphasis></term>
+	<listitem>
+		<para>Kill module with specified name.</para>
+	</listitem>
+</varlistentry>

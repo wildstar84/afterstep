@@ -1,0 +1,6 @@
+<varlistentry id="options.LabelSize">
+	<term>LabelSize</term>
+	<listitem>
+		<para>Same as the combination of LabelWidth,LabelHeight.</para>
+	</listitem>
+</varlistentry>

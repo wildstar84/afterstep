@@ -1,0 +1,94 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0103 
+header_name {.h} 
+code_name {.cxx}
+class ASControlPanelUI {open
+} {
+  Function {ASControlPanelUI()} {open
+  } {
+    Fl_Window m_MainWindow {open
+      xywh {310 53 490 425} resizable visible
+    } {
+      Fl_Menu_Bar m_MainMenu {open
+        xywh {0 0 490 25}
+      } {
+        submenu {} {
+          label Open open
+          xywh {0 0 100 20}
+        } {
+          menuitem {} {
+            label {Look Editor}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Feel Editor}
+            xywh {15 15 100 20}
+          }
+          menuitem {} {
+            label {Database Editor}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Base Config}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Wharf (toolbar) Config}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Window List Config }
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Pager Config}
+            xywh {0 0 100 20}
+          }
+          menuitem {} {
+            label {Menu Editor}
+            xywh {0 0 100 20}
+          }
+        }
+      }
+      Fl_Group {} {open
+        xywh {0 25 529 395} resizable
+      } {
+        Fl_Box m_MainPreviewBox {
+          xywh {5 25 415 325} box EMBOSSED_FRAME labeltype NO_LABEL resizable
+        }
+        Fl_Text_Display m_MainPreviewText {selected
+          xywh {5 350 415 65}
+        }
+        Fl_Button m_EditLookBtn {
+          label {Edit Look}
+          xywh {425 26 64 64} align 160
+        }
+        Fl_Button m_EditFeelBtn {
+          label {Edit Feel}
+          xywh {425 91 64 64} align 160
+        }
+        Fl_Button m_DatabaseBtn {
+          label Database
+          xywh {425 156 64 64} align 160
+        }
+        Fl_Button m_BaseConfigBtn {
+          label {Base Config}
+          xywh {425 221 64 64} align 176
+        }
+        Fl_Button m_MenuBtn {
+          label Menu
+          xywh {425 286 64 64} align 32
+        }
+        Fl_Button m_ModulesBtn {
+          label Modules
+          xywh {425 351 64 64} align 32
+        }
+      }
+    }
+  }
+  Function {show_main_window()} {open return_type int
+  } {
+    code {m_MainWindow->show();} {}
+    code {return 1;} {}
+  }
+} 

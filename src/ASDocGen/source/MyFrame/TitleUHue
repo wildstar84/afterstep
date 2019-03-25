@@ -1,0 +1,6 @@
+<varlistentry id="options.TitleUHue">
+	<term>TitleUHue</term>
+	<listitem>
+		<para>Alias for TitleUnfocusedHue.</para>
+	</listitem>
+</varlistentry>
