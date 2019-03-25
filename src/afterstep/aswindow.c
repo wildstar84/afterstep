@@ -1408,7 +1408,7 @@ is_status_overlaping (ASStatusHints * above, ASStatusHints * below)
 					&& above->y + above->height > below->y);
 }
 
-inline Bool is_canvas_overlaping (ASCanvas * above, ASCanvas * below)
+static inline Bool is_canvas_overlaping (ASCanvas * above, ASCanvas * below)
 {
 	if (above == NULL)
 		return False;
@@ -1649,11 +1649,26 @@ ASWindow *get_next_window (ASWindow * curr_win, char *action, int dir)
 	if (Scr.Windows == NULL || curr_win == NULL)
 		return NULL;
 
+/*	--- JWT:(20190310):CHANGE NEXT 4 CODE LINES TO FOLLOWING 4  IN ORDER TO USE THE STACK
+		LIST FOR FINDING THE "NEXT" WINDOW INSTEAD OF THE CIRCULATE (<Ctrl-Alt-Tab>) 
+		WINDOW LIST.  THIS FUNCTION IS ONLY CALLED IN "ClickToFocus" MODE WHEN A
+		WINDOW IS DESTROYED/UNMAPPED.  THIS ENSURES THAT THE NEXT WINDOW (IF ANY)
+		JUST BELOW THE DESTROYED WINDOW GETS THE FOCUS (USUALLY THE LAST ONE FOCUSED)
+		INSTEAD OF A SEEMING "RANDOM" WINDOW JUMPING TO THE FRONT AND GETTING FOCUS!:
 	end_i = VECTOR_USED (*(Scr.Windows->circulate_list));
 	clients = VECTOR_HEAD (ASWindow *, *(Scr.Windows->circulate_list));
 
 	if (end_i <= 1)
 		return NULL;
+*/
+	end_i = VECTOR_USED (*(Scr.Windows->stacking_order)) - 1;
+	clients = VECTOR_HEAD (ASWindow *, *(Scr.Windows->stacking_order));
+
+	if (end_i < 1)
+		return NULL;
+
+/*	--- JWT:(20190310):REPLACE FOR-LOOP BELOW WITH FOLLOWING IF-BLOCK TO PROPERLY
+		TRAVERSE THE WINDOW STACK INSTEAD OF THE CIRCULATE LIST (SEE COMMENT ABOVE):
 	for (i = 0; i < end_i; ++i)
 		if (clients[i] == curr_win) {
 			if (i == 0 && dir < 0)
@@ -1663,6 +1678,20 @@ ASWindow *get_next_window (ASWindow * curr_win, char *action, int dir)
 			else
 				return clients[i + dir];
 		}
+*/
+	if (dir > 0) {
+		for (i = end_i; i >= 0; i--)
+		{
+			if (clients[i] == curr_win)
+				return i == 0 ? clients[end_i] : clients[i - 1];
+		}
+	} else {
+		for (i = 0; i <= end_i; i++)
+		{
+			if (clients[i] == curr_win)
+				return i == end_i ? clients[0] : clients[i + 1];
+		}
+	}
 
 	return NULL;
 }
@@ -1760,7 +1789,7 @@ Bool focus_window (ASWindow * asw, Window w)
 	 *
 	 * Take 2: disabled CurrentTime altogether as it screwes up focus handling
 	 * Basically if you use CurrentTime when there are still bunch of Events
-	 * in the queue, those evens will not have any effect if you try setting
+	 * in the queue, those events will not have any effect if you try setting
 	 * focus using their time, as X aready used its own friggin current time.
 	 * Don't ask, its a mess.
 	 * */
@@ -1770,6 +1799,16 @@ Bool focus_window (ASWindow * asw, Window w)
 				Scr.last_Timestamp;
 		LOCAL_DEBUG_OUT ("XSetInputFocus(window= %lX, time = %lu)", w, t);
 		XSetInputFocus (dpy, w, RevertToParent, t);
+
+		/* JWT:(20190323):ADDED NEXT 8 TO RE-TRY FAILED FOCUS DUE TO TIMING ISSUE? */
+		ASSync (False);
+		Window focus_return; int revert_to_return;
+		XGetInputFocus(dpy, &focus_return, &revert_to_return);
+
+		if (focus_return != w) { /* JWT:last_Timestamp FAILED, TRY AGAIN W/CurrentTime!: */
+			t = CurrentTime;
+			XSetInputFocus (dpy, w, RevertToParent, t);
+		}
 	}
 
 	ASSync (False);
@@ -1915,12 +1954,19 @@ Bool focus_active_window ()
 /* second version of above : */
 void focus_next_aswindow (ASWindow * asw)
 {
+/*	--- JWT:(20190310):CHGD. TO DO SAME AS focus_prev_aswindow() SINCE THIS IS ONLY CALLED
+		BY events.c:HandleUnmapNotify() WHEN A WINDOW IS UNMAPPED - NOW THAT WE USE THE
+		STACK LIST INSTEAD OF THE CIRCULATING LIST, WE ALWAYS WANT THE *PREVIOUS* WINDOW
+		IN THE STACK TO GET FOCUS.  (I'M NOT SURE WHY THAT FUNCTION CALLS THIS ONE WHEREAS
+		add_window.c:Destroy() CALLS focus_prev_aswindow()? - MAYBE THAT WAS PART OF THE PBM!)
 	ASWindow *new_focus = NULL;
 
 	if (get_flags (Scr.Feel.flags, ClickToFocus))
 		new_focus = get_next_window (asw, NULL, 1);
 	if (!activate_aswindow (new_focus, False, False))
 		hide_focus ();
+*/
+	focus_prev_aswindow(asw);
 }
 
 void focus_prev_aswindow (ASWindow * asw)
@@ -1928,8 +1974,20 @@ void focus_prev_aswindow (ASWindow * asw)
 	ASWindow *new_focus = NULL;
 
 	if (get_flags (Scr.Feel.flags, ClickToFocus))
-		new_focus = get_next_window (asw, NULL, -1);
-	if (!activate_aswindow (new_focus, False, False))
+	{
+	/* JWT:(20190311):CHGD. TO NEXT:	new_focus = get_next_window (asw, NULL, -1); */
+		new_focus = (Scr.Windows->focused && asw != Scr.Windows->focused)
+				? Scr.Windows->focused : get_next_window (asw, NULL, -1);
+	/* JWT:(20190310):CHGD. TO NEXT WHILE-LOOP+FOLLOWING IF-TEST:  if (!activate_aswindow (new_focus, False, False)) */
+		while (new_focus && new_focus != asw)
+		{
+		    if (activate_aswindow (new_focus, False, False))
+				break;
+
+			new_focus = get_next_window (new_focus, NULL, -1);
+		}
+	}
+	if (!new_focus || new_focus == asw)
 		hide_focus ();
 }
 
@@ -1952,23 +2010,22 @@ void warp_to_aswindow (ASWindow * asw, Bool deiconify)
  *********************************************************************************/
 ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 {
-	register int i;
-	register int dir = backwards ? -1 : 1;
-	int end_i;
-	ASWindow **clients;
-	int loop_count = 0;
-
 	if (list == NULL)
 		return NULL;
 
-	end_i = VECTOR_USED (*(list->circulate_list));
-	clients = VECTOR_HEAD (ASWindow *, *(list->circulate_list));
-
+	int end_i = VECTOR_USED (*(list->circulate_list));
 	if (end_i <= 1)
 		return NULL;
 
+	register int i;
+	register int dir = backwards ? -1 : 1;
+	int loop_count = 0;
+
+	ASWindow **clients = VECTOR_HEAD (ASWindow *, *(list->circulate_list));
+
 	if (list->warp_curr_index < 0) {	/* need to initialize warping : */
-		list->warp_curr_index = (dir > 0) ? 0 : end_i;
+		/* JWT:CHGD. TO NEXT 20180325 TO ENSURE AT LEAST ONE CHECK: list->warp_curr_index = (dir > 0) ? 0 : end_i; */
+		list->warp_curr_index = (dir > 0) ? 0 : end_i-1;
 		list->warp_user_dir = dir;
 		list->warp_init_dir = dir;
 		list->warp_curr_dir = dir;
@@ -1981,7 +2038,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 		list->warp_curr_dir = dir;
 	}
 
-	i = (dir > 0) ? 1 : end_i - 1;	/*list->warp_curr_index + dir */
+	/* JWT:CHGD TO NEXT 20180322: i = (dir > 0) ? 1 : end_i - 1;	*/ /* list->warp_curr_index + dir */
+	i = list->warp_curr_index;
 	do {
 		LOCAL_DEBUG_OUT ("checking i(%d)->end_i(%d)->dir(%d)->AutoReverse(%d)",
 										 i, end_i, dir, Scr.Feel.AutoReverse);
@@ -1998,12 +2056,13 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 				return NULL;
 		}
 
-		list->warp_curr_index = i;
-		if (!(ASWIN_HFLAGS (clients[i], AS_DontCirculate)) &&
+		/* JWT:CHGD TO NEXT 20180322 TO FIX TAB-THRU-WINDOWS: if (!(ASWIN_HFLAGS (clients[i], AS_DontCirculate)) && */
+		if (list->warp_curr_index != i && !(ASWIN_HFLAGS (clients[i], AS_DontCirculate)) &&
 				!(ASWIN_GET_FLAGS (clients[i], AS_Iconic)
 					&& get_flags (Scr.Feel.flags, CirculateSkipIcons))
 				&& (ASWIN_DESK (clients[i]) == Scr.CurrentDesk
 						|| get_flags (Scr.Feel.flags, AutoTabThroughDesks))) {
+			list->warp_curr_index = i;  /* JWT:MOVED HERE FROM ABOVE IF 20180322, SINCE TEST ADDED TO IF. */
 			return clients[i];
 		}
 		i += dir;

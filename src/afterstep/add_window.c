@@ -429,6 +429,7 @@ void Destroy (ASWindow * asw, Bool kill_client)
 	 */
 	if (AS_ASSERT (asw))
 		return;
+
 	LOCAL_DEBUG_CALLER_OUT ("asw(%p)->internal(%p)->data(%p)", asw,
 													asw->internal,
 													asw->internal ? asw->internal->data : NULL);
@@ -477,8 +478,8 @@ void Destroy (ASWindow * asw, Bool kill_client)
 	CheckWarpingFocusDestroyed (asw);
 	CheckGrabbedFocusDestroyed (asw);
 
-	if (asw == Scr.Windows->focused)
-		focus_prev_aswindow (asw);
+/*	JWT:20190311:REMOVED TO FIX FOCUS-PREV IF PREV. WINDOW JUST ICONIFIED!: if (asw == Scr.Windows->focused) */
+	focus_prev_aswindow (asw);
 
 	if (asw == Scr.Windows->ungrabbed)
 		Scr.Windows->ungrabbed = NULL;
