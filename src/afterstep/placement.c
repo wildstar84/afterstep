@@ -317,6 +317,7 @@ void apply_aswindow_moveresize (struct ASMoveResizeData *data)
 			rect.y = 0;
 			moveresize_canvas (asw->frame_canvas, data->curr.x, data->curr.y,
 												 data->curr.width, data->curr.height);
+#ifdef SHAPE
 			if (data->curr.width > data->last.width) {
 				if (get_flags (asw->frame_data->condense_titlebar, ALIGN_LEFT)
 						&& asw->tbar)
@@ -337,6 +338,7 @@ void apply_aswindow_moveresize (struct ASMoveResizeData *data)
 																 0, data->last.height, &rect, 1,
 																 ShapeUnion, Unsorted);
 			}
+#endif
 		}
 		moveresize_aswindow_wm (asw, data->curr.x, data->curr.y, new_width,
 														new_height, False);
