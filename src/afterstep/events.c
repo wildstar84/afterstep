@@ -1362,7 +1362,9 @@ void HandleButtonPress (ASEvent * event, Bool deffered)
 							if (Scr.Windows->focused != asw)
 								if ((focus_accepted =
 										 activate_aswindow (asw, False, False)))
-									eat_click = True;
+									/* JWT:NEXT CONDITION LINE ADDED 20180327 TO ALLOW FOCUS+MOVE IN ONE MOUSE MOTION */
+									if ((event->context & C_WINDOW) != 0)
+										eat_click = True;
 						} else if (Scr.Windows->focused != asw)
 							activate_window = True;
 						LOCAL_DEBUG_OUT ("eat_click = %d", eat_click);
