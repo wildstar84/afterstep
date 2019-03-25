@@ -6443,210 +6443,257 @@ AFTERIMAGE_LIBS="$AFTERIMAGE_LIBS -lm"
 
 
 TTF_INCLUDES=
-
-if test "x$with_ttf" = "xno"; then
-  have_ttf=disabled
+have_ttf=
+if test "$with_ttf" = no; then
+	have_ttf=disabled
 else
-  if test "x$ttf_includes" = "xno"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking headers required by TTF support" >&5
-$as_echo_n "checking headers required by TTF support... " >&6; }
-    if freetype-config --cflags >/dev/null  ;then
-	  present_incs="$CCFLAGS $x_includes";
-	  for l in `freetype-config --cflags` ;	do
-	    inc_found=no
-	    for p in `echo "$present_incs"` ; do
-		if test "x$l" = "x$p" ; then
-    		    inc_found=yes;
-		fi;
-		if test "x$l" = "x-I$p" ; then
-    		    inc_found=yes;
-		fi;
-	    done;
-	    if test "x$inc_found" != "xyes" ; then
-		TTF_INCLUDES="$TTF_INCLUDES $l" ;
-	    fi;
-	  done;
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TTF_INCLUDES" >&5
-$as_echo "$TTF_INCLUDES" >&6; }
-	  saved_CPPFLAGS=$CPPFLAGS
-	  saved_CFLAGS=$CFLAGS
-	  CPPFLAGS="$TTF_INCLUDES $CPPFLAGS"
-	  CFLAGS="$CFLAGS $TTF_INCLUDES $XPM_CFLAGS $JPEG_CFLAGS $PNG_CFLAGS $GIF_CFLAGS $TIFF_CFLAGS $SVG_CFLAGS $X_CFLAGS"
-	  have_ft2build=no
-	  for ac_header in ft2build.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "ft2build.h" "ac_cv_header_ft2build_h" "$ac_includes_default"
-if test "x$ac_cv_header_ft2build_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_FT2BUILD_H 1
-_ACEOF
- have_ft2build=yes
-fi
-
+	if test -z "$PKG_CONFIG"; then
+    		# Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
 done
+  done
+IFS=$as_save_IFS
 
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking freetype/freetype.h " >&5
-$as_echo_n "checking freetype/freetype.h ... " >&6; }
-	  have_ttf=no
-          have_freetype_freetype=no
-	  have_freetype=no
-	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <freetype/freetype.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "FT_Face" >/dev/null 2>&1; then :
-  have_freetype_freetype=yes
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; };{ $as_echo "$as_me:${as_lineno-$LINENO}: checking freetype.h" >&5
-$as_echo_n "checking freetype.h... " >&6; }; \
-                                             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <freetype.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "FT_Face" >/dev/null 2>&1; then :
-  have_freetype=yes
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-rm -f conftest*
 
 
-fi
-rm -f conftest*
+	fi
+	if test "$PKG_CONFIG" = "no" ; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if freetype2 is available" >&5
+$as_echo_n "checking if freetype2 is available... " >&6; }
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: pkg-config is not found. Cannot check for freetype2." >&5
+$as_echo "pkg-config is not found. Cannot check for freetype2." >&6; }
+		have_ttf=no
+	else
+		have_ttf=yes
+		pkg_modules="freetype2"
 
-	  if test "x$have_ft2build" = "xno" ; then
-    	  	if test "x$have_freetype_freetype" = "xyes" ; then
-			if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <freetype/freetype.h>
-                            	int main(){FT_Face f; return 0;}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  have_ttf=yes
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
 
-	  	elif test "x$have_freetype" = "xyes" ; then
-			if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <freetype.h>
-                            	int main(){FT_Face f; return 0;}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  have_ttf=yes
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
 
-	  	fi;
-	  elif test "x$have_freetype_freetype" = "xyes" ; then
-		if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ft2build.h>
-			    #include <freetype/freetype.h>
-                            int main(){FT_Face f; return 0;}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  have_ttf=yes
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
 
-	  elif test "x$have_freetype" = "xyes" ; then
-		if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ft2build.h>
-			#include <freetype.h>
-                        int main(){FT_Face f; return 0;}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  have_ttf=yes
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
 
-	  fi;
-    	  if test "x$have_ttf" = "xyes" ; then
-
-$as_echo "#define HAVE_FREETYPE 1" >>confdefs.h
-
-		if test "x$have_freetype_freetype" = "xyes" ; then
-
-$as_echo "#define HAVE_FREETYPE_FREETYPE 1" >>confdefs.h
-
-		fi;
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	  fi;
-	  CPPFLAGS=$saved_CPPFLAGS
-	  CFLAGS=$saved_CFLAGS
-    else
-		enable_ttf=no ;
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: none found" >&5
-$as_echo "none found" >&6; }
-		echo "You have to install FreeType libary in order to be able to use TTF fonts."
-        have_ttf=no
-    fi;
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
   else
-	TTF_INCLUDES=$ttf_includes
-
-$as_echo "#define HAVE_FREETYPE 1" >>confdefs.h
-
-    have_ttf=yes
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
   fi
-  if test "$have_ttf" = yes; then
-	  AFTERIMAGE_LIBS="`freetype-config --libs` $AFTERIMAGE_LIBS"
-  fi
-fi;
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+
+fi
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for TTF" >&5
+$as_echo_n "checking for TTF... " >&6; }
+
+if test -n "$PKG_CONFIG"; then
+    if test -n "$TTF_CFLAGS"; then
+        pkg_cv_TTF_CFLAGS="$TTF_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$pkg_modules\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$pkg_modules") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_TTF_CFLAGS=`$PKG_CONFIG --cflags "$pkg_modules" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+    fi
+else
+	pkg_failed=untried
+fi
+if test -n "$PKG_CONFIG"; then
+    if test -n "$TTF_LIBS"; then
+        pkg_cv_TTF_LIBS="$TTF_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$pkg_modules\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$pkg_modules") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_TTF_LIBS=`$PKG_CONFIG --libs "$pkg_modules" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+    fi
+else
+	pkg_failed=untried
+fi
 
 
+
+if test $pkg_failed = yes; then
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        TTF_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "$pkg_modules"`
+        else
+	        TTF_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "$pkg_modules"`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$TTF_PKG_ERRORS" >&5
+
+	have_ttf=no
+elif test $pkg_failed = untried; then
+	have_ttf=no
+else
+	TTF_CFLAGS=$pkg_cv_TTF_CFLAGS
+	TTF_LIBS=$pkg_cv_TTF_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	:
+fi
+
+		if test "x$have_ttf" = "xyes"; then
+
+$as_echo "#define HAVE_TTF 1" >>confdefs.h
+
+			AFTERIMAGE_LIBS="$TTF_LIBS $AFTERIMAGE_LIBS"
+		fi
+	fi
+fi
 
 
 
