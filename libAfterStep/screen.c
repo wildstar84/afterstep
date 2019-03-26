@@ -260,27 +260,36 @@ int ASErrorHandler (Display * dpy, XErrorEvent * event)
 {
 	char *err_text;
 
+	/* JWT:MOVED DOWN TO STOP SPAMMING .xsession_errors!
 	fprintf (stderr,
 					 "%s has encountered a problem interacting with X Windows :\n",
 					 MyName);
+	*/
+/* JWT:REMOVED 20190310 TO STOP MORE SPAMMING .xsession_errors! */
+#if 0
 	if (event && dpy) {
 		if (event->error_code == BadWindow && ASDefaultScr->Windows != NULL)
 			if (ASDefaultScr->on_dead_window)
 				if (ASDefaultScr->on_dead_window (event->resourceid))
 					return 0;
 
+		fprintf (stderr,
+					 "%s has encountered a problem interacting with X Windows :\n",
+					 MyName);
 		err_text = safemalloc (128);
 		strcpy (err_text, "unknown error");
 		XGetErrorText (dpy, event->error_code, err_text, 120);
 		fprintf (stderr, "      Request: %d,    Error: %d(%s)\n",
 						 event->request_code, event->error_code, err_text);
 		free (err_text);
+/* JWT:REMOVED 20180327 TO STOP SPAMMING .xsession_errors!  #ifndef __CYGWIN__ */
+/* JWT:COMMENTED OUT 20190310 (MOVED ABOVE): #if 0 */
 		fprintf (stderr, "      in resource: 0x%lX\n", event->resourceid);
-#ifndef __CYGWIN__
 		if (is_synchronous_request (event->request_code))
 			print_simple_backtrace ();
-#endif
+/* JWT:COMMENTED OUT 20190310 (MOVED BELOW):#endif */
 	}
+#endif
 	return 0;
 }
 
