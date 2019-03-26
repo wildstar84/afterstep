@@ -264,7 +264,6 @@ Bool get_gnome_autosave ()
 /******************************************************************************/
 void asdbus_EndSessionOk ();
 
-
 void asdbus_process_messages ()
 {
 /*	show_progress ("checking Dbus messages"); */
@@ -351,11 +350,16 @@ void asdbus_process_messages ()
 {
 };
 
+Bool get_gnome_autosave ()
+{
+	Bool autosave = False;
+	return autosave;
+}
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 #endif
-
 /*****************************************************************************/
 /* Gnome Session Manager's dbus Protocol :
 
@@ -388,6 +392,7 @@ use dbus__connection_send () to send it.
 
 */
 
+#ifdef HAVE_DBUS1
 static inline Bool set_sm_client_id (DBusMessageIter * iter,
 																		 const char *sm_client_id)
 {
@@ -399,11 +404,13 @@ static inline Bool set_sm_client_id (DBusMessageIter * iter,
 	dbus_message_iter_append_basic (iter, DBUS_TYPE_STRING, &sm_client_id);
 	return True;
 }
+#endif
 
 char *asdbus_RegisterSMClient (const char *sm_client_id)
 {
 	char *client_path = NULL;
 
+#ifdef HAVE_DBUS1
 #ifdef HAVE_DBUS_CONTEXT
 	if (ASDBus.session_conn) {
 		DBusMessage *message =
@@ -462,11 +469,13 @@ char *asdbus_RegisterSMClient (const char *sm_client_id)
 		}
 	}
 #endif
+#endif
 	return client_path;
 }
 
 void asdbus_UnregisterSMClient (const char *sm_client_path)
 {
+#ifdef HAVE_DBUS1
 #ifdef HAVE_DBUS_CONTEXT
 	if (ASDBus.session_conn && sm_client_path) {
 		DBusMessage *message =
@@ -501,6 +510,7 @@ void asdbus_UnregisterSMClient (const char *sm_client_path)
 		}
 	}
 #endif
+#endif
 }
 
 void asdbus_EndSessionOk ()
@@ -533,7 +543,7 @@ void asdbus_EndSessionOk ()
 #endif
 }
 
-
+#ifdef HAVE_DBUS1
 void *asdbus_SendSimpleCommandSync (ASDBusOjectDescr *descr, const char *command, int timeout)
 {
 	void *reply = NULL;
@@ -675,6 +685,7 @@ static Bool asdbus_LogoutGNOME (int mode, int timeout)
 #endif
 	return requested;
 }
+#endif
 
 Bool asdbus_Logout (ASDbusLogoutMode mode, int timeout)
 {
@@ -702,7 +713,11 @@ Bool asdbus_Logout (ASDbusLogoutMode mode, int timeout)
 
 Bool asdbus_GetCanLogout ()
 {
+#ifdef HAVE_DBUS1
 	return (ASDBus.kdeSessionVersion >= 4 || ASDBus.gnomeSessionPath != NULL);
+#else
+	return False;
+#endif
 }
 
 Bool asdbus_Shutdown (int timeout)
@@ -721,28 +736,48 @@ Bool asdbus_Shutdown (int timeout)
 
 Bool asdbus_GetCanShutdown ()
 {
+#ifdef HAVE_DBUS1
 	return (ASDBus.kdeSessionVersion >= 4
 	        || (ASDBus.gnomeSessionPath != NULL && asdbus_GetIndicator (&dbusSessionManager, "CanShutdown")));
+#else
+	return False;
+#endif
 }
 
 Bool asdbus_Suspend (int timeout)
 {
+#ifdef HAVE_DBUS1
 	return asdbus_SendSimpleCommandSyncNoRep (&dbusUPower, "Suspend", timeout);
+#else
+	return False;
+#endif
 }
 
 Bool asdbus_GetCanSuspend ()
 {
+#ifdef HAVE_DBUS1
 	return asdbus_GetIndicator (&dbusUPower, "SuspendAllowed");
+#else
+	return False;
+#endif
 }
 
 Bool asdbus_Hibernate (int timeout)
 {
+#ifdef HAVE_DBUS1
 	return asdbus_SendSimpleCommandSyncNoRep (&dbusUPower, "Hibernate", timeout);
+#else
+	return False;
+#endif
 }
 
 Bool asdbus_GetCanHibernate ()
 {
+#ifdef HAVE_DBUS1
 	return asdbus_GetIndicator (&dbusUPower, "HibernateAllowed");
+#else
+	return False;
+#endif
 }
 
 /*******************************************************************************
@@ -825,6 +860,7 @@ char* asdbus_GetConsoleSessionType (const char *session_id)
  *******************************************************************************/
 void asdbus_Notify (const char *summary, const char *body, int timeout)
 {
+#ifdef HAVE_DBUS1
 #ifdef HAVE_DBUS_CONTEXT
 	if (ASDBus.session_conn) {
 		DBusMessage *message = dbus_message_new_method_call  ("org.freedesktop.Notifications",
@@ -888,6 +924,7 @@ void asdbus_Notify (const char *summary, const char *body, int timeout)
 			}
 		}
 	}
+#endif
 #endif
 }
 
