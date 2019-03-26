@@ -1,128 +1,74 @@
-///
-///	This is the README file for the AfterStep 2.* series
-///
+This repository originated with the latest AfterStep source code taken 
+from the official Debian repository for version 2.2.12-12, March 24, 2019.
+($>apt-get source afterstep), which applied all 57 Debian patches to it, 
+therefore this source-tree ALREADY has these patches applied to it!
 
-You can find translated versions of this README in doc/languages.  If there's
-no version corresponding to your language please write it and send it to us!
-If your README is too different from this one please send us patches to
-update it.
+The purpose of this repository is two fold:
 
- INSTALL
-+-------+
+1)  Provide a much more recent source-tree that should actually build on 
+a modern Debian-based system, and perhaps others, than seems to be 
+available elsewhere on GitHub!
 
-Please see the INSTALL file for installation notes.
+2)  Fix Debian bug#925498 (reported by me) caused by the most recent 
+Debian patch (#57) so that it will both build AND include TrueType fonts 
+(the freefont2 library).  To build without TrueType fonts, simply 
+configure with "--with-ttf=no".
 
- LIBRARIES
-+---------+
+3)  To add all my own AfterStep patches to fix various annoyances, mostly 
+involving use of the "ClickToFocus" "feel option".  I use ClickToFocus, 
+having first learnt GUIs on M$-Windows-based systems and old habits die 
+hard!  ("ClickToFocus" means that when you click on a window with the 
+mouse, that window is moved on top of others and given the keyboard focus, 
+as opposed to "FocusFollowsMouse" where when you move the mouse over 
+another window, that window then gets focused).  I seem to recall that the  
+original developer of AfterStep was a Unix/"FocusFollowsMouse guy" and 
+therefore "ClickToFocus" did not get as much testing to catch these 
+annoyances?  Anyway, if you really appreciate the simplicity, but 
+elegant beauty of this old, lean, powerful and minutely-configurable 
+window-manager, and / or just need it's "Wharf" dockapp swallower / 
+launcher, but get annoyed by it's quirks when using "ClickToFocus" 
+(like me), then download, build, and install it from here!  All other 
+sources I am aware of on GitHub are many years old and it's no longer 
+downloadable from the official website:  http://afterstep.org/, and 
+Sasha's no longer developing it.
 
-The following libraries are not necessarily required to run and enjoy
-AfterStep however, support for them is included within AfterStep and its
-various Modules.
+Anway, if you just want a good, up-to-date AfterStep source-tree to 
+build but without my patches, simply download, do a:
 
- o  xpm		(ftp://metalab.unc.edu/pub/Linux/libs/X/)
- o  jpeg	(http://www.ijg.org/)
- o  png 	(http://www.libpng.org/pub/png/libpng.html)
+$>find . -name "*.org" -print
 
-If you use a package management system (like those provided by distributions
-such as RedHat, Mandrake, Debian, etc.) you will need to get the appropriate
-<libname>-devel package and not the actual source code mentioned above.
+Then copy each one over it's corresponding file (without that extension), 
+and build a stock AfterStep in all it's original glory, warts and all!
 
- THEMES
-+------+
+See the file "README.org" for their actual README (which is very dated)!
 
-Themes are a simple 3 1/2 step procedure:
-	1/2) mkdir ~/GNUstep/Library/AfterStep/themes
-		(if it doesn't already exist    ^ )
-	1) download <themename>.tar.gz into the above dir (or mv it into it)
-	2) Update menu (start->Desktop->Update startmenu)
-	3) Select the theme from the menu (start->Desktop->Theme->)
+Here's some notes on how I build:
 
+$>git clone git://github.com/wildstar84/afterstep afterstep-2.2.12 ~/afterstep-src
 
- HINTS
-+------+
+$>export CFLAGS="-march=native -O2"
 
-Several "looks" (theme-ish) are included with the distribution.  Any of
-these can be started by selecting the name of the look from the menu.
+$>cd ~/afterstep-src
 
-	(startmenu)->Desktop->Looks->*
+#THE "helpcommand" IS OPTIONAL FOR HANDLING MANPAGES FOR APPLICATIONS WHEN [HELP] FUNCTION CALLED:
+#CHANGE "/usr/local/bin/aterm TO YOUR PREFERRED TERMINAL APP.
+#FOR SOME STUPID REASON THIS IS NOT CONFIGURABLE, BUT MUST BE COMPILED IN TO WORK?!
 
-There are several "feels" (key bindings and window reactions), background
-Pictures, and Animations to try out as well.  These all work the same way,
-by selecting them from the menu under Desktop. But if you want to use
-*different* look & feel files for *each* desktop, just tell that to
-./configure.
+$>./configure --prefix=/usr/local --enable-alsa --with-helpcommand="/usr/local/bin/aterm -e man"
 
-If you wish to change or make additions to the start menu, you will need to
-first create the file, either under the share tree or in a created start dir
-tree in the users ~/GNUstep/Library/AfterStep/start tree, then inform AfterStep
-about the menu change by.
+$>make -j2
 
-	(startmenu)->Desktop->Update startmenu
+You should get at least 1 warning (harmless):
 
- TOOLS
-+------+
-
-AfterStep has a few tools to play with which are in the tools/ directory.
-The "Uninstall-Old-AfterStep" is a script to use to remove the old binaries
-of 1.3.x and 1.4.x binaries, man pages and documents.  Simply read the top
-portion of this script to find the usage.  Without any options, it will only
-remove the core afterstep files, leaving the apps that used to be shipped
-with the releases.
-
- BUGS
-+----+
-
-The "bughint" file can be run when finding and reporting bugs.  Please then
-mail this plus any other relevant info (not a complete core file, please!) to
-as-users@afterstep.org, after subscribing to this list first .
-
-Both "makeasclean" and "makeaspatch" are used to clean out the source tree and
-making patches to the distribution (in a proper format).
-
- FAQ
-+----+
-
-Now before asking any questions, be sure to read the FAQ that is included
-in this distribution by clicking on the top Wharf button, or selecting
-AfterStepDoc from the menu.
-
- SITES
-+------+
-
-Further information	:	www.afterstep.org
-New development versions:	https://github.com/sashavasko/afterstep-devel
-Help			:	mail as-users@lists.afterstep.org
-       after subscribing:	mail as-users-request@lists.afterstep.org
-				subject: subscribe
-       or visit http://lists.afterstep.org/listinfo.cgi/as-users-afterstep.org
-Bugs			:	mail as-bugs@afterstep.org
-Chat			:	#afterstep on FreeNode
-Accessing FreeNode can be done by connecting to a random FreeNode irc server:
-	irc.freenode.net or pick one from http://freenode.net/irc_servers.shtml
+In file included from import.c:106:0:
+/usr/include/librsvg-2.0/librsvg/rsvg.h:237:12: note: declared here
+ GdkPixbuf *rsvg_pixbuf_from_file_at_size    (const gchar * file_name, gint width, gint height,
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ pixmap.c
 
 
- TODO
-+------+
+$>CLOSE DOWN AfterStep/X (go to a console)
 
-In TODO/ you'll find stuff to be put in.  Feel free to add this to this version
-: debug unreleased/ or unstable/.  Please also translate this README file to
-your language if it hasn't been done yet.
+$>sudo make install
 
-
- LOBBYING
-+--------+
-
-If you happen to run AfterStep from a Debian package on a Debian distribution,
-you might want to install the "popularity-contest" package so AfterStep will be
-kept as the most often installed window managers and will thus be present on
-the first disks of the CD and DVD sets.  You can install the
-"popularity-contest" package by entering the following command at the prompt :
-apt-get install popularity-contest
-
-
- MAINTAINERS
-+------------+
-
-Check out the TEAM file.
-
-2004-2012
+$>RESTART X, ENJOY AFTERSTEP!
