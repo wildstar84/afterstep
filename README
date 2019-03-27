@@ -3,7 +3,7 @@ from the official Debian repository for version 2.2.12-12, March 24, 2019.
 ($>apt-get source afterstep), which applied all 57 Debian patches to it, 
 therefore this source-tree ALREADY has these patches applied to it!
 
-The purpose of this repository is two fold:
+The purpose of this repository is three-fold:
 
 1)  Provide a much more recent source-tree that should actually build on 
 a modern Debian-based system, and perhaps others, than seems to be 
@@ -54,7 +54,7 @@ $>cd ~/afterstep-src
 #CHANGE "/usr/local/bin/aterm TO YOUR PREFERRED TERMINAL APP.
 #FOR SOME STUPID REASON THIS IS NOT CONFIGURABLE, BUT MUST BE COMPILED IN TO WORK?!
 
-$>./configure --prefix=/usr/local --enable-alsa --with-helpcommand="/usr/local/bin/aterm -e man"
+$>./configure --prefix=/usr/local --enable-alsa
 
 $>make -j2
 
