@@ -2005,16 +2005,13 @@ void toggle_page_func_handler (FunctionData * data, ASEvent * event,
 void gethelp_func_handler (FunctionData * data, ASEvent * event,
 													 int module)
 {
-	if (event->client != NULL && ASWIN_RES_NAME (event->client) != NULL) {
-		/* JWT:CHGD. TO NEXT 3 TO ALLOW HELPCOMMAND TO BE OVERRIDDEN BY ENVIRONMENT VARIABLE: char *realfilename = PutHome (HELPCOMMAND); */
-		char *ashelpcommand = getenv ("ASHELPCOMMAND");
-		char *realfilename = (ashelpcommand != NULL) ? PutHome (ashelpcommand)
-				: PutHome (HELPCOMMAND);
-
-		spawn_child (realfilename, -1, -1, NULL, None, C_NO_CONTEXT, True,
-								 False, ASWIN_RES_NAME (event->client), NULL);
-		free (realfilename);
-	}
+	if (event->client != NULL)
+		if (ASWIN_RES_NAME (event->client) != NULL) {
+			char *realfilename = PutHome (HELPCOMMAND);
+			spawn_child (realfilename, -1, -1, NULL, None, C_NO_CONTEXT, True,
+									 False, ASWIN_RES_NAME (event->client), NULL);
+			free (realfilename);
+		}
 }
 
 void wait_func_handler (FunctionData * data, ASEvent * event, int module)
