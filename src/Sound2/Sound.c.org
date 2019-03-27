@@ -51,8 +51,8 @@ void proc_message (send_data_type type, send_data_type *body);
 int as_snd2_init_stg1();
 int as_snd2_init_stg2();
 int as_snd2_waveheader(char *WaveFile);
-int as_snd2_playsound(int evend_ID);
-void as_snd2_segv_cb(int);
+int as_snd2_playsound(const char *SoundName);
+int as_snd2_segv_cb();
 void as_snd2_error();
 
 // ?
@@ -211,11 +211,8 @@ int as_snd2_waveheader(char *WaveFile)
     return 1;
 }
 
-int as_snd2_playsound(int event_ID)
+int as_snd2_playsound(const char *SndName)
 {
-	if (event_ID < 0 || event_ID >= AFTERSTEP_EVENTS_NUM)
-	    return 0;
-
     // Lets play some sound now!
     
     char *SFbuffer;
@@ -224,22 +221,39 @@ int as_snd2_playsound(int event_ID)
     const char *SndFname;
     char SndFullname[200];
     
-    if (CONF->debug)  fprintf(stdout,"***SNDNow: %i: %d\n",SNDPlayNow, event_ID);
+    fprintf(stdout,"***SNDNow: %i\n",SNDPlayNow);
     
     if (SNDPlayNow == 1) 
     { 
-        if (CONF->debug) fprintf(stdout,"***Already Playing!***\n");
+        fprintf(stdout,"***Already Playing!***\n");
         return 0;
     }
-
-    SndFname = CONF->sounds[event_ID];
+    
+    if (SndName == "shade")
+    { SndFname = CONF->sounds[7]; }
+    else if (SndName == "iconic")
+    { SndFname = CONF->sounds[5]; }
+    else if (SndName == "sticky")
+    { SndFname = CONF->sounds[9]; }
+    else {
+      // No Sound for this event.
+      return 0;
+    }
+    
+    if (SndName == "sticky")
+    { SndFname = "unmapped"; }
+    if (SndName == "viewport")
+    { SndFname = "unmapped"; }
+    if (SndName == "focus")
+    { SndFname = "unmapped"; }
     
     /*
       If a sound option isnt defined in the conf file,
       we need to set it to something, else fopen will
       cause a segfault.
     */
-    if (SndFname == NULL)  SndFname = "unmapped";
+    if (SndFname == NULL)
+    { SndFname = "unmapped"; }
     
     SNDPlayNow = 1;
     
@@ -253,45 +267,37 @@ int as_snd2_playsound(int event_ID)
     // 7 = SHADE
     // 9 = STUCK
     //CONF->sounds[7]
-
-	/* JWT:NOW ALLOW FOR USER-DEFINED AUDIO-PLAYING PROGRAM: */
-	char *assoundplayer = getenv ("ASSOUNDPLAYER");
-	char *realfilename = (assoundplayer != NULL) ? PutHome (assoundplayer)
-			: PutHome (SOUNDPLAYER);
-
-	if (realfilename != NULL) {
-		spawn_child (realfilename, -1, -1, NULL, None, 0, True, False, SndFullname, NULL);
-		free (realfilename);
-	} else {
-		SNDFile = fopen(SndFullname,"rb");
-		if (SNDFile == NULL) { fprintf(stdout,"Failed to open Sound File\n"); return 0; }
-
-	    /*
-	       Need to Grab Header info to pass into stage 2 Init:
-	       Sample Rate, Channels
-
-		THEN continue on (if no errors from stage 2.    
-		*/
-
-		snd_pcm_prepare(SND2devS.pcm_handle);    
-
-		if (CONF->debug)  fprintf(stdout,"Play Sound: %s: fid=(%s)\n", SndFname, SndFullname);
-
-		fseek(SNDFile,0,SEEK_END); // We're trying to get the full file size here...
-		SNDFileSize = ftell(SNDFile);
-		rewind(SNDFile); // Now that we got size, go back to beginning
-		fseek(SNDFile,128,SEEK_SET); // we're skipping first 128 bytes. its unplayable (header info)
     
-		SNDFileFrames = snd_pcm_bytes_to_frames(SND2devS.pcm_handle,SNDFileSize);
+    SNDFile = fopen(SndFullname,"rb");
+    if (SNDFile == NULL) { fprintf(stdout,"Failed to open Sound File\n"); return 0; }
+
+    /*
+       Need to Grab Header info to pass into stage 2 Init:
+       Sample Rate, Channels
+       
+       THEN continue on (if no errors from stage 2.    
+    */
+
+//    if (CONF->debug) { fprintf(stdout,"Prepare To Play!...\n"); }
+    snd_pcm_prepare(SND2devS.pcm_handle);    
+
+    fprintf(stdout,"Play Sound: %s\n",SndName);
     
-		SFbuffer = (char*)malloc(SNDFileSize);
-		while ((SNDFileRead = fread(SFbuffer,4,SNDFileFrames,SNDFile)) > 0)
-		{
-			snd_pcm_writei(SND2devS.pcm_handle,SFbuffer,SNDFileFrames);
-		}
+    fseek(SNDFile,0,SEEK_END); // We're trying to get the full file size here...
+    SNDFileSize = ftell(SNDFile);
+    rewind(SNDFile); // Now that we got size, go back to beginning
+    fseek(SNDFile,128,SEEK_SET); // we're skipping first 128 bytes. its unplayable (header info)
+    
+    SNDFileFrames = snd_pcm_bytes_to_frames(SND2devS.pcm_handle,SNDFileSize);
+    
+    SFbuffer = (char*)malloc(SNDFileSize);
+    while ((SNDFileRead = fread(SFbuffer,4,SNDFileFrames,SNDFile)) > 0)
+    {
+          snd_pcm_writei(SND2devS.pcm_handle,SFbuffer,SNDFileFrames);
     }
 //    SNDPlayNow = 0;
-
+    
+    
     return 1;
 }
 
@@ -341,16 +347,13 @@ void proc_message(send_data_type type, send_data_type *body)
         if (res == WP_DataCreated)
         {
             code = EVENT_WindowAdded;
-            if (CONF->debug)  fprintf(stdout,"---EVENT_WindowAdded(%d)\n", code);
         }
         else if (res == WP_DataChanged)
         {
             if (type == M_FOCUS_CHANGE)
             {	
                 show_activity("FOC_CHANGE"); 
-                code = EVENT_WindowActivated;
-                if (CONF->debug)  fprintf(stdout,"---(focus) EVENT_WindowActivated(%d)\n", code);
-                // as_snd2_playsound("focus");
+                as_snd2_playsound("focus");
             }
             
             StateChange = wd->state_flags ^ old_state;
@@ -368,39 +371,33 @@ void proc_message(send_data_type type, send_data_type *body)
                 */
                 if (StateChange & AS_Shaded)
                 {
-                    //show_activity("STATE: Shade");
-                    code = EVENT_WindowShaded;
-                    // as_snd2_playsound("shade");
+                    show_activity("STATE: Shade");
+                    as_snd2_playsound("shade");
                 }
                 if (StateChange & AS_Iconic)
                 {	
-                    //show_activity("STATE: Iconic"); 
-                    code = EVENT_WindowIconified;
-                    // as_snd2_playsound("iconic");
+                    show_activity("STATE: Iconic"); 
+                    as_snd2_playsound("iconic");
                 }
                 if (StateChange & AS_Sticky)
                 {	
-                    //show_activity("STATE: Sticky");
-                    code = EVENT_WindowStuck;
-                    // as_snd2_playsound("sticky");
+                    show_activity("STATE: Sticky");
+                    as_snd2_playsound("sticky");
                 }
                 if (StateChange & AS_MaximizedY)
                 {
-                    //show_activity("STATE: MaximizedY");
-                    code = EVENT_WindowMaximized;
-                    // as_snd2_playsound("maximized");
+                    show_activity("STATE: MaximizedY");
+                    as_snd2_playsound("maximized");
                 }
                 // Uncertain Flags
                 // > libAfterStep/clientprops.h
                 if (StateChange & AS_Withdrawn)
                 {
                     show_activity("STATE: Withdrawn");
-                    code = EVENT_WindowIconified;
                 }
                 if (StateChange & AS_Dead)
                 {
                     show_activity("STATE: Dead");
-                    code = EVENT_WindowDestroyed;
                 }
                 if (StateChange & AS_Layer)
                 {
@@ -422,15 +419,14 @@ void proc_message(send_data_type type, send_data_type *body)
     {
         // Getting this message when opening new windows/terms.
         show_activity("-STATE: VIEWPORT CHANGE");
-        code = EVENT_DeskViewportChanged;
-        // as_snd2_playsound("viewport");
+        as_snd2_playsound("viewport");
     }
     if (type & M_STACKING_ORDER)
     {                          
         // Layering. This and Foc Change occur on menu opening. 
         show_activity("-STATE[2]: Stack Order");
     }
-    as_snd2_playsound(code);
+                                                        
     
     SNDPlayNow = 0;
 }
@@ -444,7 +440,7 @@ GetBaseOptions (const char *filename/* unused*/)
 void
 GetOptions (const char *filename)
 {
-    if (CONF->debug)  fprintf(stdout,"*****GETOPTIONS START(%s)******\n", filename);
+    if (CONF->debug) { fprintf(stdout,"*****GETOPTIONS START******\n"); }
     SoundConfig *config = ParseSoundOptions (filename,MyName);
 
     int i ;
@@ -466,10 +462,10 @@ GetOptions (const char *filename)
     {
         CONF->path = mystrdup(config->path);
     }
-    if (config->debug)
+    if (config->debug != NULL)
     {
         CONF->debug = config->debug;
-        config->debug = 0;
+        config->debug = NULL;
     }
         
     for( i = 0 ; i < AFTERSTEP_EVENTS_NUM ; ++i ) 
@@ -494,10 +490,10 @@ GetOptions (const char *filename)
     if (CONF->debug) { fprintf(stdout,"******GETOPTIONS END*****\n"); }
 }
  
-void as_snd2_segv_cb(int sig)
+int as_snd2_segv_cb()
 {
     //
-    fprintf(stdout,"Looks like a Seg Fault tried to Occur(%d)\n", sig);
+    fprintf(stdout,"Looks like a Seg Fault tried to Occur\n");
     exit(0);
 }
 void as_snd2_error()
@@ -505,3 +501,5 @@ void as_snd2_error()
     // If we're here.. a fatal error occurred.
     
 }
+
+
