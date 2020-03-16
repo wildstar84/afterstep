@@ -94,6 +94,7 @@
 #define MAGIC_WHARF_FOLDER    0xA38AF01D
 
 struct ASWharfFolder;
+struct ASWharfButton;
 
 typedef struct ASSwallowed {
 	ASCanvas *normal, *iconic;
@@ -127,6 +128,10 @@ typedef struct ASWharfButton {
 
 	struct ASWharfFolder *folder;
 	struct ASWharfFolder *parent;
+	struct ASWharfButton *btnNorth;  /* JWT:LINKS TO "NEXT" BUTTON IN EACH DIRECTION: */
+	struct ASWharfButton *btnSouth;  /* TO ALLOW ARROW-KEY TRAVERSAL. */
+	struct ASWharfButton *btnWest;
+	struct ASWharfButton *btnEast;
 } ASWharfButton;
 
 typedef struct ASWharfFolder {
@@ -184,6 +189,10 @@ typedef struct ASWharfState {
 	int buttons_render_pending;
 
 	ASWharfButton *focused_button;
+	ASWharfButton *prev_focused_button;  /* JWT:PREVIOUSLY FOCUSED BUTTON (FOR KB-FOCUSING). */
+	Bool isFocused;                      /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
+	Window focus_return;                 /* JWT:SAVE WHARF'S MAIN X FOCUS WINDOW: */
+	int revert_to_return;
 
 	FunctionData *default_action[Button5];
 
@@ -198,8 +207,8 @@ Atom _AS_WHARF_CLOSE = None;
 
 #define WHARF_BUTTON_EVENT_MASK   (ButtonReleaseMask |\
                                    ButtonPressMask | LeaveWindowMask | EnterWindowMask |\
-                                   StructureNotifyMask | SubstructureRedirectMask )
-#define WHARF_FOLDER_EVENT_MASK   (StructureNotifyMask)
+                                   StructureNotifyMask | SubstructureRedirectMask | KeyPressMask | KeyReleaseMask)
+#define WHARF_FOLDER_EVENT_MASK   (StructureNotifyMask | KeyPressMask | KeyReleaseMask | FocusChangeMask)
 
 
 void HandleEvents ();
@@ -221,7 +230,7 @@ void withdraw_wharf_folder (ASWharfFolder * aswf);
 static inline void withdraw_wharf_subfolders (ASWharfFolder * aswf);
 void on_wharf_moveresize (ASEvent * event);
 void destroy_wharf_folder (ASWharfFolder ** paswf);
-void on_wharf_pressed (ASEvent * event);
+void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb);
 void release_pressure (int button);
 Bool check_pending_swallow (ASWharfFolder * aswf);
 void exec_pending_swallow (ASWharfFolder * aswf);
@@ -236,6 +245,7 @@ Bool render_wharf_button (ASWharfButton * aswb);
 void set_wharf_clip_area (ASWharfFolder * aswf, int x, int y);
 void set_withdrawn_clip_area (ASWharfFolder * aswf, int x, int y,
 															unsigned int w, unsigned int h);
+void press_wharf_button (ASWharfButton * aswb, int state);
 void change_button_focus (ASWharfButton * aswb, Bool focused);
 static Bool check_app_click (ASWharfButton * aswb, XButtonEvent * xbtn);
 void DeadPipe (int);
@@ -714,6 +724,8 @@ void process_message (send_data_type type, send_data_type * body)
 void DispatchEvent (ASEvent * event)
 {
 	static Bool root_pointer_moved = True;
+	KeySym ks;
+	static char buf[10], n;
 
 	SHOW_EVENT_TRACE (event);
 
@@ -728,22 +740,135 @@ void DispatchEvent (ASEvent * event)
 	case ConfigureNotify:
 		on_wharf_moveresize (event);
 		break;
-	case KeyPress:
-	case KeyRelease:
+	case KeyPress:  /* JWT:HANDLE KEYBOARD NAVIGATION: */
+		n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+		if (!WharfState.focused_button) {
+			int firstbtn = get_flags (WharfState.root_folder->flags, ASW_ReverseOrder)
+				? WharfState.root_folder->buttons_num - 1 : 0;
+		    if (firstbtn >= 0)
+				WharfState.focused_button = &(WharfState.root_folder->buttons[firstbtn]);
+		}
+		if (WharfState.focused_button) {
+			ASWharfButton * curfocusbtn = WharfState.focused_button;
+			switch (ks) {
+		    case XK_Left:
+		      if (WharfState.focused_button->btnWest != NULL) {
+				change_button_focus (curfocusbtn, False);
+				change_button_focus (curfocusbtn->btnWest, True);
+		      }
+		      break;
+		    case XK_Right:
+		      if (WharfState.focused_button->btnEast != NULL) {
+				change_button_focus (curfocusbtn, False);
+				change_button_focus (curfocusbtn->btnEast, True);
+		      }
+		      break;
+		    case XK_Up:
+		      if (WharfState.focused_button->btnNorth != NULL) {
+				change_button_focus (curfocusbtn, False);
+				change_button_focus (curfocusbtn->btnNorth, True);
+		      }
+		      break;
+		    case XK_Down:
+		      if (WharfState.focused_button->btnSouth != NULL) {
+				change_button_focus (curfocusbtn, False);
+				change_button_focus (curfocusbtn->btnSouth, True);
+		      }
+		      break;
+			case XK_Return:
+				if (WharfState.focused_button) {
+					press_wharf_button (WharfState.focused_button, event->x.xbutton.state);
+					release_pressure (1);
+					ASWharfButton *aswb = WharfState.focused_button;
+					if (aswb->swallowed) {
+						/* focus_window (NULL, w); */
+						Time t = Scr.last_Timestamp;
+						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
+						event->w = aswb->swallowed->current->w;
+						event->x.xkey.window = aswb->swallowed->current->w;
+						XSendEvent (dpy, aswb->swallowed->current->w, False,
+								KeyPressMask, &(event->x));
+						/* JWT:NOW PUT FOCUS BACK ON "WHARF"! */
+						sleep_a_millisec (100);
+						t = CurrentTime;
+						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+					}
+				}
+				break;
+			case XK_Escape:
+				if (WharfState.focused_button) {
+					ASWharfButton * curfocusbtn = WharfState.focused_button;
+					if (curfocusbtn->folder
+							&& get_flags (curfocusbtn->folder->flags, ASW_Mapped))
+						withdraw_wharf_folder (curfocusbtn->folder);
+					else if (curfocusbtn->parent
+							&& curfocusbtn->parent != WharfState.root_folder
+							&& get_flags (curfocusbtn->parent->flags, ASW_Mapped))
+						withdraw_wharf_folder (curfocusbtn->parent);
+				}
+				break;
+			default:  /* JWT:PASS OTHER USEFUL KEY-DOWN EVENTS TO SWALLOWED WIDGETS: */
+				{
+					ASWharfButton *aswb = NULL;
+					if (WharfState.focused_button)
+						aswb = WharfState.focused_button;
+					if (! aswb) {
+						ASMagic *obj = fetch_object (event->w);
+						if (obj && obj->magic == MAGIC_WHARF_BUTTON)
+							aswb = (ASWharfButton *) obj;
+					}
+					if (aswb) {
+						if (aswb->swallowed) {
+							/* focus_window (NULL, w); */
+							Time t = Scr.last_Timestamp;
+							XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
+							event->w = aswb->swallowed->current->w;
+							event->x.xkey.window = aswb->swallowed->current->w;
+							XSendEvent (dpy, aswb->swallowed->current->w, False,
+									KeyPressMask, &(event->x));
+							/* JWT:NOW PUT FOCUS BACK ON "WHARF"! */
+							sleep_a_millisec (100);
+							t = CurrentTime;
+							XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+						} else if (buf[0]) {
+							if (buf[0] == '1' || buf[0] == 'l')
+								press_wharf_button (aswb, event->x.xbutton.state);
+							else if (buf[0] == '3' || buf[0] == 'r')
+								on_wharf_pressed (event, Button3, aswb);
+						}
+					}
+				}
+			}
+		}
+		break;
+	case KeyRelease:  /* JWT:FIXED: WAS NEVER BEING TRIGGERED (ADDED MASKS)! */
 		{
-			ASMagic *obj = fetch_object (event->w);
-			if (obj && obj->magic == MAGIC_WHARF_BUTTON) {
-				ASWharfButton *aswb = (ASWharfButton *) obj;
-				if (aswb->swallowed) {
+			ASWharfButton *aswb = NULL;
+			if (WharfState.focused_button)
+				aswb = WharfState.focused_button;
+			if (! aswb) {
+				ASMagic *obj = fetch_object (event->w);
+				if (obj && obj->magic == MAGIC_WHARF_BUTTON)
+					aswb = (ASWharfButton *) obj;
+			}
+			if (aswb) {
+				if (aswb->swallowed) {  /* JWT:PASS OTHER USEFUL KEY-UP EVENTS TO SWALLOWED WIDGETS: */
 					event->x.xkey.window = aswb->swallowed->current->w;
 					XSendEvent (dpy, aswb->swallowed->current->w, False,
-											KeyPressMask | KeyReleaseMask, &(event->x));
+											KeyReleaseMask, &(event->x));
+				} else if (buf[0]) {  /* JWT:SIMULATE THE 3 MAIN MOUSE BUTTONS W/KEYBOARD SHORTCUTS: */
+					if (buf[0] == '1' || buf[0] == 'l')
+						release_pressure (1);
+					else if (buf[0] == '2' || buf[0] == 'm')
+						release_pressure (2);
+					else if (buf[0] == '3' || buf[0] == 'r')
+						release_pressure (3);
 				}
 			}
 		}
 		break;
 	case ButtonPress:
-		on_wharf_pressed (event);
+		on_wharf_pressed (event, 0, NULL);
 		break;
 	case ButtonRelease:
 		release_pressure (event->x.xbutton.button);
@@ -765,8 +890,10 @@ void DispatchEvent (ASEvent * event)
 		break;
 	case EnterNotify:
 		if (event->x.xcrossing.window == Scr.Root) {
+/* JWT: DON'T NEED AND IS VISUALLY ANNOYING: 
 			if (WharfState.focused_button)
 				change_button_focus (WharfState.focused_button, False);
+*/
 			withdraw_active_balloon ();
 			break;
 		}
@@ -777,12 +904,19 @@ void DispatchEvent (ASEvent * event)
 				change_button_focus (WharfState.focused_button, False);
 			if (obj != NULL && obj->magic == MAGIC_WHARF_BUTTON) {
 				ASWharfButton *aswb = (ASWharfButton *) obj;
-				on_astbar_pointer_action (aswb->bar, 0,
-																	(event->x.type == LeaveNotify),
-																	root_pointer_moved);
+				on_astbar_pointer_action (aswb->bar, 0, (event->x.type == LeaveNotify),
+						root_pointer_moved);
 				root_pointer_moved = False;
 				if (event->x.type == EnterNotify)
+				{
 					change_button_focus (aswb, True);
+					if (WharfState.isFocused && aswb->swallowed) {
+						/* JWT:NOW PUT FOCUS BACK ON "WHARF"! */
+						sleep_a_millisec (100);
+						Time t = CurrentTime;
+						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+					}
+				}
 			}
 		}
 		break;
@@ -843,6 +977,26 @@ void DispatchEvent (ASEvent * event)
 			update_wharf_folder_styles (WharfState.root_folder, True);
 		}
 		break;
+	case FocusIn:  /* JWT:(RE)HIGHLIGHT A BUTTON WHEN WHARF TAKES KEYBOARD FOCUS: */
+		if (! WharfState.focused_button && WharfState.prev_focused_button)
+			WharfState.focused_button = WharfState.prev_focused_button;
+		if (! WharfState.focused_button) {
+			int firstbtn = get_flags (WharfState.root_folder->flags, ASW_ReverseOrder)
+					? WharfState.root_folder->buttons_num - 1 : 0;
+			if (firstbtn >= 0)
+				WharfState.focused_button = &(WharfState.root_folder->buttons[firstbtn]);
+		}
+		if (WharfState.focused_button)
+			change_button_focus (WharfState.focused_button, True);
+
+		/* SAVE "WHARF WINDOW" THAT GETS FOCUS ON FOCUS IN!: */
+		XGetInputFocus(dpy, &WharfState.focus_return, &WharfState.revert_to_return);
+		WharfState.isFocused = True;
+		break;
+	case FocusOut:  /* JWT:UNHIGHLIGHT THE KB-FOCUSED BUTTON WHEN WHARF LOOSES KB FOCUS: */
+		if (WharfState.focused_button)
+			change_button_focus (WharfState.focused_button, False);
+		WharfState.isFocused = False;
 	default:
 #ifdef XSHMIMAGE
 		LOCAL_DEBUG_OUT
@@ -1133,8 +1287,7 @@ ASTBarData *build_wharf_button_tbar (ASWharfButton * aswb,
 /*************************************************************************/
 /* Wharf folders :                                                       */
 
-ASWharfFolder *create_wharf_folder (int button_count,
-																		ASWharfButton * parent)
+ASWharfFolder *create_wharf_folder (int button_count, ASWharfButton * parent)
 {
 	ASWharfFolder *aswf = NULL;
 	if (button_count > 0) {
@@ -1146,6 +1299,10 @@ ASWharfFolder *create_wharf_folder (int button_count,
 		while (--i >= 0) {
 			aswf->buttons[i].magic = MAGIC_WHARF_BUTTON;
 			aswf->buttons[i].parent = aswf;
+			aswf->buttons[i].btnNorth = NULL;  /* JWT:INITIALIZE OUR NEW BUTTON LINKS!: */
+			aswf->buttons[i].btnSouth = NULL;
+			aswf->buttons[i].btnWest = NULL;
+			aswf->buttons[i].btnEast = NULL;
 		}
 		aswf->parent = parent;
 	}
@@ -1689,7 +1846,10 @@ void change_button_focus (ASWharfButton * aswb, Bool focused)
 	if (focused)
 		WharfState.focused_button = aswb;
 	else if (WharfState.focused_button == aswb)
+	{
+		WharfState.prev_focused_button = WharfState.focused_button;
 		WharfState.focused_button = NULL;
+	}
 }
 
 Bool update_wharf_button_styles (ASWharfButton * aswb, Bool odd)
@@ -1804,9 +1964,9 @@ place_wharf_buttons (ASWharfFolder * aswf, int *total_width_return,
 	int i;
 	Bool fit_contents = get_flags (Config->flags, WHARF_FitContents);
 	Bool needs_shaping = False;
-	Bool reverse_order =
-			get_flags (aswf->flags,
-								 ASW_ReverseOrder) ? aswf->buttons_num - 1 : -1;
+	/* JWT:SHOULDN'T THIS BE INT?! Bool reverse_order = */
+	int reverse_order =
+			get_flags (aswf->flags, ASW_ReverseOrder) ? aswf->buttons_num - 1 : -1;
 	int button_offset_x = 0;
 	int button_offset_y = 0;
 
@@ -1838,8 +1998,22 @@ place_wharf_buttons (ASWharfFolder * aswf, int *total_width_return,
 			}
 		}
 		for (i = 0; i < aswf->buttons_num; ++i) {
-			ASWharfButton *aswb =
-					&(aswf->buttons[reverse_order >= 0 ? reverse_order - i : i]);
+			int btnindx = reverse_order >= 0 ? reverse_order - i : i;
+			ASWharfButton *aswb = &(aswf->buttons[btnindx]);
+			/* JWT:CREATE THE DOUBLY-LINKED BUTTON LIST FOR VERT. KEYBOARD TRAVERSAL: */
+			if (reverse_order >= 0) {
+				if (btnindx > 0)
+				{
+					aswf->buttons[btnindx].btnSouth = &(aswf->buttons[btnindx - 1]);
+					aswf->buttons[btnindx - 1].btnNorth = &(aswf->buttons[btnindx]);
+				}
+			} else {
+				if (btnindx > 0)
+				{
+					aswf->buttons[btnindx].btnNorth = &(aswf->buttons[btnindx - 1]);
+					aswf->buttons[btnindx - 1].btnSouth = &(aswf->buttons[btnindx]);
+				}
+			}
 			int height;
 
 			if (bc == 0) {
@@ -1904,7 +2078,7 @@ place_wharf_buttons (ASWharfFolder * aswf, int *total_width_return,
 				*total_height_return = y;
 		}
 
-	} else {
+	} else {  /* HORIZONTAL */
 		int rows = (aswf == WharfState.root_folder) ? Config->rows : 1;
 		int buttons_per_row = (aswf->buttons_num + rows - 1) / rows, br = 0;
 
@@ -1923,8 +2097,22 @@ place_wharf_buttons (ASWharfFolder * aswf, int *total_width_return,
 		}
 
 		for (i = 0; i < aswf->buttons_num; ++i) {
-			ASWharfButton *aswb =
-					&(aswf->buttons[reverse_order >= 0 ? reverse_order - i : i]);
+			int btnindx = reverse_order >= 0 ? reverse_order - i : i;
+			ASWharfButton *aswb = &(aswf->buttons[btnindx]);
+			/* JWT:CREATE THE DOUBLY-LINKED BUTTON LIST FOR HORZ. KEYBOARD TRAVERSAL: */
+			if (reverse_order >= 0) {
+				if (btnindx > 0)
+				{
+					aswf->buttons[btnindx].btnEast = &(aswf->buttons[btnindx - 1]);
+					aswf->buttons[btnindx - 1].btnWest = &(aswf->buttons[btnindx]);
+				}
+			} else {
+				if (btnindx > 0)
+				{
+					aswf->buttons[btnindx].btnWest = &(aswf->buttons[btnindx - 1]);
+					aswf->buttons[btnindx - 1].btnEast = &(aswf->buttons[btnindx]);
+				}
+			}
 			int width;
 
 			if (br == 0) {
@@ -2275,7 +2463,7 @@ display_wharf_folder (ASWharfFolder * aswf, int left, int top, int right,
 			y = Scr.MyDisplayHeight - total_height;
 	}
 	/* if user has configured us so that we'll have to overlap ourselves -
-	   then its theirs fault - we cannot account for all situations */
+	   then its their fault - we cannot account for all situations */
 
 	LOCAL_DEBUG_OUT ("corrected  pos(%+d%+d)", x, y);
 	LOCAL_DEBUG_OUT ("flags 0x%lX, reverse_order = %d", aswf->flags,
@@ -2344,6 +2532,28 @@ display_wharf_folder (ASWharfFolder * aswf, int left, int top, int right,
 		clear_flags (aswf->flags, ASW_UseBoundary | ASW_AnimationPending);
 	}
 
+	/* JWT:SET THE KEYBOARD TRAVERSAL LINKS FOR THE NOW-DISPLAYED SUBFOLDER: */
+	if (aswf != WharfState.root_folder && aswf->parent) {
+		if (get_flags (aswf->flags, ASW_Vertical)) {
+			if (south) {  /* EXPANDS TO NORTH! */
+				aswf->parent->btnSouth = NULL;
+				aswf->parent->btnNorth = &(aswf->buttons[0]);
+			} else {
+				aswf->parent->btnNorth = NULL;
+				aswf->parent->btnSouth = &(aswf->buttons[aswf->buttons_num - 1]);
+			}
+		} else {
+			if (east) {  /* EXPANDS TO WEST! */
+				aswf->parent->btnEast = NULL;
+				aswf->parent->btnWest = &(aswf->buttons[0]);
+				aswf->buttons[0].btnEast = aswf->parent;
+			} else {
+				aswf->parent->btnWest = NULL;
+				aswf->parent->btnEast = &(aswf->buttons[aswf->buttons_num - 1]);
+				aswf->buttons[0].btnWest = aswf->parent;
+			}
+		}
+	}
 	return True;
 }
 
@@ -2396,6 +2606,23 @@ void withdraw_wharf_folder (ASWharfFolder * aswf)
 			animate_wharf_loop (aswf, aswf->canvas->width, aswf->canvas->height,
 													1, aswf->canvas->height, False);
 	}
+
+	/* JWT:UNSET THE KEYBOARD TRAVERSAL LINKS FOR THE NOW-WITHDRAWN SUBFOLDER: */
+	if (aswf != WharfState.root_folder && aswf->parent) {
+		if (WharfState.focused_button) {
+			change_button_focus (WharfState.focused_button, False);
+			change_button_focus (aswf->parent, True);
+			WharfState.focused_button = WharfState.focused_button;
+		}
+		if (get_flags (aswf->parent->flags, ASW_Vertical)) {
+			aswf->parent->btnNorth = NULL;
+			aswf->parent->btnSouth = NULL;
+		} else {
+			aswf->parent->btnEast = NULL;
+			aswf->parent->btnWest = NULL;
+		}
+	}
+
 	LOCAL_DEBUG_OUT ("unmapping folder %p", aswf);
 	unmap_wharf_folder (aswf);
 	ASSync (False);
@@ -3270,7 +3497,6 @@ void release_pressure (int button)
 	}
 }
 
-
 static Bool check_app_click (ASWharfButton * aswb, XButtonEvent * xbtn)
 {
 	if (aswb->swallowed) {
@@ -3283,19 +3509,22 @@ static Bool check_app_click (ASWharfButton * aswb, XButtonEvent * xbtn)
 	return False;
 }
 
-void on_wharf_pressed (ASEvent * event)
+void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb)
 {
-	ASMagic *obj = fetch_object (event->w);
-	if (obj == NULL)
-		return;
-	if (obj->magic == MAGIC_WHARF_BUTTON) {
-		ASWharfButton *aswb = (ASWharfButton *) obj;
+	if (! aswb) {  /* JWT:NOW HANDLES KEYBOARD "PRESSING" OF BUTTONS (aswb button KNOWN): */
+		ASMagic *obj = fetch_object (event->w);
+		if (obj == NULL)
+			return;
+		if (obj->magic == MAGIC_WHARF_BUTTON)
+			aswb = (ASWharfButton *) obj;
+	}
+	if (aswb && aswb->parent) {
 		ASWharfFolder *aswf = aswb->parent;
 
 		if (get_flags (aswb->flags, ASW_Transient))
 			return;
 
-		if (event->x.xbutton.button == Button3
+		if (kbButton == Button3 || event->x.xbutton.button == Button3
 				&& aswf == WharfState.root_folder) {
 			if ((WITHDRAW_ON_EDGE (Config)
 					 && (&(aswf->buttons[0]) == aswb
