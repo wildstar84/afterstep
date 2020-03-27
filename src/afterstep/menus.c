@@ -1167,10 +1167,16 @@ on_menu_pressure_changed (ASInternalWindow * asiw, int pressed_context)
 					pressed = py / menu->item_height;
 				pressed += menu->top_item;
 				if (pressed != menu->pressed_item)
+				{
 					press_menu_item (menu, pressed, False);
+					  /* JWT:ALSO DO RELEASE (TO ACTIVATE) DUE TO CHANGE JUST BELOW!: */
+					press_menu_item (menu, -1, False);
+				}
 			}
+/* JWT:STOP INVOKING MENUS EXCEPT WHEN USER *PRESSES* THE MOUSE ON 'EM! (ANNOYING)
 		} else if (menu->pressed_item >= 0) {
 			press_menu_item (menu, -1, False);
+*/
 		}
 	}
 }
