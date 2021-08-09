@@ -1849,16 +1849,14 @@ void update_wharf_folder_transprency (ASWharfFolder * aswf, Bool force)
 
 void change_button_focus (ASWharfButton * aswb, Bool focused)
 {
-
 	if (aswb == NULL)
 		return;
 	if (focused && !get_flags (aswb->flags, ASW_Focusable))
 		return;
 
 	if (set_astbar_focused (aswb->bar, NULL, focused)) {
-		if (!swap_save_canvas (aswb->canvas)) {
+		if (!swap_save_canvas (aswb->canvas))
 			render_wharf_button (aswb);
-		}
 		update_canvas_display (aswb->canvas);
 		update_wharf_folder_shape (aswb->parent);
 	}
@@ -1983,8 +1981,7 @@ place_wharf_buttons (ASWharfFolder * aswf, int *total_width_return,
 	int i;
 	Bool fit_contents = get_flags (Config->flags, WHARF_FitContents);
 	Bool needs_shaping = False;
-	/* JWT:SHOULDN'T THIS BE INT?! Bool reverse_order = */
-	int reverse_order =
+	Bool reverse_order =
 			get_flags (aswf->flags, ASW_ReverseOrder) ? aswf->buttons_num - 1 : -1;
 	int button_offset_x = 0;
 	int button_offset_y = 0;
@@ -2631,7 +2628,6 @@ void withdraw_wharf_folder (ASWharfFolder * aswf)
 		if (WharfState.focused_button) {
 			change_button_focus (WharfState.focused_button, False);
 			change_button_focus (aswf->parent, True);
-			WharfState.focused_button = WharfState.focused_button;
 		}
 		if (get_flags (aswf->parent->flags, ASW_Vertical)) {
 			aswf->parent->btnNorth = NULL;
@@ -3478,11 +3474,18 @@ void release_pressure (int button)
 	LOCAL_DEBUG_OUT ("pressed button is %p", pressed);
 	button -= Button1;
 	if (pressed) {
+		/* JWT:REPURPOSED DEPRECIATED WharfNoWithdraw TO NOT WITHDRAW FOLDERS WHEN A BUTTON WITHIN A FOLDER ACTUATED!: */
+		Bool noCollapseFolders = get_flags (Config->flags, WHARF_NO_WITHDRAW);
+		if (! noCollapseFolders) {
+			/* JWT:(AS BUG) - THIS HAS 2B B4 NEXT IF BLOCK ELSE TRANSPARENT BGS GET FOOBARRED: */
+			set_astbar_pressed (pressed->bar, pressed->canvas, False);
+			WharfState.pressed_button = NULL;
+		}
 		if (pressed->folder && !(button > 0 && pressed->fdata[button])) {
 			LOCAL_DEBUG_OUT ("pressed button has folder %p (%s)",
-											 pressed->folder, get_flags (pressed->folder->flags,
-																									 ASW_Mapped) ? "Mapped" :
-											 "Unmapped");
+											pressed->folder, get_flags (pressed->folder->flags,
+											ASW_Mapped) ? "Mapped" :
+											"Unmapped");
 			if (get_flags (pressed->folder->flags, ASW_Mapped))
 				withdraw_wharf_folder (pressed->folder);
 			else
@@ -3502,17 +3505,21 @@ void release_pressure (int button)
 				ASWharfButton *parentb = NULL;
 				SendCommand (pressed->fdata[button], 0);
 				sleep_a_millisec (200);	/* give AS a chance to handle requests */
-				while (parentf != WharfState.root_folder) {
-					parentb = parentf->parent;
-					withdraw_wharf_folder (parentf);
-					if (parentb == NULL)
-						break;
-					parentf = parentb->parent;
+				if (! noCollapseFolders) {
+					while (parentf != WharfState.root_folder) {
+						parentb = parentf->parent;
+						withdraw_wharf_folder (parentf);
+						if (parentb == NULL)
+							break;
+						parentf = parentb->parent;
+					}
 				}
 			}
 		}
-		set_astbar_pressed (pressed->bar, pressed->canvas, False);
-		WharfState.pressed_button = NULL;
+		if (noCollapseFolders) {  /* JWT:OK TO DO HERE (NORMAL) IF FOLDERS NOT WITHDRAWN ON ACTUATION!: */
+			set_astbar_pressed (pressed->bar, pressed->canvas, False);
+			WharfState.pressed_button = NULL;
+		}
 	}
 }
 

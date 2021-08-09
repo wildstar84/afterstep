@@ -50,11 +50,19 @@ $>export CFLAGS="-march=native -O2"
 
 $>cd ~/afterstep-src
 
-#THE "helpcommand" IS OPTIONAL FOR HANDLING MANPAGES FOR APPLICATIONS WHEN [HELP] FUNCTION CALLED:
+#THE "helpcommand" IS OPTIONAL FOR HANDLING MANPAGES FOR APPLICATIONS
+#WHEN [HELP] FUNCTION CALLED:
 #CHANGE "/usr/local/bin/aterm TO YOUR PREFERRED TERMINAL APP.
 #FOR SOME STUPID REASON THIS IS NOT CONFIGURABLE, BUT MUST BE COMPILED IN TO WORK?!
 
+#NOTE:  NO LONGER NECESSARY IS THIS CAN NOW BE SPECIFIED/OVERRIDDEN BY THE
+#SHELL ENVIRONMENT VARIABLE:  $ASHELPCOMMAND
+
 $>./configure --prefix=/usr/local --enable-alsa
+
+#MY PERSONAL CONFIGURE:  ./configure --prefix=/usr/local --enable-alsa --with-ttf=no --with-dbus1=no --with-gnome-session=no --with-tiff=no
+#(I don't need truetype fonts, tiff images, dbus, or a gnome session for my window-manager:
+#other apps I use that use dbus, etc. still use it and work fine)!
 
 $>make -j2
 
