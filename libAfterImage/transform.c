@@ -2088,7 +2088,7 @@ static void calc_gauss_int(int radius, GAUSS_COEFF_TYPE* gauss, GAUSS_COEFF_TYPE
 #define gauss_data_t CARD32
 #define gauss_var_t int
 
-static inline void
+static void
 gauss_component_int(gauss_data_t *s1, gauss_data_t *d1, int radius, GAUSS_COEFF_TYPE* gauss, GAUSS_COEFF_TYPE* gauss_sums, int len)
 {
 #define DEFINE_GAUS_TMP_VAR		CARD32 *xs1 = &s1[x]; CARD32 v1 = xs1[0]*gauss[0]
