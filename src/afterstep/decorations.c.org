@@ -713,30 +713,16 @@ char *list_functions_by_context (int context, ASHints * hints)
 			if (fterm != NULL) {
 				char *ptr;
 
-				/* JWT:ADDED CONDITION+TOP PART TO SHOW ACTUAL FUNCTION NAMES IN
-				   TITLEBAR BALLOONS INSTEAD OF JUST THE WORD "Function": */
-				if (!strcmp (fterm->keyword, "Function") && btn->fdata->name != NULL) {
-					int fnname_len = strlen(btn->fdata->name);
-					if (str) {
-						str = realloc (str, allocated_bytes + 1 + fnname_len + 32);
-						ptr = str + allocated_bytes;
-						*(ptr++) = '\n';
-					} else
-						ptr = str = safemalloc (fnname_len + 32);
+				if (str) {
+					str =
+							realloc (str, allocated_bytes + 1 + fterm->keyword_len + 32);
+					ptr = str + allocated_bytes;
+					*(ptr++) = '\n';
+				} else
+					ptr = str = safemalloc (fterm->keyword_len + 32);
 
-					sprintf (ptr, "%s: ", btn->fdata->name);
-					ptr += fnname_len + 2;
-				} else {
-					if (str) {
-						str = realloc (str, allocated_bytes + 1 + fterm->keyword_len + 32);
-						ptr = str + allocated_bytes;
-						*(ptr++) = '\n';
-					} else
-						ptr = str = safemalloc (fterm->keyword_len + 32);
-
-					sprintf (ptr, "%s: ", fterm->keyword);
-					ptr += fterm->keyword_len + 2;
-				}
+				sprintf (ptr, "%s: ", fterm->keyword);
+				ptr += fterm->keyword_len + 2;
 				if (btn->Modifier & ShiftMask) {
 					strcat (ptr, "Shift+");
 					ptr += 8;
