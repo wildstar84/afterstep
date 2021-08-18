@@ -193,6 +193,7 @@ typedef struct ASWharfState {
 	Bool isFocused;                      /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
 	Window focus_return;                 /* JWT:SAVE WHARF'S MAIN X FOCUS WINDOW: */
 	int revert_to_return;
+	time_t last_pressed_time;  /* JWT:PREVENT KEY-REPEAT FOR FUNCTION-INVOCATION KEYS! */
 
 	FunctionData *default_action[Button5];
 
@@ -776,6 +777,10 @@ void DispatchEvent (ASEvent * event)
 		      }
 		      break;
 			case XK_Return:
+				if (difftime (time (NULL), WharfState.last_pressed_time) < 2) /* JWT:PREVENT KEY-REPEAT! */
+					break;
+				WharfState.last_pressed_time = time (NULL);
+
 				if (WharfState.focused_button) {
 					press_wharf_button (WharfState.focused_button, event->x.xbutton.state);
 					release_pressure (1);
@@ -847,6 +852,10 @@ void DispatchEvent (ASEvent * event)
 							t = CurrentTime;
 							XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
 						} else if (buf[0]) {
+							if (difftime (time (NULL), WharfState.last_pressed_time) < 2) /* JWT:PREVENT KEY-REPEAT! */
+								break;
+							WharfState.last_pressed_time = time (NULL);
+
 							if (buf[0] == '1' || buf[0] == 'l')
 								press_wharf_button (aswb, event->x.xbutton.state);
 							else if (buf[0] == '2' || buf[0] == 'm')
@@ -971,10 +980,12 @@ void DispatchEvent (ASEvent * event)
 		}
 		break;
 	case ReparentNotify:
+		/* JWT:DEAD CODE (DOES NOTHING NOW)!:
 		if (event->x.xreparent.parent == Scr.Root) {
 			//sleep_a_millisec( 100 );
 			//XMoveResizeWindow( dpy, event->x.xreparent.window, -10000, -10000, 1, 1 );
 		}
+		*/
 		break;
 	case PropertyNotify:
 		handle_wmprop_event (Scr.wmprops, &(event->x));
@@ -1502,19 +1513,22 @@ ASWharfFolder *build_wharf_folder (WharfButton * list,
 				disabled = False;
 		}
 
-		if (wb->contents_num == 0 && disabled) {
-			set_flags (wb->set_flags, WHARF_BUTTON_DISABLED);
-			show_warning
-					("Button \"%s\" has no functions nor folder assigned to it. Button will be disabled",
-					 wb->title ? wb->title : "-");
-		} else if (disabled) {
-			set_flags (wb->set_flags, WHARF_BUTTON_DISABLED);
-			show_warning
-					("None of Applications assigned to the button \"%s\" can be found in the PATH. Button will be disabled",
-					 wb->title ? wb->title : "-");
+		if (disabled) {
+			if (wb->contents_num == 0) {
+				set_flags (wb->set_flags, WHARF_BUTTON_DISABLED);
+				show_warning
+						("Button \"%s\" has no functions nor folder assigned to it. Button will be disabled",
+						 wb->title ? wb->title : "-");
+			} else {
+				set_flags (wb->set_flags, WHARF_BUTTON_DISABLED);
+				show_warning
+						("None of Applications assigned to the button \"%s\" can be found in the PATH. Button will be disabled",
+						 wb->title ? wb->title : "-");
+			}
 		}
-		if (!disabled)
+		else
 			++count;
+
 		wb = wb->next;
 	}
 
@@ -3130,14 +3144,14 @@ Bool on_wharf_button_moveresize (ASWharfButton * aswb, ASEvent * event)
 	if (get_flags (changes, CANVAS_RESIZED))
 		set_astbar_size (aswb->bar, aswb->canvas->width, aswb->canvas->height);
 
-	if (changes != 0)							/* have to always do that whenever canvas is changed */
+	if (changes != 0)	{						/* have to always do that whenever canvas is changed */
 		update_astbar_transparency (aswb->bar, aswb->canvas, False);
 
-	if (changes != 0
-			&& (DoesBarNeedsRendering (aswb->bar)
-					|| is_canvas_needs_redraw (aswb->canvas))) {
-		invalidate_canvas_save (aswb->canvas);
-		render_wharf_button (aswb);
+		if (DoesBarNeedsRendering (aswb->bar)
+						|| is_canvas_needs_redraw (aswb->canvas)) {
+			invalidate_canvas_save (aswb->canvas);
+			render_wharf_button (aswb);
+		}
 	}
 #ifndef SHAPE
 	swallowed_changes = 0;				/* if no shaped extensions - ignore the changes */
@@ -3391,7 +3405,8 @@ void on_wharf_moveresize (ASEvent * event)
 		}
 
 		LOCAL_DEBUG_OUT ("Handling button resizefor button %p", aswb);
-		on_wharf_button_moveresize (aswb, event);
+		if (aswb->parent == WharfState.root_folder)  /* JWT:ONLY DO THIS FOR ROOT, SUBFOLDERS GET DONE BELOW!: */
+			on_wharf_button_moveresize (aswb, event);
 	} else if (obj->magic == MAGIC_WHARF_FOLDER) {
 		ASWharfFolder *aswf = (ASWharfFolder *) obj;
 		ASFlagType changes = handle_canvas_config (aswf->canvas);
