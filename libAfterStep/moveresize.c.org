@@ -172,11 +172,6 @@ void move_func (struct ASMoveResizeData *data, int x, int y);
 
 static ASMoveResizeData *_as_curr_moveresize_data = NULL;
 static moveresize_event_func _as_curr_moveresize_handler = NULL;
-/* JWT:PREVENT SLIGHT MOTION BETWEEN PRESS & RELEASE (A "CLICK") FROM MOVING/RESIZING
-   WINDOW (ANNOYING WHEN CLICKING TITLEBAR TO FOCUS BUT *NOT* TRYING TO MOVE)!
-   AS THIS IS ANNOYING WHEN YOU HAVE YOUR WINDOWS WHERE YOU WANT THEM!
-   (5 MICKIES SEEMS TO BE ENOUGH TO PREVENT THIS ANNOYANCE) */
-static int _mouseMovedEnuf2bIntentional;
 
 /* We need to track what widgets has received ButtonPress so that we can
  * send them ButtonRelease in case we need to ungrab the pointer. Another
@@ -202,7 +197,6 @@ start_widget_moveresize (ASMoveResizeData * data,
 		return False;
 	_as_curr_moveresize_data = data;
 	_as_curr_moveresize_handler = handler;
-	_mouseMovedEnuf2bIntentional = 0;
 	return True;
 }
 
@@ -571,10 +565,6 @@ Bool move_resize_loop (ASMoveResizeData * data, ASEvent * event)
 				(event->x.type == ButtonPress ? 1 : 0))
 			finished = True;
 	case MotionNotify:
-		++_mouseMovedEnuf2bIntentional;
-		/* JWT:DON'T COUNT AS A "MOVE" UNTIL 5+MOUSE-MOVED EVENTS HAVE OCURRED! */
-		if (_mouseMovedEnuf2bIntentional < 5)
-			break;
 		/* update location of the pager_view window */
 		{
 			/* must get current pointer position as we may get late while
