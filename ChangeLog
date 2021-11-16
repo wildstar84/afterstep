@@ -1,6 +1,60 @@
 CHANGELOG
 ----------------------
+[2021-11-16: Jim Turner]
+ * Apply v2.2.15 patch "60-Fix-FTBFS-ar-clq.patch" to fix new FTBFS
+   caused by binutils API break in Debian Bookworm (ar command -l option)
+ * Update this ChangeLog file to reflect all our patches / changes.
+   (SEE https://github.com/wildstar84/afterstep/commits/master commits for
+   more details)!
 
+[2021-09-04: Jim Turner]
+ * Fix windows moving if titlebar clicked w/slight mouse-move.
+
+[2021-08-18: Jim Turner]
+ * Titlebar balloons: Show function names instead of just "Function"!
+ * Wharf - Clean up code format for legability.
+ * Wharf - Fix another broken transparency case, etc.
+
+[2021-08-09: Jim Turner]
+ * Wharf: Fix sometimes-broken transparency, add WharfNoWithdraw.
+ * Remove compiler warning a/b unable to inline.
+
+[2020-03-27: Jim Turner]
+ * Menus - Prevent menus from exploding from mouseover on open!
+
+[2020-03-19: Jim Turner]
+ * Wharf - Pass actual button events to swallowed apps.
+
+[2020-03-16: Jim Turner]
+ * Wharf - Add keyboard-navigation when focused.
+
+[2019-03-27: Jim Turner]
+ * Add the "original" source files before last 2 commits.
+ * Add ASHELPCOMMAND env. vble. for user-set HELP fn manpage reader.
+ * Actually make Sound2 WORK again. Also added environment.
+ * Tweak the README and re-upload the Orig. AS readme.
+
+[2019-03-26: Jim Turner]
+ * Update the dated README file to make it useful.
+ * Remove README.org since GitHub still thinks it's the README.
+ * Stop spamming .xsession_errors!
+ * Make possible to build with --with-dbus1=no.
+
+[2019-03-25: Jim Turner]
+ * Start afresh with Pristine Debian-src AfterStep 2.2.12-12 and
+   create this GitHub site!
+ * Fix bug in latest Debian patch (#57) that causes FTBFS.
+ * Enable building w/CFLAGS="-march=native -O2".
+ * Prevent FTBFS if configed with --enable-shaping=no.
+ * Fix "Can't locate X resources database" error.
+ * Make FocusOnMap work consistently with ClickToFocus!
+ * Fix "Grab & Drag" of unfocused windows by handles/titlebar.
+ * 1) Fix ClickToFocus to focus on prev. window on the stack.
+ * Upload orig. (.org) files, 'case someone wants orig. source!
+
+----------------------
+LEGACY CHANGELOG
+----------------------
 [2013-04-01: Sasha Vasko]
  * AfterStep 2.2.12 release
  * updated configure script to remove old privacy notice and add install
