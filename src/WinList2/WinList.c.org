@@ -1011,8 +1011,6 @@ rearrange_winlist_window( Bool dont_resize_main_canvas )
     
     if( WinListState.windows_num != 0 && WinListState.window_order != NULL )    
     {
-        /* JWT(ADDED):TRUE IF ONLY DISPLAYING ICONS (WinListUseName 5; WinListMaxColWidth ##). */
-        Bool IconsOnly = (Config->UseName >= ASN_NameTypes && Config->MaxColWidth);
         /* Pass 1: determining size of each individual bar, as well as max height of any bar */
         for( i = 0 ; i < WinListState.windows_num ; ++i )
         {
@@ -1036,35 +1034,6 @@ rearrange_winlist_window( Bool dont_resize_main_canvas )
                 max_item_height = height ;
         }
         LOCAL_DEBUG_OUT( "calculated max_item_height = %d", max_item_height );
-
-        /* JWT:ADDED TO ENSURE ICON-ONLY WINLISTS AUTO-RESIZE WIDTH TO CURRENT ICON LIST! */
-        /* (NORMALLY WINLIST REMAINS THE FULL WIDTH OF THE SCREEN AND BARS CHANGE WIDTH): */
-        if (IconsOnly) {
-            if (allowed_min_height < max_item_height) {
-                allowed_min_height = max_item_height;
-                if (allowed_max_height < allowed_min_height)
-                    allowed_max_height = allowed_min_height;
-            }
-            if (max_item_height < allowed_min_height)
-                max_item_height = allowed_min_height;
-            if (Config->MinColWidth > 0 && min_col_width < Config->MinColWidth)
-                min_col_width = Config->MinColWidth;
-            if (min_col_width > Config->MaxColWidth)
-                min_col_width = Config->MaxColWidth;
-            allowed_max_width = 0;
-            /* JWT:PREVENT WINLIST HEIGHT GROWING TALLER IF APP. HAS A HUGE ICON!: */
-            if (Config->MaxColWidth > 0 && max_item_height > Config->MaxColWidth)
-                max_item_height = Config->MaxColWidth;  /* JWT:WE WANT SQUARE ICONS! */
-            for( i = 0 ; i < WinListState.windows_num ; ++i ) {
-                if (WinListState.width_wanted[i] > Config->MaxColWidth)
-                    WinListState.width_wanted[i] = Config->MaxColWidth;
-                else if (WinListState.width_wanted[i] < Config->MinColWidth)
-                    WinListState.width_wanted[i] = Config->MinColWidth;
-
-                WinListState.width_wanted[i] += Config->HSpacing;
-                allowed_max_width += WinListState.width_wanted[i] + Config->HSpacing;
-            }
-        }
     }
     
     if( min_col_width <= 1 ) 
@@ -1379,10 +1348,7 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
                 safe_asimage_destroy( icon_im );
                 icon_im = scaled_im ;
             }                      
-        }
-
-        /* JWT:FIXME: IconAlign (IE. "WinListIconAlign Center", ETC.) SEEMS TO HAVE NO EFFECT -
-           ICONS SEEM TO ALWAYS POSITION IN NW CORNER?!: */
+        }    
         add_astbar_icon( tbar, 
                          pos[Config->IconLocation%10][0], 
                          pos[Config->IconLocation%10][1], 
