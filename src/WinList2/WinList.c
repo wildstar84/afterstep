@@ -1040,11 +1040,6 @@ rearrange_winlist_window( Bool dont_resize_main_canvas )
         /* JWT:ADDED TO ENSURE ICON-ONLY WINLISTS AUTO-RESIZE WIDTH TO CURRENT ICON LIST! */
         /* (NORMALLY WINLIST REMAINS THE FULL WIDTH OF THE SCREEN AND BARS CHANGE WIDTH): */
         if (IconsOnly) {
-            if (allowed_min_height < max_item_height) {
-                allowed_min_height = max_item_height;
-                if (allowed_max_height < allowed_min_height)
-                    allowed_max_height = allowed_min_height;
-            }
             if (max_item_height < allowed_min_height)
                 max_item_height = allowed_min_height;
             if (Config->MinColWidth > 0 && min_col_width < Config->MinColWidth)
@@ -1052,9 +1047,6 @@ rearrange_winlist_window( Bool dont_resize_main_canvas )
             if (min_col_width > Config->MaxColWidth)
                 min_col_width = Config->MaxColWidth;
             allowed_max_width = 0;
-            /* JWT:PREVENT WINLIST HEIGHT GROWING TALLER IF APP. HAS A HUGE ICON!: */
-            if (Config->MaxColWidth > 0 && max_item_height > Config->MaxColWidth)
-                max_item_height = Config->MaxColWidth;  /* JWT:WE WANT SQUARE ICONS! */
             for( i = 0 ; i < WinListState.windows_num ; ++i ) {
                 if (WinListState.width_wanted[i] > Config->MaxColWidth)
                     WinListState.width_wanted[i] = Config->MaxColWidth;
@@ -1370,6 +1362,22 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
                 width = Config->IconSize.width;
             if( Config->IconSize.height > 0 ) 
                 height = Config->IconSize.height;
+        }
+        else if (height && Config->UseName >= ASN_NameTypes && Config->MaxColWidth)  /* JWT:ICONS ONLY! */
+        {
+            /* JWT:SCALE DOWN LARGE ICONS TO FIT, BUT DON'T SCALE SMALL ONES UP TO FILL: */
+            /* (FOR BOTH SCALE UP & DOWN, SPECIFY *WinListIconSize WxH)! */
+            float aspect = width / height;
+            if (height > Config->MaxColWidth)
+            {
+                height = Config->MaxColWidth;
+                width = (int)(aspect * height);
+            }
+            if (width > Config->MaxColWidth)
+            {
+                width = Config->MaxColWidth;
+                height = (int)((1 / aspect) * width);
+            }
         }
         if( width != icon_im->width || height != icon_im->height ) 
         {

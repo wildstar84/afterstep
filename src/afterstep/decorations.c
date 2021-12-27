@@ -27,6 +27,7 @@
 
 #include "asinternals.h"
 #include "../../libAfterConf/afterconf.h"
+#include "../../libAfterImage/afterimage.h"
 
 /********************************************************************/
 /* ASWindow frame decorations :                                     */
@@ -1021,14 +1022,42 @@ Bool hints2decorations (ASWindow * asw, ASHints * old_hints)
 
 		if (icon_image_changed) {
 			ASImage *icon_image =	get_client_icon_image (ASDefaultScr, asw->hints, 128);
-			check_tbar (&(asw->icon_button), (asw->icon_canvas != NULL), AS_ICON_MYSTYLE, icon_image, Scr.Look.ButtonWidth, Scr.Look.ButtonHeight,	/* scaling icon image */
+
+			if (icon_image)
+			{
+				/* JWT:SCALE DOWN LARGE ICONS TO FIT, BUT DON'T SCALE SMALL ONES UP TO FILL: */
+				if (icon_image->height && Scr.Look.ButtonWidth && Scr.Look.ButtonHeight)
+				{
+					int width = icon_image->width;
+					int height = icon_image->height;
+					float aspect = width / height;
+					if (height > Scr.Look.ButtonHeight)
+					{
+						height = Scr.Look.ButtonHeight;
+						width = (int)(aspect * height);
+					}
+					if (width > Scr.Look.ButtonWidth)
+					{
+						width = Scr.Look.ButtonWidth;
+						height = (int)((1 / aspect) * width);
+					}
+					if (width != icon_image->width || height != icon_image->height)
+					{
+						ASImage *scaled_im = scale_asimage( Scr.asv, icon_image, width, height, ASA_ASImage, 100, ASIMAGE_QUALITY_DEFAULT );
+						if (scaled_im != NULL )
+						{
+							safe_asimage_destroy( icon_image );
+							icon_image = scaled_im ;
+						}
+					}
+				}
+				check_tbar (&(asw->icon_button), (asw->icon_canvas != NULL), AS_ICON_MYSTYLE, icon_image, Scr.Look.ButtonWidth, Scr.Look.ButtonHeight,	/* scaling icon image */
 									0, Scr.Look.ButtonAlign,
 									Scr.Look.ButtonBevel, Scr.Look.ButtonBevel,
 									TEXTURE_TRANSPIXMAP_ALPHA, TEXTURE_TRANSPIXMAP_ALPHA,
 									C_IconButton, False);
-
-			if (icon_image)
 				safe_asimage_destroy (icon_image);
+			}
 		}
 	}
 	if (asw->icon_button && old_hints == NULL) {
