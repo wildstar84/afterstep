@@ -1,5 +1,30 @@
 CHANGELOG
 ----------------------
+[2021-12-27: Jim Turner]
+ * Scale large icons down to fit (WinList, and iconified app. icons) 
+   We also keep aspect ratio (Icons-only WinList wasn't doing this properly, 
+   and iconified apps with large icons weren't always honoring ButtonSize
+   "look option".  Problem was that while the icon box was properly sized, the 
+   large icon would display only one corner.  Now, these large icons can be 
+   scaled down to fit the specified icon box size.  Small icons will remain 
+   their natural size.
+ * Added option to display the application's icon scaled to fit as one of the 
+   titlebar buttons, giving AfterStep a more modern look (this is the default 
+   in many current window-managers, including M$-Windows (usually the leftmost 
+   button.  Normally, the titlebar button images are fixed files specified in 
+   the "look" config. file as one or two image files (two image files provide 
+   a "pressed" and "unpressed" look when clicking the button.  To instead use 
+   the application's icon image, specify a single image file (the "pressed" 
+   image, followed by a dash "-" as the 2nd image file in the line:
+
+TitleButton # default-image-file -
+
+[2021-12-18: Jim Turner]
+ * WinList - Don't fill screen horizontally if icons-only!
+   For icons-only winlist: users should set WinListShowIcon 1,
+   WinListScaleIconToTextHeight 0, *WinListUseName 5, and
+   WinListMaxColWidth <#desired_icon_sz_pixels> in their "look" config file.
+
 [2021-11-16: Jim Turner]
  * Apply v2.2.15 patch "60-Fix-FTBFS-ar-clq.patch" to fix new FTBFS
    caused by binutils API break in Debian Bookworm (ar command -l option)

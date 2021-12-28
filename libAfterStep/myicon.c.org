@@ -214,15 +214,10 @@ Bool
 load_button (button_t * button, char **filenames, ASImageManager * imman)
 {
 	if (button && imman && filenames) {
-		button->use_app_icon = False;
 		if (filenames[0])
 			load_icon (&(button->unpressed), filenames[0], imman);
-		if (filenames[1]) {
-			if (strstr("-", filenames[1]))
-				button->use_app_icon = True;
-			else
-				load_icon (&(button->pressed), filenames[1], imman);
-		}
+		if (filenames[1])
+			load_icon (&(button->pressed), filenames[1], imman);
 		update_button_size (button);
 		return (button->width > 0 && button->height > 0);
 	}

@@ -42,7 +42,6 @@ typedef struct button_t
 /*    Bool is_pressed;         is the button pressed? */
 	unsigned int width, height ;
 	int context ;
-	Bool use_app_icon;  /* JWT:USE APPLICATION'S ICON IF TRUE! */
 }button_t;
 
 typedef button_t MyButton ;
