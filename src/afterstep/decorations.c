@@ -1182,6 +1182,36 @@ Bool hints2decorations (ASWindow * asw, ASHints * old_hints)
 	}
 
 	if (asw->tbar) {							/* 9) now we have to setup titlebar buttons */
+		/* JWT:SCALE APP. ICON FOR TITLE-BUTTON WHICH IS SET TO USE THE APP-ICON!: */
+		for (i = 0; i < TITLE_BUTTONS; i++) {
+			if (Scr.Look.buttons[i].use_app_icon) {
+				ASImage *appicon_image =	get_client_icon_image (ASDefaultScr, asw->hints, 32);
+				if (appicon_image && appicon_image->height) {
+					int width = appicon_image->width;
+					int height = appicon_image->height;
+					float aspect = width / height;
+					if (height > Scr.Look.buttons[i].height) {
+						height = Scr.Look.buttons[i].height;
+						width = (int)(aspect * height);
+					}
+					if (width > Scr.Look.buttons[i].width) {
+						width = Scr.Look.buttons[i].width;
+						height = (int)((1 / aspect) * width);
+					}
+					if (width != appicon_image->width || height != appicon_image->height)
+					{
+						ASImage *scaled_im = scale_asimage( Scr.asv, appicon_image, width, height, ASA_ASImage, 100, ASIMAGE_QUALITY_DEFAULT );
+						if (scaled_im != NULL )
+						{
+							safe_asimage_destroy( appicon_image );
+							appicon_image = scaled_im ;
+						}
+					}
+					Scr.Look.buttons[i].unpressed.image = appicon_image;
+				}
+				break;  /* NOTE:WE SAVE TIME BY ASSUMING AT MOST 1 BUTTON WILL HAVE THIS OPTION! */
+			}
+		}
 		ASFlagType title_align = frame->title_align;
 		ASFlagType btn_mask = compile_titlebuttons_mask (asw->hints);
 #ifdef SHAPE
