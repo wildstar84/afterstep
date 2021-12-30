@@ -254,6 +254,10 @@ file2ASImage_extra( const char *file, ASImageImportParams *iparams )
 	if( iparams == NULL )
 		iparams = &dummy_iparams ;
 
+	/* JWT:DON'T BOTHER IF USER DIDN'T SPECIFY A FILE NAME! */
+	if (file == NULL || file[0] == 0)
+		return NULL;
+
 	realfilename = locate_image_file_in_path( file, iparams ); 
 	
 	if( realfilename != NULL ) 

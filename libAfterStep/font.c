@@ -75,8 +75,9 @@ Bool load_font (const char *name_in, MyFont * font)
 		font->as_font =
 				get_asfont (ASDefaultScr->font_manager, default_font, 0, font_size,
 										ASF_GuessWho);
-		show_warning ("failed to load font \"%s\" - using default instead",
-									name);
+		/* JWT:ONLY WARN IF USER ACTUALLY SPECIFIED A FONT NAME!: */
+		if (name != NULL && name[0] > 0)
+			show_warning ("failed to load font \"%s\" - using default instead", name);
 	}
 
 	if (clean_name && clean_name != name)

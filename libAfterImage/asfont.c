@@ -260,6 +260,8 @@ open_X11_font_int( ASFontManager *fontman, const char *font_string, ASFlagType f
 	XFontStruct *xfs ;
 	if( fontman->dpy == NULL ) 
 		return NULL;
+	if( font_string == NULL || font_string[0] == 0)
+		return NULL;  /* JWT:DON'T BOTHER WARNING IF USER DIDN'T SPECIFY A FONT NAME! */
 	if( (xfs = XLoadQueryFont( fontman->dpy, font_string )) == NULL )
 	{
 		show_warning( "failed to load X11 font \"%s\". Sorry about that.", font_string );
