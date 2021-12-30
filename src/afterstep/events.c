@@ -828,8 +828,7 @@ void HandleKeyPress (ASEvent * event)
 		LOCAL_DEBUG_OUT ("internal = %p", event->client->internal);
 		if (event->client->internal
 				&& event->client->internal->on_keyboard_event)
-			event->client->internal->on_keyboard_event (event->client->internal,
-																									event);
+			event->client->internal->on_keyboard_event (event->client->internal, event);
 		else if (xk->window != event->client->w) {
 			xk->window = event->client->w;
 			XSendEvent (dpy, event->client->w, False, KeyPressMask, &(event->x));

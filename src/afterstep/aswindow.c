@@ -1882,8 +1882,7 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 	if (do_nothing || do_hide_focus)
 		return False;
 
-	if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->ungrabbed != asw) {	/* need to grab all buttons for window that we are about to
-																																										 * unfocus */
+	if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->ungrabbed != asw) {	/* need to grab all buttons for window that we are about to unfocus */
 		grab_aswindow_buttons (Scr.Windows->ungrabbed, False);
 		grab_aswindow_buttons (asw, True);
 		Scr.Windows->ungrabbed = asw;
