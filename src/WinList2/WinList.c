@@ -99,6 +99,7 @@ typedef struct {
        as those messages could arrive too late :*/
     int frame_x, frame_y ;
     unsigned int frame_width, frame_height, frame_bw ; 
+    short keyboard_cursor;  /* JWT:CURRENT INDEX OF BUTTON "FOCUSED" BY KEYBOARD NAV. (-1=NONE) */
 
 }ASWinListState ;
 
@@ -158,6 +159,7 @@ void update_winlist_styles();
 void DeadPipe(int);
 void switch_deskviewport( int new_desk, int new_vx, int new_vy );
 Bool check_avoid_collision();
+void set_just_winlist_button_focus( ASWindowData *wd, Bool focus );
 
 int
 main( int argc, char **argv )
@@ -448,7 +450,8 @@ process_message (send_data_type type, send_data_type *body)
                     if( !WinListState.postpone_display && check_avoid_collision() )
                         rearrange_winlist_window( False );
             }
-        }else if( res == WP_DataDeleted )
+        }
+        else if( res == WP_DataDeleted )
         {
             if( WinListState.self == saved_wd ) /* just in case */
                 WinListState.self = NULL ;
@@ -459,11 +462,26 @@ process_message (send_data_type type, send_data_type *body)
     }
 }
 
+/* JWT:NEW FUNCTION TO ACTIVATE "FOCUSED" BUTTON WITH SPECIFIED MOUSE BTN# BASED ON A KEY-PRESS: */
+void activate_button_with_keypress (short btnindx)
+{
+    if (WinListState.keyboard_cursor >= 0
+            && WinListState.keyboard_cursor < WinListState.windows_num)
+    {
+        press_winlist_button(WinListState.window_order[WinListState.keyboard_cursor]);
+        sleep_a_millisec (100);
+        release_winlist_button(WinListState.window_order[WinListState.keyboard_cursor], btnindx);
+    }
+}
+
 void
 DispatchEvent (ASEvent * event)
 {
     ASWindowData *pointer_wd = NULL ;
     static Bool root_pointer_moved = True ;
+	KeySym ks;
+	static char buf[10], n;
+
     SHOW_EVENT_TRACE(event);
     
     if( (event->eclass & ASE_POINTER_EVENTS) != 0 )
@@ -511,6 +529,57 @@ DispatchEvent (ASEvent * event)
                 }
             }
             break;
+        case KeyPress:  /* JWT:HANDLE KEYBOARD NAVIGATION: */
+            n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+            switch (ks) {
+              case XK_Left:
+                if (WinListState.keyboard_cursor >= 0
+                        && WinListState.keyboard_cursor < WinListState.windows_num)
+                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
+                else
+                    WinListState.keyboard_cursor = WinListState.windows_num;
+                WinListState.keyboard_cursor--;
+                if (WinListState.keyboard_cursor < 0
+                        || WinListState.keyboard_cursor >= WinListState.windows_num)
+                    break;
+                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], True);
+                break;
+              case XK_Right:
+                if (WinListState.keyboard_cursor >= 0
+                        && WinListState.keyboard_cursor < WinListState.windows_num)
+                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
+                else if (WinListState.keyboard_cursor >= WinListState.windows_num)
+                    WinListState.keyboard_cursor = -1;
+                WinListState.keyboard_cursor++;
+                if (WinListState.keyboard_cursor < 0
+                        || WinListState.keyboard_cursor >= WinListState.windows_num)
+                    break;
+                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], True);
+                break;
+              case XK_space:   /* TREAT [SPACE] & [RETURN] AS MOUSE-BUTTON (ACTION) 1: */
+              case XK_Return:
+                if (WinListState.self && get_flags(WinListState.self->state_flags, AS_Shaded))
+                    SendInfo ("Shade", WinListState.main_window);  /* UNshade! */
+                else
+                    activate_button_with_keypress(1);
+                break;
+              case XK_Escape:
+                if (WinListState.self && !get_flags(WinListState.self->state_flags, AS_Shaded))
+                    SendInfo ("Shade", WinListState.main_window);  /* Shade! */
+                break;
+              default:
+                /* JWT:DO CORRESPONDING MOUSE-BUTTON# PRESS & RELEASE ACTION: */
+                if (buf[0] >= '1' && buf[0] <= '3')
+                    activate_button_with_keypress(buf[0]-'0');
+                else if (buf[0] == 'l')
+                    activate_button_with_keypress(1);
+                else if (buf[0] == 'm')
+                    activate_button_with_keypress(2);
+                else if (buf[0] == 'r')
+                    activate_button_with_keypress(3);
+                break;
+            }
+            break;
         case ButtonPress:
             if( pointer_wd )
                 press_winlist_button( pointer_wd );
@@ -519,13 +588,21 @@ DispatchEvent (ASEvent * event)
             if( pointer_wd )
                 release_winlist_button( pointer_wd, event->x.xbutton.button );
             break;
+        case FocusIn:  /* JWT:WHEN WINLIST TAKES KEYBOARD FOCUS: */
+            WinListState.keyboard_cursor = -1;
+            break;
+        case FocusOut:  /* JWT:WHEN WINLIST LOOSES KB FOCUS: */
+            if (WinListState.keyboard_cursor >= 0
+                    && WinListState.keyboard_cursor < WinListState.windows_num)
+                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
+            break;
         case EnterNotify :
+        case LeaveNotify :
             if( event->x.xcrossing.window == Scr.Root )
             {
                 withdraw_active_balloon();
                 break;
             }
-        case LeaveNotify :
         case MotionNotify :
             if( event->x.type == MotionNotify ) 
                 root_pointer_moved = True ; 
@@ -669,7 +746,7 @@ LOCAL_DEBUG_OUT( "gravity = %d", Config->gravity );
     XSelectInput (dpy, w, PropertyChangeMask|StructureNotifyMask|
                           ButtonPressMask|ButtonReleaseMask|PointerMotionMask|
                           KeyPressMask|KeyReleaseMask|
-                          EnterWindowMask|LeaveWindowMask);
+                          EnterWindowMask|LeaveWindowMask|FocusChangeMask);
 
     return w ;
 }
@@ -1363,11 +1440,11 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
             if( Config->IconSize.height > 0 ) 
                 height = Config->IconSize.height;
         }
-        else if (height && Config->UseName >= ASN_NameTypes && Config->MaxColWidth)  /* JWT:ICONS ONLY! */
+        else if (Config->UseName >= ASN_NameTypes && Config->MaxColWidth)  /* JWT:ICONS ONLY! */
         {
             /* JWT:SCALE DOWN LARGE ICONS TO FIT, BUT DON'T SCALE SMALL ONES UP TO FILL: */
             /* (FOR BOTH SCALE UP & DOWN, SPECIFY *WinListIconSize WxH)! */
-            float aspect = width / height;
+            float aspect = (width > 0 && height > 0) ? ((float)width / (float)height) : 1.0;
             if (height > Config->MaxColWidth)
             {
                 height = Config->MaxColWidth;
@@ -1407,10 +1484,22 @@ do_blink_urgent_bar( void *vdata )
     timer_new (500, do_blink_urgent_bar, tbar); 
 }
 
+/* JWT:NEW FUNCTION TO JUST TOGGLE "FOCUS" ON THE DESIRED BUTTON (FOR KEYBOARD NAVIGATION): */
+void set_just_winlist_button_focus( ASWindowData *wd, Bool focus )
+{
+    timer_remove_by_data( wd->bar );  /* just in case */
+
+    if (focus)
+        set_astbar_style_ptr( wd->bar, BAR_STATE_FOCUSED, Scr.Look.MSWindow[BACK_FOCUSED] );
+
+    set_astbar_focused( wd->bar, NULL, focus );
+    render_astbar( wd->bar, WinListState.main_canvas );
+}
+
 static void 
 focus_winlist_button( ASWindowData *wd )
 {
-    timer_remove_by_data( wd->bar );  /* just in case */ 
+    timer_remove_by_data( wd->bar );  /* just in case */
 
     if( wd->focused ) 
     {
@@ -1645,7 +1734,7 @@ LOCAL_DEBUG_OUT("tbar = %p, wd = %p", tbar, wd );
         WinListState.focused = NULL ;
 
     if( tbar )
-        timer_remove_by_data( tbar );  /* just in case */ 
+        timer_remove_by_data( tbar );  /* just in case */
 
     if( i < WinListState.windows_num  )
     {
