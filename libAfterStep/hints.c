@@ -2757,8 +2757,7 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 				icon_file_isDefault = True;
 		}
 		if (get_flags (hints->client_icon_flags, AS_ClientIcon)) {
-			Bool use_client_icon = (hints->icon_file == NULL
-															|| Database == NULL);
+			Bool use_client_icon = (hints->icon_file == NULL || Database == NULL);
 
 			if (!use_client_icon) {
 				if (icon_file_isDefault)
@@ -2769,9 +2768,8 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 					if (icon_file_im == NULL)
 						use_client_icon = True;
 					LOCAL_DEBUG_OUT ("loaded icon from file \"%s\" into %p",
-													 icon_file ? icon_file : "(null)", im);
+							icon_file ? icon_file : "(null)", im);
 				}
-
 			}
 			if (use_client_icon) {
 				/* first try ARGB icon If provided by the application : */
@@ -2786,7 +2784,7 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 					im = convert_argb2ASImage (scr->asv, width, height,
 																		 hints->icon_argb + 2, NULL);
 					LOCAL_DEBUG_OUT ("converted client's ARGB into an icon %dx%d %p",
-													 width, height, im);
+							width, height, im);
 
 				}
 				if (im == NULL && get_flags (hints->client_icon_flags, AS_ClientIconPixmap) && hints->icon.pixmap != None) {	/* convert client's icon into ASImage */
@@ -2794,12 +2792,10 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 
 					get_drawable_size (hints->icon.pixmap, &width, &height);
 					im = picture2asimage (scr->asv, hints->icon.pixmap,
-																hints->icon_mask, 0, 0, width, height,
-																0xFFFFFFFF, False, 100);
+							hints->icon_mask, 0, 0, width, height, 0xFFFFFFFF, False, 100);
 
 					LOCAL_DEBUG_OUT
-							("converted client's pixmap into an icon %dx%d %p", width,
-							 height, im);
+							("converted client's pixmap into an icon %dx%d %p", width, height, im);
 				}
 			}
 		}
@@ -2831,13 +2827,12 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 
 					de = fetch_desktop_entry (CombinedCategories, hints->res_name);
 					LOCAL_DEBUG_OUT ("found desktop entry %p, for res_name = \"%s\"",
-													 de, hints->res_name);
+							de, hints->res_name);
 					if (de == NULL)
 						de = fetch_desktop_entry (CombinedCategories,
 																			hints->res_class);
-					LOCAL_DEBUG_OUT
-							("found desktop entry %p, for res_class = \"%s\"", de,
-							 hints->res_class);
+					LOCAL_DEBUG_OUT ("found desktop entry %p, for res_class = \"%s\"", de,
+							hints->res_class);
 				}
 				if (de) {
 					if (de && de->ref_count > 0 && de->Icon) {
@@ -2851,10 +2846,9 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 
 			}
 			if (icon_file) {
-				if (icon_file_im)
-					im = icon_file_im;
-				else
-					im = load_environment_icon_any (icon_file, desired_size);
+				im = (icon_file_im) ? icon_file_im
+						: load_environment_icon_any (icon_file, desired_size);
+
 				/*get_asimage (scr->image_manager, icon_file, 0xFFFFFFFF, 100); */
 				LOCAL_DEBUG_OUT ("loaded icon from \"%s\" into %dx%d %p",
 												 icon_file, im ? im->width : 0,
@@ -2864,6 +2858,13 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 			}
 		}
 	}
+	/* JWT:IF NO OR BAD ICON FOUND & WE HAVE A DEFAULT, USE THAT, FOR PETE'S SAKE!: */
+	if (im == NULL && Database && Database->style_default.icon_file != NULL) {
+		im = get_asimage (scr->image_manager, Database->style_default.icon_file, 0xFFFFFFFF, 100);
+		LOCAL_DEBUG_OUT ("loaded DEFAULT icon from file \"%s\" into %p",
+				Database->style_default.icon_file, im);
+	}
+
 	return im;
 }
 
