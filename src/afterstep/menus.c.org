@@ -1167,16 +1167,10 @@ on_menu_pressure_changed (ASInternalWindow * asiw, int pressed_context)
 					pressed = py / menu->item_height;
 				pressed += menu->top_item;
 				if (pressed != menu->pressed_item)
-				{
 					press_menu_item (menu, pressed, False);
-					  /* JWT:ALSO DO RELEASE (TO ACTIVATE) DUE TO CHANGE JUST BELOW!: */
-					press_menu_item (menu, -1, False);
-				}
 			}
-/* JWT:STOP INVOKING MENUS EXCEPT WHEN USER *PRESSES* THE MOUSE ON 'EM! (ANNOYING)
 		} else if (menu->pressed_item >= 0) {
 			press_menu_item (menu, -1, False);
-*/
 		}
 	}
 }
@@ -1186,18 +1180,11 @@ handle_menu_selection (ASMenu * menu, int button_state, int px,
 											 int selection, Bool render)
 {
 	if (selection != menu->selected_item) {
-/* JWT:STOP INVOKING SUBMENUS JUST B/C MOUSE MOVES SLIGHTLY BETWEEN PRESS AND
-RELEASE (SLIGHT DRAG) AND RELEASE OCCURS ON AN AJACENT MENU-ITEM (VERY ANNOYING)!
-TRYING TO NAVIGATE, INSTEAD, JUST MOVE THE SELECTION!
-(ANNOYANCE OCCURS (OFTEN) WHEN CLICKING SCREEN TO INVOKE MAIN MENU WITHOUT HOLDING
-MOUSE STEADY WHILST RELEASING!):
 		if (button_state & (Button1Mask | Button2Mask | Button3Mask))
 			press_menu_item (menu, selection, False);
 		else
-*/
 			select_menu_item (menu, selection, render);
 	}
-	/* THIS SEEMS TO ALLOW HOVERING OVER ".." PART TO LAUNCH SUBMENUS (DESIRABLE): */
 	if (px >
 			menu->main_canvas->width - (menu->arrow_space + DEFAULT_MENU_SPACING)
 			&& menu->submenu == NULL)
@@ -1580,10 +1567,10 @@ void show_asmenu (ASMenu * menu, int x, int y)
 	my_width = menu->optimal_width + tbar_height;
 	my_height = menu->optimal_height + tbar_height;
 
-/*  JWT:A DOUBLE-COMPENSATION? - (MENU STARTS W/MOUSE OVER 2ND ITEM):  y -= tbar_height; */
-/*  JWT:ONLY DO FOR TOPLEVEL MENU (START SUBMENUS AT MOUSE-POSITION):  x -= menu->optimal_width / 3; */
+	y -= tbar_height;
+	x -= menu->optimal_width / 3;
 
-	if (menu->supermenu) {	 /* (SUBMENU): we need to make sure we would not overlay our parent completely ! */
+	if (menu->supermenu) {				/* we need to make sure we would not overlay our parent completely ! */
 		ASCanvas *pc = menu->supermenu->main_canvas;
 		int requested_x = x, requested_y = y;
 		if (x + my_width > Scr.MyDisplayWidth)
@@ -1614,8 +1601,7 @@ void show_asmenu (ASMenu * menu, int x, int y)
 			} else if (requested_x != x)
 				gravity = NorthEastGravity;
 		}
-	} else {   /* (TOPLEVEL MENU): */
-		x -= menu->optimal_width / 3;  /* JWT:MOVED HERE (DO ONLY FOR TOPLEVEL MENUS)! */
+	} else {
 		if (x <= MIN_MENU_X)
 			x = MIN_MENU_X;
 		else if (x + menu->optimal_width + tbar_height > MAX_MENU_X) {
