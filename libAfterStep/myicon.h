@@ -43,6 +43,7 @@ typedef struct button_t
 	unsigned int width, height ;
 	int context ;
 	Bool use_app_icon;  /* JWT:USE APPLICATION'S ICON IF TRUE! */
+	struct ASImage *save_nonapp_image;  /* JWT:PRESERVE LOOK'S DEFAULT IMAGE HERE (IF use_app_icon)! */
 }button_t;
 
 typedef button_t MyButton ;

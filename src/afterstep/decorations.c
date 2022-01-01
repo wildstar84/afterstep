@@ -1021,31 +1021,26 @@ Bool hints2decorations (ASWindow * asw, ASHints * old_hints)
 		}
 
 		if (icon_image_changed) {
-			ASImage *icon_image =	get_client_icon_image (ASDefaultScr, asw->hints, 128);
+			ASImage *icon_image =	get_client_icon_image (ASDefaultScr, asw->hints, 64);
 
 			if (icon_image)
 			{
 				/* JWT:SCALE DOWN LARGE ICONS TO FIT, BUT DON'T SCALE SMALL ONES UP TO FILL: */
-				if (icon_image->height && Scr.Look.ButtonWidth && Scr.Look.ButtonHeight)
-				{
+				if (icon_image->height && Scr.Look.ButtonWidth && Scr.Look.ButtonHeight) {
 					int width = icon_image->width;
 					int height = icon_image->height;
-					float aspect = width / height;
-					if (height > Scr.Look.ButtonHeight)
-					{
+					float aspect = (width > 0 && height > 0) ? ((float)width / (float)height) : 1.0;
+					if (height > Scr.Look.ButtonHeight) {
 						height = Scr.Look.ButtonHeight;
 						width = (int)(aspect * height);
 					}
-					if (width > Scr.Look.ButtonWidth)
-					{
+					if (width > Scr.Look.ButtonWidth) {
 						width = Scr.Look.ButtonWidth;
 						height = (int)((1 / aspect) * width);
 					}
-					if (width != icon_image->width || height != icon_image->height)
-					{
+					if (width != icon_image->width || height != icon_image->height) {
 						ASImage *scaled_im = scale_asimage( Scr.asv, icon_image, width, height, ASA_ASImage, 100, ASIMAGE_QUALITY_DEFAULT );
-						if (scaled_im != NULL )
-						{
+						if (scaled_im != NULL ) {
 							safe_asimage_destroy( icon_image );
 							icon_image = scaled_im ;
 						}
@@ -1182,33 +1177,40 @@ Bool hints2decorations (ASWindow * asw, ASHints * old_hints)
 	}
 
 	if (asw->tbar) {							/* 9) now we have to setup titlebar buttons */
-		/* JWT:SCALE APP. ICON FOR TITLE-BUTTON WHICH IS SET TO USE THE APP-ICON!: */
+		/* JWT:CHECK IF ANY TITLE-BUTTON IS SET TO USE THE APP. ICON & SCALE THE ICON IF SO: */
 		for (i = 0; i < TITLE_BUTTONS; i++) {
 			if (Scr.Look.buttons[i].use_app_icon) {
-				ASImage *appicon_image =	get_client_icon_image (ASDefaultScr, asw->hints, 32);
-				if (appicon_image && appicon_image->height) {
+				ASImage *appicon_image = get_client_icon_image (ASDefaultScr, asw->hints, 32);
+				if (appicon_image != NULL && Scr.Look.buttons[i].unpressed.image != NULL) {
 					int width = appicon_image->width;
 					int height = appicon_image->height;
-					float aspect = width / height;
-					if (height > Scr.Look.buttons[i].height) {
-						height = Scr.Look.buttons[i].height;
+					float aspect = (width > 0 && height > 0) ? ((float)width / (float)height) : 1.0;
+					if (Scr.Look.buttons[i].pressed.image == NULL)
+						Scr.Look.buttons[i].pressed.image = Scr.Look.buttons[i].unpressed.image;
+
+					/* WE USE THE wXh OF THE DEFAULT BUTTON IMAGE TO FIGURE OUR MAX. SIZE: */
+					/* (NOTE: THE DEFAULT BUTTON IMAGE SHOULD PROBABLY BE SQUAREISH)! */
+					/* (ALSO IN THIS CASE, THE "pressed" IMG. IS A COPY OF THE "unpressed" ONE) */
+					int buttonarea_height = Scr.Look.buttons[i].pressed.image->height;
+
+					/* SCALE THE ICON DOWN TO FIT IN THE SQUAREISH AREA INSIDE THE TITLEBAR: */
+					/* if (height > buttonarea_height) { */ /* FILL ONLY: */
+					if (height != buttonarea_height) {  /* FILL OR FIT: */
+						height = buttonarea_height;
 						width = (int)(aspect * height);
 					}
-					if (width > Scr.Look.buttons[i].width) {
-						width = Scr.Look.buttons[i].width;
-						height = (int)((1 / aspect) * width);
-					}
-					if (width != appicon_image->width || height != appicon_image->height)
-					{
+					if (width != appicon_image->width || height != appicon_image->height) {
 						ASImage *scaled_im = scale_asimage( Scr.asv, appicon_image, width, height, ASA_ASImage, 100, ASIMAGE_QUALITY_DEFAULT );
-						if (scaled_im != NULL )
-						{
+						if (scaled_im != NULL ) {
 							safe_asimage_destroy( appicon_image );
 							appicon_image = scaled_im ;
 						}
 					}
 					Scr.Look.buttons[i].unpressed.image = appicon_image;
-				}
+				} else
+					/* JWT:WE MUST RESTORE THE ORIGINAL "LOOK" BUTTON IMAGE (FOR NEXT WINDOW)! */
+					Scr.Look.buttons[i].unpressed.image = Scr.Look.buttons[i].save_nonapp_image;
+
 				break;  /* NOTE:WE SAVE TIME BY ASSUMING AT MOST 1 BUTTON WILL HAVE THIS OPTION! */
 			}
 		}

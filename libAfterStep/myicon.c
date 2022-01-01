@@ -215,13 +215,19 @@ load_button (button_t * button, char **filenames, ASImageManager * imman)
 {
 	if (button && imman && filenames) {
 		button->use_app_icon = False;
+		button->save_nonapp_image = NULL;
 		if (filenames[0])
+		{
 			load_icon (&(button->unpressed), filenames[0], imman);
-		if (filenames[1]) {
-			if (strstr("-", filenames[1]))
-				button->use_app_icon = True;
-			else
-				load_icon (&(button->pressed), filenames[1], imman);
+			/* JWT:2ND IMAGE CAN BE "-" (ALWAYS USE APPLICATION ICON INSTEAD OF HAVING A "PRESSED" ICON)!: */
+			/* NOTE:WHEN USING THE APP. ICON, THERE WILL BE NO VISUAL CHG. WHEN PRESSING THE BUTTON. */
+			if (filenames[1]) {
+				if (strstr("-", filenames[1])) {  /* USER WANTS APP. ICON */
+					button->use_app_icon = True;
+					button->save_nonapp_image = button->unpressed.image;
+				} else  /* USER WANTS SEPARATE ICON WHEN BUTTON PRESSED */
+					load_icon (&(button->pressed), filenames[1], imman);
+			}
 		}
 		update_button_size (button);
 		return (button->width > 0 && button->height > 0);
@@ -245,4 +251,9 @@ void free_button_resources (button_t * button)
 {
 	free_icon_resources (&(button->unpressed));
 	free_icon_resources (&(button->pressed));
+	if (button->use_app_icon && button->save_nonapp_image != NULL) {
+		safe_asimage_destroy( button->save_nonapp_image );
+		button->save_nonapp_image = NULL;
+		button->use_app_icon = False;
+	}
 }

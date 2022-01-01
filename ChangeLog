@@ -1,5 +1,51 @@
 CHANGELOG
 ----------------------
+[2021-12-30: Jim Turner]
+ * Fix another "exploding menu" issue:  This annoyance occurs often when one 
+   pops up the main applications menu, aka. the "Start Menu" in 
+   M$-Windowsspeak, and inadvertanly moves the mouse slightly between press and 
+   release such that the mouse moves just across the boundry to an ajacent menu 
+   item that contains submenus causing activation of the submenu almost on top 
+   of the menu one is TRYING to invoke!  Stopped this from happening so that 
+   one now has to click the menu-item or hover over the ".." on the right edge.
+   Also make submenus pop up with left edge just under the mouse cursor (seems 
+   more natural to me & leaving more of the parent menu visible) and corrected 
+   the virtical positioning to have the first item in the submenu under the 
+   mouse cursor (when possible).  All this should be much more intuitive and 
+   similar to more modern popup menus for most users.
+ * Add option for WinList to take keyboard focus and be keyboard-navigatible 
+   (like another window-list menu but always visible)!  The left and right 
+   arrow keys traverse the open windows and keys:  1, l, 2, m, 3, and r (the 
+   same sequences previously added to Wharf) invoke the matching mouse-buttons 
+   to invoke the specified WinList functions.  You can give WinList a vertical 
+   titlebar and can then shade/unshade it when needing more screen realestate.  
+   In that case, the Escape key shades and Return key unshades (when focused 
+   but no buttons are highlighted).  When a button is highlighted the other 
+   keys mentioned invoke WinList mouse-button functions, along with Return and 
+   Spacebar also equivalent to mouse-button 1.
+ * Reduce logfile (.xsession_errors) spam when AS looks to load some font or 
+   image file and no actual file-name is specified (configured) for some 
+   option and AS happily uses a default, as this is useless to users without 
+   there being an actual file-name that AS can't find (we'll still warn in that 
+   case)!
+ * Fix scaling issues for app-icons in window title-bar to whit: use the size 
+   of the required "default" unpressed image (not otherwise used) in the 
+   Look.TitleButton line to scale the app-icon icon to fit in the titlebar 
+   nicely with other buttons (the 2nd ("pressed") image parameter is specified 
+   as just a dash ("-") to use the app's icon in lieu of the default pressed 
+   image (both pressed and unpressed).  In other words it is not possible 
+   (and doesn't make any sense) to have separate "pressed" and "unpressed" 
+   image options for app. icons!  Even though this "default" "pressed" 
+   image in the TitleButton configuration line is required for sizing, it 
+   will only appear if there is no icon for the application / window AND there 
+   is no default/fallback icon specified in the "database" file.  Also fix 
+   issue where the button for the last window opened was being used in lieu of 
+   the default icon when a later app. window was opened that had no app. icon.
+ * Try harder to find a default icon for applications without one, as this 
+   is needed now more than ever - if no icon is found for the app. and there's 
+   a default/fallback icon specified in the "database" file ("*" line), then 
+   we will always use that.
+
 [2021-12-28: Jim Turner]
  * Added option to display the application's icon scaled to fit as one of the 
    titlebar buttons, giving AfterStep a more modern look (this is the default 
@@ -12,6 +58,10 @@ CHANGELOG
    line, ie.:
 
 TitleButton # default-image-file -
+
+   NOTE:  The current version of WinList currently only works horizontally.
+   My reccomendation is to use a vertical titlebar on it so that you can shade 
+   it when you need more screen realestate.
 
 [2021-12-27: Jim Turner]
  * Scale large icons down to fit (WinList, and iconified app. icons) 
