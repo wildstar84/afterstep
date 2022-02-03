@@ -1602,7 +1602,8 @@ spawn_child (const char *cmd, int singleton_id, int screen,
 /******************************************************************************/
 Bool is_url (const char *url)
 {
-	return (strncmp (url, "http://", 7) == 0
+	/* JWT:ADD https:// - REQUIRED FOR MODERN URLs!: */
+	return (strncmp (url, "http://", 7) == 0 || strncmp (url, "https://", 8) == 0
 					|| strncmp (url, "ftp://", 6) == 0);
 }
 
