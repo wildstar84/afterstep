@@ -890,6 +890,9 @@ void DispatchEvent (ASEvent * event)
 		on_wharf_pressed (event, 0, NULL);
 		break;
 	case ButtonRelease:
+		if (event->x.xbutton.button > Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
+			break;
+
 		release_pressure (event->x.xbutton.button);
 		{
 			ASMagic *obj = fetch_object (event->w);
@@ -3578,6 +3581,7 @@ void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb)
 				}
 			}
 		}
-		press_wharf_button (aswb, event->x.xbutton.state);
+		if (event->x.xbutton.button <= Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
+			press_wharf_button (aswb, event->x.xbutton.state);
 	}
 }
