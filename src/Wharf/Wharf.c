@@ -190,10 +190,14 @@ typedef struct ASWharfState {
 
 	ASWharfButton *focused_button;
 	ASWharfButton *prev_focused_button;  /* JWT:PREVIOUSLY FOCUSED BUTTON (FOR KB-FOCUSING). */
-	Bool isFocused;                      /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
-	Window focus_return;                 /* JWT:SAVE WHARF'S MAIN X FOCUS WINDOW: */
-	int revert_to_return;
-	time_t last_pressed_time;  /* JWT:PREVENT KEY-REPEAT FOR FUNCTION-INVOCATION KEYS! */
+	Bool isFocused;             /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
+	Window focus_return;        /* JWT:SAVE WHARF'S MAIN X FOCUS WINDOW: */
+	int revert_to_return;       /* JWT:EXTRA RETURN VALUE FROM XGetInputFocus. */
+	Bool key_release_pending;   /* JWT:PREVENT KEY-REPEAT FOR FUNCTION-INVOCATION KEYS! */
+	Bool ctrlkey_down;          /* JWT:TRUE BETWEEN PRESS & RELEASE OF CONTROL-KEY! */
+	Bool skipFdataFns;          /* JWT:SKIP fdata[] FUNCTION-CALLS ON FOLDERS IF CONTROL-KEY PRESSED. */
+	int holdFocus;              /* JWT:TRY TO STOP FOCUS-ON-MOUSE STATE IN CERTAIN WEIRD CASES! */
+	time_t commandSent;         /* JWT:AVOID SENDING FDATA COMMANDS > 1 TIME! */
 
 	FunctionData *default_action[Button5];
 
@@ -231,7 +235,7 @@ static inline void withdraw_wharf_subfolders (ASWharfFolder * aswf);
 void on_wharf_moveresize (ASEvent * event);
 void destroy_wharf_folder (ASWharfFolder ** paswf);
 void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb);
-void release_pressure (int button);
+void release_pressure (int button, ASWharfButton *sel);
 Bool check_pending_swallow (ASWharfFolder * aswf);
 void exec_pending_swallow (ASWharfFolder * aswf);
 void check_swallow_window (ASWindowData * wd);
@@ -274,6 +278,14 @@ int main (int argc, char **argv)
 	}
 
 	memset (&WharfState, 0x00, sizeof (WharfState));
+	/* JWT:INITIALIZE OUR STUFF: */
+	WharfState.isFocused = False;
+	WharfState.focus_return = 0;
+	WharfState.revert_to_return = 0;
+	WharfState.key_release_pending = False;
+	WharfState.ctrlkey_down = False;
+	WharfState.skipFdataFns = False;
+	WharfState.holdFocus = 0;
 
 	ConnectX (ASDefaultScr, EnterWindowMask);
 	_AS_WHARF_CLOSE = XInternAtom (dpy, "_AS_WHARF_CLOSE", False);
@@ -717,7 +729,7 @@ void DispatchEvent (ASEvent * event)
 {
 	static Bool root_pointer_moved = True;
 	KeySym ks;
-	static char buf[10], n;
+	char buf[10], n;
 
 	SHOW_EVENT_TRACE (event);
 
@@ -768,15 +780,14 @@ void DispatchEvent (ASEvent * event)
 		      }
 		      break;
 			case XK_Return:
-				if (difftime (time (NULL), WharfState.last_pressed_time) < 2) /* JWT:PREVENT KEY-REPEAT! */
+				if (WharfState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
 					break;
-				WharfState.last_pressed_time = time (NULL);
+				WharfState.key_release_pending = True;
 
 				if (WharfState.focused_button) {
-					press_wharf_button (WharfState.focused_button, event->x.xbutton.state);
-					release_pressure (1);
+					on_wharf_pressed (event, Button1, WharfState.focused_button);
 					ASWharfButton *aswb = WharfState.focused_button;
-					if (aswb->swallowed) {
+					if (aswb->swallowed && WharfState.isFocused) {
 						/* focus_window (NULL, w); */
 						Time t = Scr.last_Timestamp;
 						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
@@ -785,12 +796,17 @@ void DispatchEvent (ASEvent * event)
 						XSendEvent (dpy, aswb->swallowed->current->w, False,
 								KeyPressMask, &(event->x));
 						/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
-						t = CurrentTime;
+						t = Scr.last_Timestamp;
 						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
 					}
+					release_pressure (1, aswb);
 				}
 				break;
 			case XK_Escape:
+				if (WharfState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
+					break;
+				WharfState.key_release_pending = True;
+
 				if (WharfState.focused_button) {
 					ASWharfButton * curfocusbtn = WharfState.focused_button;
 					if (curfocusbtn->folder
@@ -800,21 +816,40 @@ void DispatchEvent (ASEvent * event)
 							&& curfocusbtn->parent != WharfState.root_folder
 							&& get_flags (curfocusbtn->parent->flags, ASW_Mapped))
 						withdraw_wharf_folder (curfocusbtn->parent);
+					else if (curfocusbtn->folder && curfocusbtn->parent == WharfState.root_folder)
+						on_wharf_pressed (event, 3, curfocusbtn);
 				}
 				break;
 			default:  /* JWT:PASS OTHER USEFUL KEY-DOWN EVENTS TO SWALLOWED WIDGETS: */
 				{
+					if (WharfState.key_release_pending && !WharfState.ctrlkey_down)  /* JWT:PREVENT KEY-REPEAT! */
+						break;
+					if (ks == XK_Control_L || ks == XK_Control_R) {
+						WharfState.ctrlkey_down = True;
+						break;
+					} else if (WharfState.ctrlkey_down && ks == XK_3) {
+						/* JWT:FIXME:HACK - Ctrl,1 WORKS BUT Ctrl,3 DOES NOT?! */
+						buf[0] = '3';
+						buf[1] = 0;
+					} else if (ks == XK_Shift_L || ks == XK_Shift_R)
+						break;
+
+					WharfState.key_release_pending = True;
+
 					ASWharfButton *aswb = WharfState.focused_button;
-					if (aswb) {
+					if (aswb && WharfState.isFocused) {
 						if (aswb->swallowed) {
 							/* focus_window (NULL, w); */
 							Time t = Scr.last_Timestamp;
 							XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
 							event->w = aswb->swallowed->current->w;
 							event->x.xkey.window = aswb->swallowed->current->w;
-							XSendEvent (dpy, aswb->swallowed->current->w, False,
-									KeyPressMask, &(event->x));
-							if (buf[0] == '1' || buf[0] == '2' || buf[0] == '3') {
+							/* JWT:SEND ALL KEYPRESS EVENTS TO SWALLOWED APPS (IF KB-FOCUSED): */
+							if (!XSendEvent (dpy, aswb->swallowed->current->w, False,
+									KeyPressMask, &(event->x)))
+								show_warning("ERROR - COULD NOT SEND KEYDOWN EVENT!");
+							if (buf[0] && (buf[0] == '1' || buf[0] == '2' || buf[0] == '3')) {
+								press_wharf_button (aswb, 0x100);
 								memset(&event->x, 0x00, sizeof(event->x));
 								/* JWT:SEND CORRESPONDING MOUSE-BUTTON# PRESS & RELEASE TO APP: */
 								/* JWT:NOTE: PERL/TK APPS (TkWeather: YOU!) WON'T TAKE THESE BUTTON EVENTS?! */
@@ -824,6 +859,8 @@ void DispatchEvent (ASEvent * event)
 									event->x.xbutton.button = Button2;
 								else if (buf[0] == '3')
 									event->x.xbutton.button = Button3;
+
+								/* JWT:EMULATE BUTTON PRESS: */
 								event->x.type = ButtonPress;
 								event->x.xbutton.window = aswb->swallowed->current->w;
 								event->x.xbutton.same_screen = True;
@@ -833,8 +870,6 @@ void DispatchEvent (ASEvent * event)
 								event->x.type = ButtonRelease;
 								event->x.xbutton.window = aswb->swallowed->current->w;
 								event->x.xbutton.state = 0x100;
-								t = Scr.last_Timestamp;
-								XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
 								if (! XSendEvent (dpy, InputFocus, False,
 										0xfff, &(event->x)))
 									show_warning("ERROR - COULD NOT SEND BUTTON-UP EVENT!");
@@ -842,16 +877,13 @@ void DispatchEvent (ASEvent * event)
 							/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
 							t = CurrentTime;
 							XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
-						} else if (buf[0]) {
-							if (difftime (time (NULL), WharfState.last_pressed_time) < 2) /* JWT:PREVENT KEY-REPEAT! */
-								break;
-							WharfState.last_pressed_time = time (NULL);
-
-							if (buf[0] == '1' || buf[0] == 'l')
-								press_wharf_button (aswb, event->x.xbutton.state);
-							else if (buf[0] == '2' || buf[0] == 'm')
+						} else if (buf[0]) {  /* NOT SWALLOWED (REGULAR AS BUTTON) */
+							/* JWT:ONLY NEED TO HANDLE THE 3 MAIN MOUSE-BUTTONS: */
+							if (buf[0] == '1')
+								on_wharf_pressed (event, Button1, aswb);
+							else if (buf[0] == '2')
 								on_wharf_pressed (event, Button2, aswb);
-							else if (buf[0] == '3' || buf[0] == 'r')
+							else if (buf[0] == '3')
 								on_wharf_pressed (event, Button3, aswb);
 						}
 					}
@@ -861,6 +893,24 @@ void DispatchEvent (ASEvent * event)
 		break;
 	case KeyRelease:  /* JWT:FIXED: WAS NEVER BEING TRIGGERED (ADDED MASKS)! */
 		{
+			/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
+			if (XEventsQueued(dpy, QueuedAfterReading)) {
+				XEvent nev;
+				XPeekEvent(dpy, &nev);
+				if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
+						nev.xkey.keycode == *(&(event->x).xkey.keycode)) {
+					break;
+				}
+			}
+			WharfState.key_release_pending = False;
+
+			n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+			if (ks == XK_Control_L || ks == XK_Control_R) {
+				WharfState.ctrlkey_down = False;
+				break;
+			} else if (ks == XK_Shift_L || ks == XK_Shift_R)
+				break;
+
 			ASWharfButton *aswb = NULL;
 			if (WharfState.focused_button)
 				aswb = WharfState.focused_button;
@@ -869,19 +919,45 @@ void DispatchEvent (ASEvent * event)
 				if (obj && obj->magic == MAGIC_WHARF_BUTTON)
 					aswb = (ASWharfButton *) obj;
 			}
-			if (aswb) {
+			if (aswb && WharfState.isFocused) {
 				if (aswb->swallowed) {  /* JWT:PASS OTHER USEFUL KEY-UP EVENTS TO SWALLOWED WIDGETS: */
+					Time t = Scr.last_Timestamp;
+					XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
 					event->w = aswb->swallowed->current->w;
 					event->x.xkey.window = aswb->swallowed->current->w;
-					XSendEvent (dpy, aswb->swallowed->current->w, False,
-								KeyReleaseMask, &(event->x));
-				} else if (buf[0]) {  /* JWT:SIMULATE THE 3 MAIN MOUSE BUTTONS W/KEYBOARD SHORTCUTS: */
-					if (buf[0] == '1' || buf[0] == 'l')
-						release_pressure (1);
-					else if (buf[0] == '2' || buf[0] == 'm')
-						release_pressure (2);
-					else if (buf[0] == '3' || buf[0] == 'r')
-						release_pressure (3);
+					if (!XSendEvent (dpy, aswb->swallowed->current->w, False,
+							KeyReleaseMask, &(event->x)))
+						show_warning("ERROR - COULD NOT SEND KEYUP EVENT!");
+					if (buf[0] && (buf[0] == '1' || buf[0] == '2' || buf[0] == '3')) {
+						memset(&event->x, 0x00, sizeof(event->x));
+						/* JWT:SEND CORRESPONDING MOUSE-BUTTON# RELEASE TO APP: */
+						/* JWT:NOTE: PERL/TK APPS (TkWeather: YOU!) WON'T TAKE THESE BUTTON EVENTS?! */
+						if (buf[0] == '1')
+							event->x.xbutton.button = Button1;
+						else if (buf[0] == '2')
+							event->x.xbutton.button = Button2;
+						else if (buf[0] == '3')
+							event->x.xbutton.button = Button3;
+
+						/* JWT:EMULATE BUTTON RELEASE: */
+						event->x.type = ButtonRelease;
+						event->x.xbutton.window = aswb->swallowed->current->w;
+						event->x.xbutton.state = 0x100;
+						if (! XSendEvent (dpy, aswb->swallowed->current->w, False,
+									0xfff, &(event->x)))
+							show_warning("ERROR - COULD NOT SEND BUTTON-UP EVENT!");
+					}
+					/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
+					t = CurrentTime;
+					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+				}
+				if (buf[0]) {
+					if (buf[0] == '1')
+						release_pressure (1, aswb);
+					else if (buf[0] == '2')
+						release_pressure (2, aswb);
+					else if (buf[0] == '3')
+						release_pressure (3, aswb);
 				}
 			}
 		}
@@ -893,8 +969,8 @@ void DispatchEvent (ASEvent * event)
 		if (event->x.xbutton.button > Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
 			break;
 
-		release_pressure (event->x.xbutton.button);
-		{
+		release_pressure (event->x.xbutton.button, NULL);
+		{   /* JWT:SCOPE NEEDED HERE FOR LOCAL VARIABLE DECLARATION: */
 			ASMagic *obj = fetch_object (event->w);
 			if (obj && obj->magic == MAGIC_WHARF_BUTTON) {
 				ASWharfButton *aswb = (ASWharfButton *) obj;
@@ -911,6 +987,9 @@ void DispatchEvent (ASEvent * event)
 		root_pointer_moved = True;
 		break;
 	case EnterNotify:
+		WharfState.key_release_pending = False;  /* JWT:REINITIALIZE KEYBOARD FLAGS: */
+		WharfState.ctrlkey_down = False;
+		WharfState.skipFdataFns = False;
 		if (event->x.xcrossing.window == Scr.Root) {
 /* JWT: DON'T NEED AND IS VISUALLY ANNOYING: 
 			if (WharfState.focused_button)
@@ -919,27 +998,37 @@ void DispatchEvent (ASEvent * event)
 			withdraw_active_balloon ();
 			break;
 		}
-	case LeaveNotify:
+	case LeaveNotify:  /* NOTE: ALSO CATCHES EnterNotify EVENTS WHEN NOT CROSSING ROOT WINDOW!: */
 		{
+			if (event->x.type == LeaveNotify) {
+				if (event->x.xcrossing.subwindow)
+					WharfState.holdFocus++;
+
+				/* DON'T LET FOCUS FOLLOWS MOUSE OUT OF WHARF (DOESN'T AFFECT USER-SET FFM MODE)!: */
+				if (WharfState.isFocused) {
+					Time t = Scr.last_Timestamp;
+					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+				}
+			} else
+				WharfState.holdFocus = 0;
+
 			ASMagic *obj = fetch_object (event->w);
-			if (WharfState.focused_button)
-				change_button_focus (WharfState.focused_button, False);
 			if (obj != NULL && obj->magic == MAGIC_WHARF_BUTTON) {
 				ASWharfButton *aswb = (ASWharfButton *) obj;
 				on_astbar_pointer_action (aswb->bar, 0, (event->x.type == LeaveNotify),
 						root_pointer_moved);
 				root_pointer_moved = False;
-				if (event->x.type == EnterNotify)
+				if (event->x.type == EnterNotify || WharfState.isFocused)
 				{
+					if (WharfState.focused_button && WharfState.focused_button != aswb)
+						change_button_focus (WharfState.focused_button, False);
+
 					change_button_focus (aswb, True);
-					if (WharfState.isFocused && aswb->swallowed) {
-						/* JWT:NOW PUT FOCUS BACK ON "WHARF"! */
-						sleep_a_millisec (100);
-						Time t = CurrentTime;
-						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
-					}
+					break;
 				}
 			}
+			if (WharfState.focused_button)
+				change_button_focus (WharfState.focused_button, False);
 		}
 		break;
 	case ConfigureRequest:
@@ -951,7 +1040,6 @@ void DispatchEvent (ASEvent * event)
 			}
 		}
 		break;
-
 	case ClientMessage:
 		{
 #ifdef LOCAL_DEBUG
@@ -1014,13 +1102,27 @@ void DispatchEvent (ASEvent * event)
 			change_button_focus (WharfState.focused_button, True);
 
 		/* SAVE "WHARF WINDOW" THAT GETS FOCUS ON FOCUS IN!: */
-		XGetInputFocus(dpy, &WharfState.focus_return, &WharfState.revert_to_return);
+		if (! WharfState.focus_return)
+			XGetInputFocus(dpy, &WharfState.focus_return, &WharfState.revert_to_return);
 		WharfState.isFocused = True;
 		break;
 	case FocusOut:  /* JWT:UNHIGHLIGHT THE KB-FOCUSED BUTTON WHEN WHARF LOOSES KB FOCUS: */
-		if (WharfState.focused_button)
-			change_button_focus (WharfState.focused_button, False);
-		WharfState.isFocused = False;
+		if (WharfState.holdFocus > 1) {
+			WharfState.holdFocus = 0;
+			/* JWT:FIXME: THIS HACK NEEDED TO KEEP WHARF FROM LOSING FOCUS WHEN MOVING MOUSE OFF
+			   OF SOME SWALLOWED WINDOWS (PerlTk DOCKLETS ARE KNOWN FOR THIS).  WHEN THIS HAPPENS,
+			   AS SEEMS TO GO INTO A "FOCUS-FOLLOWS-MOUSE" MODE UNTIL ANOTHER WINDOW IS CLICKED ON!
+			   FIXME #2: get_flags(Scr.Feel.flags, ClickToFocus) DOES NOT WORK IN WHARF?!
+			   GOOD NEWS IS THAT THIS HACK SHOULD ONLY AFFECT CLICK-2-FOCUS MODE!
+			*/
+			Time t = Scr.last_Timestamp;  /* JWT:FORCE WHARF TO KEEP FOCUS ON SIMPLE MOUSE-OUT: */
+			XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+		} else {
+			if (WharfState.focused_button)
+				change_button_focus (WharfState.focused_button, False);
+			WharfState.isFocused = False;
+		}
+		break;
 	default:
 #ifdef XSHMIMAGE
 		LOCAL_DEBUG_OUT
@@ -3406,9 +3508,9 @@ void press_wharf_button (ASWharfButton * aswb, int state)
 	}
 }
 
-void release_pressure (int button)
+void release_pressure (int button, ASWharfButton *sel)
 {
-	ASWharfButton *pressed = WharfState.pressed_button;
+	ASWharfButton *pressed = sel ? sel : WharfState.pressed_button;
 	LOCAL_DEBUG_OUT ("pressed button is %p", pressed);
 	button -= Button1;
 	if (pressed) {
@@ -3419,26 +3521,21 @@ void release_pressure (int button)
 			set_astbar_pressed (pressed->bar, pressed->canvas, False);
 			WharfState.pressed_button = NULL;
 		}
-		if (pressed->folder && !(button > 0 && pressed->fdata[button])) {
-			LOCAL_DEBUG_OUT ("pressed button has folder %p (%s)",
-					pressed->folder, get_flags (pressed->folder->flags,
-					ASW_Mapped) ? "Mapped" :
-					"Unmapped");
-			if (get_flags (pressed->folder->flags, ASW_Mapped))
-				withdraw_wharf_folder (pressed->folder);
-			else
-				display_wharf_folder (pressed->folder, pressed->canvas->root_x,
-						pressed->canvas->root_y,
-						pressed->canvas->root_x + pressed->canvas->width,
-						pressed->canvas->root_y + pressed->canvas->height);
-		} else if (pressed->fdata[button]) {
+		if (pressed->fdata[button] && !WharfState.skipFdataFns) {
+			/* HANDLE FDATA (BUTTON FUNCTIONS): */
 #if defined(LOCAL_DEBUG) && !defined(NO_DEBUG_OUTPUT)
 			print_func_data (__FILE__, __FUNCTION__, __LINE__,
 											 pressed->fdata[button]);
 #endif
 			if (button > 0 || !get_flags (pressed->flags, ASW_SwallowTarget)
 					|| pressed->swallowed == NULL) {	/* send command to the AS-proper : */
-				SendCommand (pressed->fdata[button], 0);
+				if (difftime (time (NULL), WharfState.commandSent) > 1) /* JWT:PREVENT KEY-REPEAT! */
+				{
+					/* JWT:PBM. IS THAT ON SOME SWALLOWED APPLETS (& BUTTON ISN'T BUTTON1) IS THAT
+					   THIS CAN GET CALLED BY BOTH A KEYPRESS, THEN AGAIN BY THE KEY RELEASE!: */
+					SendCommand (pressed->fdata[button], 0);
+					WharfState.commandSent = time (NULL);
+				}
 				sleep_a_millisec (200);	/* give AS a chance to handle requests */
 				if (! noCollapseFolders) {
 					ASWharfFolder *parentf = pressed->parent;
@@ -3457,6 +3554,7 @@ void release_pressure (int button)
 			set_astbar_pressed (pressed->bar, pressed->canvas, False);
 			WharfState.pressed_button = NULL;
 		}
+		WharfState.skipFdataFns = False;
 	}
 }
 
@@ -3474,6 +3572,10 @@ static Bool check_app_click (ASWharfButton * aswb, XButtonEvent * xbtn)
 
 void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb)
 {
+	/* JWT:NOTE:SWALLOWED APPS CALL press_wharf_button() WHICH SIMULATES A "MOUSE-BUTTON
+	   PRESS" WHICH CALLS THIS FUNCTION W/kbButton == 0, EVEN THOUGH IT WAS INITIATED BY
+	   A KEYBOARD PRESS, BUT THIS IS HANDLED ELSEWHERE AND WORKS FINE, BUT TAKE NOTE!
+	*/
 	if (! aswb) {  /* JWT:NOW HANDLES KEYBOARD "PRESSING" OF BUTTONS (aswb button KNOWN): */
 		ASMagic *obj = fetch_object (event->w);
 		if (obj == NULL)
@@ -3494,78 +3596,84 @@ void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb)
 							 || &(aswf->buttons[aswf->buttons_num - 1]) == aswb))
 					|| WITHDRAW_ON_ANY (Config)) {
 				if (aswb->fdata[Button3 - Button1] == NULL
-						|| (event->x.xbutton.state & AllModifierMask) == ControlMask) {
-					if (get_flags (WharfState.root_folder->flags, ASW_Withdrawn)) {
-						/* update our name to normal */
-						set_folder_name (WharfState.root_folder, False);
-						LOCAL_DEBUG_OUT ("un - withdrawing folder%s", "");
-						display_main_folder ();
-					} else {
-						int wx = 0, wy = 0, wwidth, wheight;
-						int i = aswf->buttons_num;
-						Bool reverse = False;
-
-						if (Config->withdraw_style < WITHDRAW_ON_ANY_BUTTON_AND_SHOW)
-							aswb = &(aswf->buttons[0]);
-
-						withdraw_wharf_subfolders (aswf);
-						/* update our name to withdrawn */
-						set_folder_name (aswf, True);
-
-						wwidth = aswb->desired_width;
-						wheight = aswb->desired_height;
-						if (get_flags (aswf->flags, ASW_Vertical)) {
-							int dy = event->x.xbutton.y_root - aswf->canvas->root_y;
-							if (get_flags (Config->geometry.flags, XNegative))
-								wx = Scr.MyDisplayWidth - wwidth;
-							if (dy > aswf->canvas->height / 2) {
-								wy = Scr.MyDisplayHeight - wheight;
-								reverse = (!get_flags (Config->geometry.flags, YNegative));
-							} else
-								reverse = (get_flags (Config->geometry.flags, YNegative));
+						|| (event->x.xbutton.state & AllModifierMask) == ControlMask
+						|| kbButton == Button3) { /* JWT:KEYBOARD WILL DO BOTH POPUP/DOWN AND fdata!: */
+					/* IF fdata DEFINED FOR B3 THEN ONLY TOGGLE FOLDER POP IF Control-key HELD DOWN: */
+					/* NOTE:STRANGE THAT Ctrl-KEY IS DETECTED VERY DIFFERENTLY FOR KEYBOARD VS. MOUSE! */
+					if (aswb->fdata[Button3 - Button1] == NULL || WharfState.ctrlkey_down
+							|| (event->x.xbutton.button == Button3
+								&& (event->x.xbutton.state & AllModifierMask) == ControlMask)) {
+						if (get_flags (WharfState.root_folder->flags, ASW_Withdrawn)) {
+							/* update our name to normal */
+							set_folder_name (WharfState.root_folder, False);
+							LOCAL_DEBUG_OUT ("un - withdrawing folder%s", "");
+							display_main_folder ();
 						} else {
-							int dx = event->x.xbutton.x_root - aswf->canvas->root_x;
-							if (get_flags (Config->geometry.flags, YNegative))
-								wy = Scr.MyDisplayHeight - wheight;
-							if (dx > aswf->canvas->width / 2) {
-								wx = Scr.MyDisplayWidth - wwidth;
-								reverse = (!get_flags (Config->geometry.flags, XNegative));
-							} else
-								reverse = (get_flags (Config->geometry.flags, XNegative));
-						}
-						if (get_flags (Config->flags, WHARF_ANIMATE)) {
-							set_flags (aswf->flags, ASW_UseBoundary);
-							animate_wharf_loop (aswf, aswf->canvas->width,
-									aswf->canvas->height, wwidth, wheight, reverse);
-							clear_flags (aswf->flags, ASW_UseBoundary);
-						}
+							int wx = 0, wy = 0, wwidth, wheight;
+							int i = aswf->buttons_num;
+							Bool reverse = False;
 
-						LOCAL_DEBUG_OUT ("withdrawing folder to %dx%d%+d%+d", wwidth,
-														 wheight, wx, wy);
-						XRaiseWindow (dpy, aswb->canvas->w);
-						while (--i >= 0) {
-							if (&(aswf->buttons[i]) != aswb &&
-									aswf->buttons[i].canvas->root_x == aswf->canvas->root_x
-									&& aswf->buttons[i].canvas->root_y ==
-									aswf->canvas->root_y) {
-								aswf->buttons[i].folder_x = wwidth;
-								aswf->buttons[i].folder_y = wheight;
-								move_canvas (aswf->buttons[i].canvas, wwidth, wheight);
+							if (Config->withdraw_style < WITHDRAW_ON_ANY_BUTTON_AND_SHOW)
+								aswb = &(aswf->buttons[0]);
+
+							withdraw_wharf_subfolders (aswf);
+							/* update our name to withdrawn */
+							set_folder_name (aswf, True);
+
+							wwidth = aswb->desired_width;
+							wheight = aswb->desired_height;
+							if (get_flags (aswf->flags, ASW_Vertical)) {
+								int dy = event->x.xbutton.y_root - aswf->canvas->root_y;
+								if (get_flags (Config->geometry.flags, XNegative))
+									wx = Scr.MyDisplayWidth - wwidth;
+								if (dy > aswf->canvas->height / 2) {
+									wy = Scr.MyDisplayHeight - wheight;
+									reverse = (!get_flags (Config->geometry.flags, YNegative));
+								} else
+									reverse = (get_flags (Config->geometry.flags, YNegative));
+							} else {
+								int dx = event->x.xbutton.x_root - aswf->canvas->root_x;
+								if (get_flags (Config->geometry.flags, YNegative))
+									wy = Scr.MyDisplayHeight - wheight;
+								if (dx > aswf->canvas->width / 2) {
+									wx = Scr.MyDisplayWidth - wwidth;
+									reverse = (!get_flags (Config->geometry.flags, XNegative));
+								} else
+									reverse = (get_flags (Config->geometry.flags, XNegative));
 							}
+							if (get_flags (Config->flags, WHARF_ANIMATE)) {
+								set_flags (aswf->flags, ASW_UseBoundary);
+								animate_wharf_loop (aswf, aswf->canvas->width,
+										aswf->canvas->height, wwidth, wheight, reverse);
+								clear_flags (aswf->flags, ASW_UseBoundary);
+							}
+							LOCAL_DEBUG_OUT ("withdrawing folder to %dx%d%+d%+d", wwidth,
+															 wheight, wx, wy);
+							XRaiseWindow (dpy, aswb->canvas->w);
+							while (--i >= 0) {
+								if (&(aswf->buttons[i]) != aswb &&
+										aswf->buttons[i].canvas->root_x == aswf->canvas->root_x
+										&& aswf->buttons[i].canvas->root_y ==
+										aswf->canvas->root_y) {
+									aswf->buttons[i].folder_x = wwidth;
+									aswf->buttons[i].folder_y = wheight;
+									move_canvas (aswf->buttons[i].canvas, wwidth, wheight);
+								}
+							}
+							set_flags (aswf->flags, ASW_Withdrawn);
+							set_withdrawn_clip_area (aswf, wx, wy, wwidth, wheight);
+							moveresize_canvas (aswf->canvas, wx, wy, wwidth, wheight);
+							//          ASSync(False);
+							//          MapConfigureNotifyLoop();
+
+							aswb->folder_x = 0;
+							aswb->folder_y = 0;
+							aswb->folder_width = wwidth;
+							aswb->folder_height = wheight;
+							moveresize_canvas (aswb->canvas, 0, 0, wwidth, wheight);
+
+							aswf->withdrawn_button = aswb;
 						}
-						set_flags (aswf->flags, ASW_Withdrawn);
-						set_withdrawn_clip_area (aswf, wx, wy, wwidth, wheight);
-						moveresize_canvas (aswf->canvas, wx, wy, wwidth, wheight);
-						//          ASSync(False);
-						//          MapConfigureNotifyLoop();
-
-						aswb->folder_x = 0;
-						aswb->folder_y = 0;
-						aswb->folder_width = wwidth;
-						aswb->folder_height = wheight;
-						moveresize_canvas (aswb->canvas, 0, 0, wwidth, wheight);
-
-						aswf->withdrawn_button = aswb;
 					}
 					return;
 				}
@@ -3580,8 +3688,35 @@ void on_wharf_pressed (ASEvent * event, int kbButton, ASWharfButton *aswb)
 					return;
 				}
 			}
+		} else if (kbButton == Button1 || event->x.xbutton.button == Button1) {
+			if (aswb->folder && (aswb->fdata[0] == NULL
+					|| (event->x.xbutton.state & AllModifierMask) == ControlMask
+					|| kbButton == Button1)) { /* JWT:KEYBOARD WILL DO BOTH POPUP/DOWN AND fdata!: */
+				/* IF fdata DEFINED FOR B1 THEN ONLY TOGGLE FOLDER POP IF Control-key HELD DOWN: */
+				if (aswb->fdata[0] == NULL || (event->x.xbutton.button == Button1
+						&& (event->x.xbutton.state & AllModifierMask) == ControlMask)
+						|| (kbButton == Button1 && WharfState.ctrlkey_down)) {
+					LOCAL_DEBUG_OUT ("aswb button has folder %p (%s)",
+							aswb->folder, get_flags (aswb->folder->flags,
+							ASW_Mapped) ? "Mapped" :
+							"Unmapped");
+					if (get_flags (aswb->folder->flags, ASW_Mapped))
+						withdraw_wharf_folder (aswb->folder);
+						/* pressit = True; */
+					else
+						display_wharf_folder (aswb->folder, aswb->canvas->root_x,
+								aswb->canvas->root_y,
+								aswb->canvas->root_x + aswb->canvas->width,
+								aswb->canvas->root_y + aswb->canvas->height);
+				}
+				if (kbButton != Button1)
+					return;  /* ONLY IF *MOUSE* BTN#1 WAS PRESSED (SEE press_wharf_button()!) */
+				else
+					/* TELL release_pressure() TO SKIP ANY fdata[] FN. CALLS IF USER USED Ctrl+key1!: */
+					WharfState.skipFdataFns = WharfState.ctrlkey_down;
+			}
 		}
-		if (event->x.xbutton.button <= Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
+		if (kbButton == Button3 || event->x.xbutton.button <= Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
 			press_wharf_button (aswb, event->x.xbutton.state);
 	}
 }

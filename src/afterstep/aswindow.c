@@ -1802,6 +1802,7 @@ Bool focus_window (ASWindow * asw, Window w)
 
 		/* JWT:(20190323):ADDED NEXT 8 TO RE-TRY FAILED FOCUS DUE TO TIMING ISSUE? */
 		ASSync (False);
+		/* sleep_a_millisec (100); */ /* JWT:TRIED THIS BUT CAUSES C2F ON TITLEBAR TO CATCH & DRAG! */
 		Window focus_return; int revert_to_return;
 		XGetInputFocus(dpy, &focus_return, &revert_to_return);
 
