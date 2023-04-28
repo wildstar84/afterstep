@@ -760,6 +760,7 @@ void HandleFocusIn (ASEvent * event)
 	int events_count = 0;
 	while (ASCheckTypedEvent (FocusIn, &event->x))
 		events_count++;
+
 	if (events_count > 0)
 		DigestEvent (event);
 
@@ -771,7 +772,15 @@ void HandleFocusIn (ASEvent * event)
 	if (Scr.Windows->focused != event->client) {
 		LOCAL_DEBUG_OUT ("CHANGE Scr.Windows->focused from %p to NULL",
 										 Scr.Windows->focused);
-		unset_focused_window();
+		/* JWT:ADD THIS TEST TO HANDLE C2F & MY STUPID Perl/Tk WHARF DOCKAPPS: */
+		if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->focused
+				&& event->client != NULL
+				&& ! get_flags (AfterStepState, ASS_HousekeepingMode)) {
+/* fprintf (stderr, "XCROSSING(FIN): c2f:FOCUS FOLLOWED MOUSE(%lX/%lX), PUT IT BACK ON LAST CLICKED(%lX/%lX)!\n",event->client,event->client->w,Scr.Windows->focused,Scr.Windows->focused->w);  fflush(stderr); */
+			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
+		} else {
+			unset_focused_window();
+		}
 	}
 	if (event->client == NULL
 			&& get_flags (AfterStepState, ASS_HousekeepingMode))
@@ -981,13 +990,21 @@ void HandlePropertyNotify (ASEvent * event)
 		/*ASFlagType old_hflags = asw->hints->flags ; */
 		show_debug (__FILE__, __FUNCTION__, __LINE__, "name prop changed...");
 		if (get_flags (Scr.Feel.flags, FollowTitleChanges))
-			on_window_hints_changed (asw);
+			on_window_hints_changed (asw);  /* JWT:THIS PUTS A BORDER AROUND WHARF (WTF?!) */
 		else if (update_property_hints_manager (asw->w, xprop->atom,
-																						Scr.Look.supported_hints,
-																						Database,
-																						asw->hints, asw->status)) {
+					Scr.Look.supported_hints,
+					Database,
+					asw->hints, asw->status))
+		{
+			/* JWT:REMOVED NEXT 2 20230227 - B/C SOME APPS (LIKE MY "Fauxdacious Mediaplayer") CAN
+			   CHANGE TITLES WHILST ICONIFIED AND AS IS THE ONLY WM I KNOW THAT DOESN'T UPDATE THE
+			   TITLE WHEN DEICONIFIED B/C OF THIS: (AND "FollowTitleChanges" UGLIFIES MY WHARF)?!
+			*/
+/*
 			if (ASWIN_GET_FLAGS (asw, AS_Dead))
 				return;
+*/
+
 			show_debug (__FILE__, __FUNCTION__, __LINE__,
 									"New name is \"%s\", icon_name \"%s\", following title change ? %s",
 									ASWIN_NAME (asw), ASWIN_ICON_NAME (asw),
@@ -998,8 +1015,11 @@ void HandlePropertyNotify (ASEvent * event)
 																												AS_ShortLived));
 			if (old_name && strcmp (old_name, ASWIN_NAME (asw)) != 0)
 				set_flags (asw->internal_flags, ASWF_NameChanged);
+
 			/* fix the name in the title bar */
-			if (!ASWIN_GET_FLAGS (asw, AS_Iconic))
+
+			/* JWT:REMOVED NEXT LINE 20230227 (AND THIS TOO, SEE ABOVE)!: */
+/*			if (!ASWIN_GET_FLAGS (asw, AS_Iconic)) */
 				on_window_title_changed (asw, True);
 			broadcast_res_names (asw);
 			broadcast_window_name (asw);
