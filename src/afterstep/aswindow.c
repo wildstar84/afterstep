@@ -1905,11 +1905,17 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 		show_warning ("unable to focus window %lX for client %lX, frame %lX",
 									w, asw->w, asw->frame);
 	else if (!ASWIN_GET_FLAGS (asw, AS_Mapped))
-		show_warning
+		if (get_flags (Scr.Feel.flags, ClickToFocus))
+			focus_prev_aswindow (asw);  /* JWT:c2f - HIDDEN/ICONIFIED WINDOW, FOCUS ON PREV. WINDOW. */
+		else
+			show_warning
 				("unable to focus unmapped window %lX for client %lX, frame %lX",
 				 w, asw->w, asw->frame);
 	else if (ASWIN_GET_FLAGS (asw, AS_UnMapPending))
-		show_warning
+		if (get_flags (Scr.Feel.flags, ClickToFocus))
+			focus_prev_aswindow (asw);  /* JWT:c2f - WINDOW PENDING HIDE/ICONIFY, FOCUS ON PREV. WINDOW. */
+		else
+			show_warning
 				("unable to focus window %lX that is about to be unmapped for client %lX, frame %lX",
 				 w, asw->w, asw->frame);
 	else {
