@@ -775,12 +775,11 @@ void HandleFocusIn (ASEvent * event)
 		/* JWT:ADD THIS TEST TO HANDLE C2F & MY STUPID Perl/Tk WHARF DOCKAPPS: */
 		if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->focused
 				&& event->client != NULL
-				&& ! get_flags (AfterStepState, ASS_HousekeepingMode)) {
-/* fprintf (stderr, "XCROSSING(FIN): c2f:FOCUS FOLLOWED MOUSE(%lX/%lX), PUT IT BACK ON LAST CLICKED(%lX/%lX)!\n",event->client,event->client->w,Scr.Windows->focused,Scr.Windows->focused->w);  fflush(stderr); */
+				&& !get_flags (AfterStepState, ASS_HousekeepingMode)
+				&& !strcmp (ASWIN_NAME (Scr.Windows->focused), "Wharf")) {
 			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
-		} else {
+		} else
 			unset_focused_window();
-		}
 	}
 	if (event->client == NULL
 			&& get_flags (AfterStepState, ASS_HousekeepingMode))
