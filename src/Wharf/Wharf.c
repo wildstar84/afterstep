@@ -727,17 +727,19 @@ void process_message (send_data_type type, send_data_type * body)
  *************************************************************************/
 void DispatchEvent (ASEvent * event)
 {
-	static Bool root_pointer_moved = True;
+	Bool root_pointer_moved;
 	KeySym ks;
 	char buf[10], n;
 
 	SHOW_EVENT_TRACE (event);
 
+/* JWT:SEEMS TO BE NO LONGER NEEDED NOW:
 	if ((event->eclass & ASE_POINTER_EVENTS) != 0
 			&& is_balloon_click (&(event->x))) {
 		withdraw_balloon (NULL);
 		return;
 	}
+*/
 
 	event->client = NULL;
 	switch (event->x.type) {
@@ -984,18 +986,22 @@ void DispatchEvent (ASEvent * event)
 		}
 		break;
 	case MotionNotify:
-		root_pointer_moved = True;
+		root_pointer_moved = True;  /* JWT:NOTE:  NEVER SEEMS TO HAPPEN?! */
 		break;
 	case EnterNotify:
-		WharfState.key_release_pending = False;  /* JWT:REINITIALIZE KEYBOARD FLAGS: */
+		/* JWT:REINITIALIZE KEYBOARD FLAGS (DO HERE, *NOT* IN FOCUSIN/OUT!): */
+		WharfState.key_release_pending = False;
 		WharfState.ctrlkey_down = False;
 		WharfState.skipFdataFns = False;
+		root_pointer_moved = True;
 		if (event->x.xcrossing.window == Scr.Root) {
 /* JWT: DON'T NEED AND IS VISUALLY ANNOYING: 
 			if (WharfState.focused_button)
 				change_button_focus (WharfState.focused_button, False);
 */
+/* JWT:SEEMS TO BE NO LONGER NEEDED NOW:
 			withdraw_active_balloon ();
+*/
 			break;
 		}
 	case LeaveNotify:  /* NOTE: ALSO CATCHES EnterNotify EVENTS WHEN NOT CROSSING ROOT WINDOW!: */
@@ -1016,8 +1022,9 @@ void DispatchEvent (ASEvent * event)
 			if (obj != NULL && obj->magic == MAGIC_WHARF_BUTTON) {
 				ASWharfButton *aswb = (ASWharfButton *) obj;
 				on_astbar_pointer_action (aswb->bar, 0, (event->x.type == LeaveNotify),
-						root_pointer_moved);
+						root_pointer_moved);  /* THIS SHOWS THE BALLOON, IF SET UP. */
 				root_pointer_moved = False;
+
 				if (event->x.type == EnterNotify || WharfState.isFocused)
 				{
 					if (WharfState.focused_button && WharfState.focused_button != aswb)
