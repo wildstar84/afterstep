@@ -181,7 +181,7 @@ void rearrange_pager_desks (Bool dont_resize_main);
 void on_pager_window_moveresize (void *client, Window w, int x, int y,
 																 unsigned int width, unsigned int height);
 void on_pager_pressure_changed (ASEvent * event);
-void release_pressure ();
+void release_pressure (ASEvent * event);
 void on_desk_moveresize (ASPagerDesk * d);
 void on_scroll_viewport (ASEvent * event);
 void place_separation_bars (ASPagerDesk * d);
@@ -2387,7 +2387,7 @@ start_moveresize_client (ASWindowData * wd, Bool move, ASEvent * event)
 	ASPagerDesk *d = get_pager_desk (wd->desk);
 	MyStyle *pager_focused_style = Scr.Look.MSWindow[BACK_FOCUSED];
 
-	release_pressure ();
+	release_pressure (NULL);
 	if (Scr.moveresize_in_progress)
 		return;
 
@@ -2606,7 +2606,7 @@ void DispatchEvent (ASEvent * event)
 										 event->x.xbutton.state & ButtonAnyMask);
 		if ((event->x.xbutton.state & ButtonAnyMask) ==
 				(Button1Mask << (event->x.xbutton.button - Button1)))
-			release_pressure ();
+			release_pressure (event);
 		return;
 	case EnterNotify:
 		if (event->x.xcrossing.window == Scr.Root)
@@ -2842,10 +2842,7 @@ void on_desk_pressure_changed (ASPagerDesk * d, ASEvent * event)
 void on_pager_pressure_changed (ASEvent * event)
 {
 	if (event->client == NULL) {
-		if (event->w == PagerState.main_canvas->w) {
-
-
-		} else {
+		if (event->w != PagerState.main_canvas->w) {
 			int i;
 			for (i = 0; i < PagerState.desks_num; ++i)
 				if (PagerState.desks[i].desk_canvas->w == event->w) {
@@ -2855,8 +2852,7 @@ void on_pager_pressure_changed (ASEvent * event)
 		}
 	} else
 		start_moveresize_client ((ASWindowData *) (event->client),
-														 (event->x.xbutton.state & ControlMask) == 0,
-														 event);
+				(event->x.xbutton.state & ControlMask) == 0, event);
 }
 
 void on_scroll_viewport (ASEvent * event)
@@ -2886,7 +2882,7 @@ void on_scroll_viewport (ASEvent * event)
 	}
 }
 
-void release_pressure ()
+void release_pressure (ASEvent * event)
 {
 	if (PagerState.pressed_canvas && PagerState.pressed_bar) {
 		LOCAL_DEBUG_OUT ("canvas(%p)->bar(%p)->context(%s)",
@@ -2905,7 +2901,6 @@ void release_pressure ()
 				else
 					shade_desk_row (d, !get_flags (d->flags, ASP_DeskShaded));
 			} else {									/* need to switch desktops here ! */
-
 				char command[64];
 				int px = 0, py = 0;
 				ASQueryPointerRootXY (&px, &py);
@@ -2938,8 +2933,17 @@ void release_pressure ()
 										 new_vx, new_vy);
 					else
 						sprintf (command, "Desk 0 %d\n", new_desk);
+
 					SendInfo (command, 0);
 					++PagerState.wait_as_response;
+					/* JWT:IF ClickToFocus && Button1 CLICKED ON A WINDOW IN PAGER, FOCUS IT: */
+					if (event && event->x.xbutton.button == Button1 && event->w) {
+						ASWindowData *wd = fetch_client (event->w);
+						if (wd && wd->client && get_flags(wd->state_flags, ClickToFocus)) {
+							sprintf (command, "Focus");
+							SendInfo (command, wd->client);
+						}
+					}
 				}
 			}
 		}
