@@ -99,9 +99,10 @@ typedef struct {
        as those messages could arrive too late :*/
     int frame_x, frame_y ;
     unsigned int frame_width, frame_height, frame_bw ; 
-    short keyboard_cursor;  /* JWT:CURRENT INDEX OF BUTTON "FOCUSED" BY KEYBOARD NAV. (-1=NONE) */
+    short keyboard_cursor;    /* JWT:CURRENT INDEX OF BUTTON "FOCUSED" BY KEYBOARD NAV. (-1=NONE) */
+    Bool key_release_pending; /* JWT:PREVENT KEY-REPEAT! */
 
-}ASWinListState ;
+}ASWinListState;
 
 ASWinListState WinListState;
 
@@ -479,8 +480,8 @@ DispatchEvent (ASEvent * event)
 {
     ASWindowData *pointer_wd = NULL ;
     static Bool root_pointer_moved = True ;
-	KeySym ks;
-	static char buf[10], n;
+    KeySym ks;
+    char buf[10], n;
 
     SHOW_EVENT_TRACE(event);
     
@@ -533,52 +534,86 @@ DispatchEvent (ASEvent * event)
             n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
             switch (ks) {
               case XK_Left:
-                if (WinListState.keyboard_cursor >= 0
-                        && WinListState.keyboard_cursor < WinListState.windows_num)
-                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
-                else
-                    WinListState.keyboard_cursor = WinListState.windows_num;
-                WinListState.keyboard_cursor--;
-                if (WinListState.keyboard_cursor < 0
-                        || WinListState.keyboard_cursor >= WinListState.windows_num)
-                    break;
-                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], True);
+                if (get_flags(WinListState.self->state_flags, AS_Shaded))
+                    SendInfo ("Shade", WinListState.main_window);
+                else {
+                    if (WinListState.keyboard_cursor >= 0
+                            && WinListState.keyboard_cursor < WinListState.windows_num)
+                        set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                                False);
+                    else
+                        WinListState.keyboard_cursor = WinListState.windows_num;
+
+                    WinListState.keyboard_cursor--;
+                    if (WinListState.keyboard_cursor < 0
+                            || WinListState.keyboard_cursor >= WinListState.windows_num)
+                        break;
+
+                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                            True);
+                }
                 break;
               case XK_Right:
-                if (WinListState.keyboard_cursor >= 0
-                        && WinListState.keyboard_cursor < WinListState.windows_num)
-                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
-                else if (WinListState.keyboard_cursor >= WinListState.windows_num)
-                    WinListState.keyboard_cursor = -1;
-                WinListState.keyboard_cursor++;
-                if (WinListState.keyboard_cursor < 0
-                        || WinListState.keyboard_cursor >= WinListState.windows_num)
-                    break;
-                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], True);
+                if (get_flags(WinListState.self->state_flags, AS_Shaded))
+                    SendInfo ("Shade", WinListState.main_window);
+                else {
+                    if (WinListState.keyboard_cursor >= 0
+                            && WinListState.keyboard_cursor < WinListState.windows_num)
+                        set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                                False);
+                    else if (WinListState.keyboard_cursor >= WinListState.windows_num)
+                        WinListState.keyboard_cursor = -1;
+
+                    WinListState.keyboard_cursor++;
+                    if (WinListState.keyboard_cursor < 0
+                            || WinListState.keyboard_cursor >= WinListState.windows_num)
+                        break;
+
+                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                            True);
+                }
                 break;
               case XK_space:   /* TREAT [SPACE] & [RETURN] AS MOUSE-BUTTON (ACTION) 1: */
               case XK_Return:
-                if (WinListState.self && get_flags(WinListState.self->state_flags, AS_Shaded))
-                    SendInfo ("Shade", WinListState.main_window);  /* UNshade! */
+                if (WinListState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
+                    break;
+                WinListState.key_release_pending = True;
+
+                if (WinListState.keyboard_cursor < 0 || get_flags(WinListState.self->state_flags, AS_Shaded))
+                    SendInfo ("Shade", WinListState.main_window);  /* Toggle shade! */
                 else
                     activate_button_with_keypress(1);
                 break;
               case XK_Escape:
-                if (WinListState.self && !get_flags(WinListState.self->state_flags, AS_Shaded))
-                    SendInfo ("Shade", WinListState.main_window);  /* Shade! */
+                if (WinListState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
+                    break;
+                WinListState.key_release_pending = True;
+
+                SendInfo ("Shade", WinListState.main_window);  /* Shade! */
                 break;
               default:
+                if (WinListState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
+                    break;
+                WinListState.key_release_pending = True;
+
                 /* JWT:DO CORRESPONDING MOUSE-BUTTON# PRESS & RELEASE ACTION: */
-                if (buf[0] >= '1' && buf[0] <= '3')
+                if (!get_flags(WinListState.self->state_flags, AS_Shaded)
+                        && buf[0] >= '1' && buf[0] <= '3')
                     activate_button_with_keypress(buf[0]-'0');
-                else if (buf[0] == 'l')
-                    activate_button_with_keypress(1);
-                else if (buf[0] == 'm')
-                    activate_button_with_keypress(2);
-                else if (buf[0] == 'r')
-                    activate_button_with_keypress(3);
                 break;
             }
+            break;
+        case KeyRelease:
+			/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
+			if (XEventsQueued(dpy, QueuedAfterReading)) {
+				XEvent nev;
+				XPeekEvent(dpy, &nev);
+				if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
+						nev.xkey.keycode == *(&(event->x).xkey.keycode)) {
+					break;
+				}
+			}
+            WinListState.key_release_pending = False;
             break;
         case ButtonPress:
             if( pointer_wd )
@@ -590,6 +625,7 @@ DispatchEvent (ASEvent * event)
             break;
         case FocusIn:  /* JWT:WHEN WINLIST TAKES KEYBOARD FOCUS: */
             WinListState.keyboard_cursor = -1;
+            WinListState.key_release_pending = False;
             break;
         case FocusOut:  /* JWT:WHEN WINLIST LOOSES KB FOCUS: */
             if (WinListState.keyboard_cursor >= 0
@@ -598,11 +634,8 @@ DispatchEvent (ASEvent * event)
             break;
         case EnterNotify :
         case LeaveNotify :
-            if( event->x.xcrossing.window == Scr.Root )
-            {
-                withdraw_active_balloon();
-                break;
-            }
+            withdraw_active_balloon();
+            break;
         case MotionNotify :
             if( event->x.type == MotionNotify ) 
                 root_pointer_moved = True ; 
