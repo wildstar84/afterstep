@@ -1733,6 +1733,8 @@ void hide_focus ()
  **********************************************************************/
 void commit_circulation ()
 {
+/* JWT:REMOVED 20230502 - CIRCULATE LIST NOW == LIST OF WINDOWS IN ORDER CREATED (SEE WINLIST). */
+#if 0
 	ASWindow *asw = Scr.Windows->active;
 	LOCAL_DEBUG_OUT ("circulation completed with active window being %p",
 									 asw);
@@ -1744,6 +1746,7 @@ void commit_circulation ()
 													True);
 		}
 	Scr.Windows->warp_curr_index = -1;
+#endif
 }
 
 void autoraise_aswindow (void *data)
@@ -1843,10 +1846,12 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 
 	LOCAL_DEBUG_CALLER_OUT ("asw = %p", asw);
 	if (asw) {
+/* JWT:REMOVED 20230502 - CIRCULATE LIST NOW == LIST OF WINDOWS IN ORDER CREATED (SEE WINLIST). */
+#if 0
 		if (!get_flags (AfterStepState, ASS_WarpingMode))
 			if (vector_remove_elem (Scr.Windows->circulate_list, &asw) == 1)
-				vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL,
-														True);
+				vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL, True);
+#endif
 
 #if 0
 		/* ClickToFocus focus queue manipulation */
@@ -1883,7 +1888,10 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 	if (do_nothing || do_hide_focus)
 		return False;
 
-	if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->ungrabbed != asw) {	/* need to grab all buttons for window that we are about to unfocus */
+
+	Bool click2focus = get_flags (Scr.Feel.flags, ClickToFocus);
+
+	if (click2focus && Scr.Windows->ungrabbed != asw) {	/* need to grab all buttons for window that we are about to unfocus */
 		grab_aswindow_buttons (Scr.Windows->ungrabbed, False);
 		grab_aswindow_buttons (asw, True);
 		Scr.Windows->ungrabbed = asw;
@@ -1905,14 +1913,14 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 		show_warning ("unable to focus window %lX for client %lX, frame %lX",
 									w, asw->w, asw->frame);
 	else if (!ASWIN_GET_FLAGS (asw, AS_Mapped))
-		if (get_flags (Scr.Feel.flags, ClickToFocus))
+		if (click2focus)
 			focus_prev_aswindow (asw);  /* JWT:c2f - HIDDEN/ICONIFIED WINDOW, FOCUS ON PREV. WINDOW. */
 		else
 			show_warning
 				("unable to focus unmapped window %lX for client %lX, frame %lX",
 				 w, asw->w, asw->frame);
 	else if (ASWIN_GET_FLAGS (asw, AS_UnMapPending))
-		if (get_flags (Scr.Feel.flags, ClickToFocus))
+		if (click2focus)
 			focus_prev_aswindow (asw);  /* JWT:c2f - WINDOW PENDING HIDE/ICONIFY, FOCUS ON PREV. WINDOW. */
 		else
 			show_warning
@@ -1928,7 +1936,7 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 		ASWIN_SET_FLAGS(asw, AS_Focused);
 		set_client_state (asw->w, asw->status);
 
-		if (!suppress_autoraise)
+		if (click2focus || !suppress_autoraise)
 			autoraise_window (asw);
 	}
 
@@ -2045,19 +2053,29 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 	}
 
 	/* JWT:CHGD TO NEXT 20180322: i = (dir > 0) ? 1 : end_i - 1;	*/ /* list->warp_curr_index + dir */
+	/* JWT:ADDED NEXT 7 20230502 TO SET WARP START-POINT AT CURRENTLY-FOCUSED WINDOW, IF ANY: */
+	if (Scr.Windows->focused)
+		for (i = 0; i < end_i; ++i)
+			if (clients[i] == Scr.Windows->focused)
+			{
+				list->warp_curr_index = i;
+				break;
+			}
+
 	i = list->warp_curr_index;
 	do {
 		LOCAL_DEBUG_OUT ("checking i(%d)->end_i(%d)->dir(%d)->AutoReverse(%d)",
 										 i, end_i, dir, Scr.Feel.AutoReverse);
 		if (0 > i || i >= end_i) {
 			if (Scr.Feel.AutoReverse == AST_OpenLoop)
-				i = (dir < 0) ? end_i - 1 : 0;
+				i = (dir < 0) ? end_i - 1 : 0; /* 2=CONTINUOUS LOOP IN 1 DIRECTION: */
 			else if (Scr.Feel.AutoReverse == AST_ClosedLoop) {
-				i = (dir < 0) ? 0 : end_i - 1;
+				i = (dir < 0) ? 0 : end_i - 1; /* 1:AT END, REVERSE DIRECTION: */
 				list->warp_curr_dir = dir = (dir < 0) ? 1 : -1;
 				i += dir;								/* we need to skip the one that was focused at the moment ! */
 			} else
-				return NULL;
+				return NULL;                   /* 0:AT END, FULL STOP: */
+
 			if (++loop_count >= 2)
 				return NULL;
 		}
@@ -2065,7 +2083,7 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 		/* JWT:CHGD TO NEXT 20180322 TO FIX TAB-THRU-WINDOWS: if (!(ASWIN_HFLAGS (clients[i], AS_DontCirculate)) && */
 		if (list->warp_curr_index != i && !(ASWIN_HFLAGS (clients[i], AS_DontCirculate)) &&
 				!(ASWIN_GET_FLAGS (clients[i], AS_Iconic)
-					&& get_flags (Scr.Feel.flags, CirculateSkipIcons))
+				&& get_flags (Scr.Feel.flags, CirculateSkipIcons))
 				&& (ASWIN_DESK (clients[i]) == Scr.CurrentDesk
 						|| get_flags (Scr.Feel.flags, AutoTabThroughDesks))) {
 			list->warp_curr_index = i;  /* JWT:MOVED HERE FROM ABOVE IF 20180322, SINCE TEST ADDED TO IF. */

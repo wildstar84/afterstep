@@ -1,5 +1,113 @@
 CHANGELOG
 ----------------------
+[2023-05-04: Jim Turner]
+ * Make window-warping actually work properly!  When warping between windows 
+ (via [Ctrl-[Alt-[Tab]]], etc.), the window warped too often seemed random, 
+ rather that (the more logical) order that windows appear in the WinListMenu 
+ and WinList.  This was due to the way AfterStep implements it's window-lists, 
+ namely the "circulate-list".  AfterStep maintains two main window-lists:  the 
+ circulate-list and the stacking-order.  The latter represents the order 
+ windows are stacked on the desktop, and is updated whenever a window is 
+ raised or lowered (ie. in ClickToFocus mode, the window clicked on becomes 
+ focused and is raised to the top of the stacking-order.  One of my earliest 
+ committed fixes was to switch from using the circulate-list to using the 
+ stacking-order (stack) to find the "next-up" window to focus whenever a 
+ focused window became unfocusable (namely iconfied, hidden, or destroyed).  
+ Window-warping, however, continued to be based on the circulate-list, and 
+ since I don't use it that much I hadn't had enough time to figure out why it 
+ also sometimes seemed a bit random in it's window-traversal.  Window-warping 
+ does properly use the circulate-list.  I'm still not totally sure what 
+ AfterStep had in mind for how this list should work, but *my* interpretation 
+ is that windows are added to the circulate-list in the order they are 
+ created, then removed when destroyed (like the WindowList and WinList module), 
+ and that this list (unlike the stack) should not be shuffled or reordered 
+ otherwise.  After digging into exactly what's happening in the circulate-list, 
+ I discovered that when a window received the focus, it was moved to the front 
+ of this list (see aswindow.c functions "commit_circulation()" and 
+ "focus_aswindow()".  By removing these two reordering ocurrances, and 
+ adjusting the "starting-point" window to the currently-focused window (if any) 
+ when warping, window-warping now works in a much more logical way using the 
+ circulate-list:  pretty much following the order of buttons in WinList.
+
+[2023-05-02: Jim Turner]
+ * Pager - Make button1 click on window focus if ClickToFocus set:  Convenience 
+ enhancement:  When clicking on one of the tiny representations of a window 
+ within any of Pager's screen boxes will not only switch the screen to that 
+ desktop (if different from the current one), but now will also focus that 
+ window, if ClickToFocus mode is set.  I decided to do this because when I 
+ click on another desk, I naturally expect a window (usually the largest one) 
+ in that desktop to be focused and ready for keyboard input (previously focus 
+ was just removed from the focused window on the previous desktop and no window 
+ (or the pager itself, if Wharf is allowed to take focus) had the focus after 
+ switching desktops.
+
+ * ClickToFocus - Try harder to focus correct window when iconifying:  
+ (aswindow.c) - Previously when a window was iconified / hidden / in the 
+ process of being so, AfterStep was not always setting the focus to the 
+ most logical window choice, particularly when the AfterStep menus were 
+ closed by clicking on the desktop background area, and outputing a warning 
+ to .xsession-errors.  AfterStep now tries to focus the next window on the 
+ stack.  My general philosophy with ClickToFocus is that if a window is 
+ focused, then becomes unfocusable (ie. iconified, hidden, or destroyed), then 
+ the next window in the stack (of windows on the screen) should get focus, 
+ rather than having to manually click on one after being left with no window 
+ having the focus!
+
+ * Wharf - Better handle Wharf balloons:  Namely, fix failure to display 
+ balloon when mouse enters a Wharf button (balloon properly displays), mouse 
+ then exits Wharf, then reenters the SAME button.  Pbm. is that current Wharf 
+ is apparently no longer configured to handle Motion-notify events (and doesn't 
+ seem to need to).
+
+ * WinList - Improve keyboard function & eliminate key-repeating:  The [Esc] 
+ key will now toggle shading of WinList (if it is configured with a title-bar, 
+ generally should be a vertical one!) instead of just shading if not shaded, 
+ regardless if any WinList button is selected.  Left & Right arrows, [Return] 
+ and [Spacebar] will unshade if shaded.  Numeric keys (for corresponding mouse-
+ buttons) will no longer apply to window associated with selected WinList 
+ button if shaded (to avoid shooting into the dark).
+
+[2023-04-28: Jim Turner]
+ * events - Fix failure to update window-titles whilst iconified/hidden:  
+ Pbm. is with media-players that change the window-title on every song-title 
+ change & permit user to iconify the player window while listening.  When 
+ deiconified (WITHOUT feel."FollowTitleChange" set, which has it's own issues), 
+ AS (unlike most other WMs) left title set to a PREV. song when deiconifying, 
+ so FIXED that!
+
+ * Wharf - Fix several Click-to-focus related annoyances:  Wharf somehow 
+ temporarily reverts to a pseudo Focus-Follows-Mouse mode when moving mouse out 
+ of a focused Wharf-swallowed (usually Perl/Tk) dockapp onto a window (usually 
+ abutting Wharf itself).  Also Wharf wasn't being consistent handling button-
+ functions assigned to swallowed app buttons; and wasn't properly handling  
+ key-repeats (old test required waiting 1 second between keypresses to be 
+ treated as non-repeating.  Now, we use a better strategy to allow user to 
+ press keys rapidly byt block system key-repeating).  Also properly recognise 
+ meta-keys when focused on a swallowed dockapp.  Added a lot of code (after 
+ MUCH T&E)!  This now allows adding mouse-button functions to be added to 
+ Wharf folder icons, and for the corresponding [[Ctrl]+Mousebutton] and 
+ [[Ctrl]+Key#] to still expand / collapse the folder (The non-modified versions 
+ will then execute the assigned button-function in this case).
+
+[2022-05-05: Jim Turner]
+ * Wharf - Fix crash when scrollwheeling over Wharf-button:  This was Happening 
+ intermittantly on some buttons.  Fixed by ignoring all mouse-buttons > 3 
+ (scrollwheels usually use 4-7), as Wharf doesn't use.
+
+[2022-02-03: Jim Turner]
+ * asapp - Include modern https urls as valud urls (previously, AfterStep's 
+ asapp was only treating strings starting with the old, unencrypted "http:" 
+ as URLs.
+
+[2022-01-01: Jim Turner]
+ * Fix issues with recently-added icon features:  Namely titlebar icons were 
+ not being scaled quite right with respect to the titlebar height.  We now use 
+ the size of the required "default" unpressed image in the Look.TitleButton 
+ line to scale the app-icon icon to fit in the titlebar nicely with other 
+ buttons (the 2nd ("pressed") image parameter is specified as just a dash 
+ ("-") to use the app's icon in lieu of the default pressed image, both 
+ pressed and unpressed).
+
 [2021-12-30: Jim Turner]
  * Fix another "exploding menu" issue:  This annoyance occurs often when one 
    pops up the main applications menu, aka. the "Start Menu" in 
@@ -13,6 +121,7 @@ CHANGELOG
    the virtical positioning to have the first item in the submenu under the 
    mouse cursor (when possible).  All this should be much more intuitive and 
    similar to more modern popup menus for most users.
+
  * Add option for WinList to take keyboard focus and be keyboard-navigatible 
    (like another window-list menu but always visible)!  The left and right 
    arrow keys traverse the open windows and keys:  1, l, 2, m, 3, and r (the 
@@ -23,11 +132,13 @@ CHANGELOG
    but no buttons are highlighted).  When a button is highlighted the other 
    keys mentioned invoke WinList mouse-button functions, along with Return and 
    Spacebar also equivalent to mouse-button 1.
+
  * Reduce logfile (.xsession_errors) spam when AS looks to load some font or 
    image file and no actual file-name is specified (configured) for some 
    option and AS happily uses a default, as this is useless to users without 
    there being an actual file-name that AS can't find (we'll still warn in that 
    case)!
+
  * Fix scaling issues for app-icons in window title-bar to whit: use the size 
    of the required "default" unpressed image (not otherwise used) in the 
    Look.TitleButton line to scale the app-icon icon to fit in the titlebar 
@@ -41,6 +152,7 @@ CHANGELOG
    is no default/fallback icon specified in the "database" file.  Also fix 
    issue where the button for the last window opened was being used in lieu of 
    the default icon when a later app. window was opened that had no app. icon.
+
  * Try harder to find a default icon for applications without one, as this 
    is needed now more than ever - if no icon is found for the app. and there's 
    a default/fallback icon specified in the "database" file ("*" line), then 

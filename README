@@ -30,7 +30,7 @@ launcher, but get annoyed by it's quirks when using "ClickToFocus"
 (like me), then download, build, and install it from here!  All other 
 sources I am aware of on GitHub are many years old and it's no longer 
 downloadable from the official website:  http://afterstep.org/, and 
-Sasha's no longer developing it.
+Sasha Vasko, et. el seem to no longer be developing it.
 
 Anway, if you just want a good, up-to-date AfterStep source-tree to 
 build but without my patches, simply download, do a:
@@ -50,13 +50,14 @@ $>export CFLAGS="-march=native -O2"
 
 $>cd ~/afterstep-src
 
-#THE "helpcommand" IS OPTIONAL FOR HANDLING MANPAGES FOR APPLICATIONS
-#WHEN [HELP] FUNCTION CALLED:
-#CHANGE "/usr/local/bin/aterm TO YOUR PREFERRED TERMINAL APP.
-#FOR SOME STUPID REASON THIS IS NOT CONFIGURABLE, BUT MUST BE COMPILED IN TO WORK?!
+#The "--helpcommand" is optional for handling manpages for applications
+#when the [HELP] function is called:
+#CHANGE THE DEFAULT OF "xiterm -e man" to your preferred terminal app.
+#FOR SOME STUPID REASON THIS WAS NOT CONFIGURABLE, BUT MUST BE COMPILED
+#IN TO WORK!
 
-#NOTE:  NO LONGER NECESSARY IS THIS CAN NOW BE SPECIFIED/OVERRIDDEN BY THE
-#SHELL ENVIRONMENT VARIABLE:  $ASHELPCOMMAND
+#NOTE:  No longer necessary as this can now be specified/overridden at
+#startup by the shell environment variable:  $ASHELPCOMMAND
 
 $>./configure --prefix=/usr/local --enable-alsa
 
@@ -79,4 +80,4 @@ $>CLOSE DOWN AfterStep/X (go to a console)
 
 $>sudo make install
 
-$>RESTART X, ENJOY AFTERSTEP!
+$>RESTART X, and enjoy AfterStep!
