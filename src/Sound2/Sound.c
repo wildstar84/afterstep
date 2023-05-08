@@ -36,6 +36,7 @@
 #define MAX_SOUNDS AFTERSTEP_EVENTS_NUM
 #define mask_reg MAX_MASK
 
+static char *assoundplayer;
 // from libAfterConf
 SoundConfig     *CONF = NULL;
 
@@ -49,8 +50,11 @@ void proc_message (send_data_type type, send_data_type *body);
 
 // Sound2 Functions
 int as_snd2_init_stg1();
+/* JWT:NO LONGER SEEMS TO BE USED: */
+#if 0
 int as_snd2_init_stg2();
 int as_snd2_waveheader(char *WaveFile);
+#endif
 int as_snd2_playsound(int evend_ID);
 void as_snd2_segv_cb(int);
 void as_snd2_error();
@@ -121,43 +125,56 @@ int as_snd2_init_stg1()
     
     int ErrRet;
 
-    if (CONF->debug) { fprintf(stdout,"Opening PCM Device.... %s\n",CONF->pcmdevice); }
-    
-    // (Returned PCM Handle, ASCII Ident of Handle, Wanted Stream, Open Mode)
-    ErrRet = snd_pcm_open(&SND2devS.pcm_handle,CONF->pcmdevice,SND_PCM_STREAM_PLAYBACK,0);
-    if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n", ErrRet, snd_strerror(ErrRet)); exit(1); }
-  
-    if (CONF->debug) { fprintf(stdout,"Allocating Hardware Param Structure....\n"); }
-    
-    // (Returned Pointer)
-    ErrRet = snd_pcm_hw_params_malloc(&SND2devS.hw_params);
-    if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
-    
-    if (CONF->debug) { fprintf(stdout,"Init Hardware Param Structure...\n");}
-    
-    // (PCM Handle, Config Space)
-    ErrRet = snd_pcm_hw_params_any(SND2devS.pcm_handle,SND2devS.hw_params);
-    if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
-    
-    if (CONF->debug) { fprintf(stdout,"Setting Access Type...\n"); }
-    
-    // (PCM Handle, Config Space, Access Type)
-    ErrRet = snd_pcm_hw_params_set_access(SND2devS.pcm_handle,SND2devS.hw_params,SND_PCM_ACCESS_RW_INTERLEAVED);
-    if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
-    
-    if (CONF->debug) { fprintf(stdout,"Setting Sample Format...\n"); }
-    
-    // (PCM Handle, Config Space, Format)
-    // SND_PCM_FORMAT_S16_LE = Signed 16-bit Little Endian
-    // May need to var-ize last part, and detect cpu type on configure.
-    ErrRet = snd_pcm_hw_params_set_format(SND2devS.pcm_handle,SND2devS.hw_params,SND_PCM_FORMAT_S16_LE);
-    if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
-    
-    if (CONF->debug) { fprintf(stdout,"Stage 1 Init Complete!\n\n"); }
-    
+    /* JWT:NOW ALLOW FOR USER-DEFINED AUDIO-PLAYING PROGRAM: */
+    assoundplayer = PutHome(getenv ("ASSOUNDPLAYER"));
+    if (!assoundplayer) {
+        assoundplayer = PutHome (SOUNDPLAYER);
+        if (assoundplayer && !assoundplayer[0])
+            assoundplayer = NULL;
+    }
+
+    if (assoundplayer)
+        fprintf(stdout,"Stage 1 Init Complete, using ASSOUNDPLAYER=%s=!\n\n", assoundplayer);
+    else {
+        if (CONF->debug) { fprintf(stdout,"Opening PCM Device.... %s\n",CONF->pcmdevice); }
+        // (Returned PCM Handle, ASCII Ident of Handle, Wanted Stream, Open Mode)
+        ErrRet = snd_pcm_open(&SND2devS.pcm_handle,CONF->pcmdevice,SND_PCM_STREAM_PLAYBACK,0);
+        if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n", ErrRet, snd_strerror(ErrRet)); exit(1); }
+
+        if (CONF->debug) { fprintf(stdout,"Allocating Hardware Param Structure....\n"); }
+
+        // (Returned Pointer)
+        ErrRet = snd_pcm_hw_params_malloc(&SND2devS.hw_params);
+        if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
+
+        if (CONF->debug) { fprintf(stdout,"Init Hardware Param Structure...\n");}
+
+        // (PCM Handle, Config Space)
+        ErrRet = snd_pcm_hw_params_any(SND2devS.pcm_handle,SND2devS.hw_params);
+        if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
+
+        if (CONF->debug) { fprintf(stdout,"Setting Access Type...\n"); }
+
+        // (PCM Handle, Config Space, Access Type)
+        ErrRet = snd_pcm_hw_params_set_access(SND2devS.pcm_handle,SND2devS.hw_params,SND_PCM_ACCESS_RW_INTERLEAVED);
+        if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
+
+        if (CONF->debug) { fprintf(stdout,"Setting Sample Format...\n"); }
+
+        // (PCM Handle, Config Space, Format)
+        // SND_PCM_FORMAT_S16_LE = Signed 16-bit Little Endian
+        // May need to var-ize last part, and detect cpu type on configure.
+        ErrRet = snd_pcm_hw_params_set_format(SND2devS.pcm_handle,SND2devS.hw_params,SND_PCM_FORMAT_S16_LE);
+        if (ErrRet <= -1) { fprintf(stdout,"ALSA Error: %i [%s] (quitting!).\n",ErrRet, snd_strerror(ErrRet)); exit(1);  }
+
+        if (CONF->debug) { fprintf(stdout,"Stage 1 Init Complete!\n\n"); }
+    }
+
     return 1;
 }
 
+/* JWT:NO LONGER SEEMS TO BE USED: */
+#if 0
 int as_snd2_init_stg2()
 {
     // Following Init depends on the file type.
@@ -210,6 +227,7 @@ int as_snd2_waveheader(char *WaveFile)
     
     return 1;
 }
+#endif
 
 int as_snd2_playsound(int event_ID)
 {
@@ -243,7 +261,7 @@ int as_snd2_playsound(int event_ID)
     
     SNDPlayNow = 1;
     
-    strcpy(SndFullname,CONF->path);
+    strcpy(SndFullname,PutHome(CONF->path));
     strcat(SndFullname,"/");
     strcat(SndFullname,SndFname);
     
@@ -255,14 +273,9 @@ int as_snd2_playsound(int event_ID)
     //CONF->sounds[7]
 
 	/* JWT:NOW ALLOW FOR USER-DEFINED AUDIO-PLAYING PROGRAM: */
-	char *assoundplayer = getenv ("ASSOUNDPLAYER");
-	char *realfilename = (assoundplayer != NULL) ? PutHome (assoundplayer)
-			: PutHome (SOUNDPLAYER);
-
-	if (realfilename != NULL) {
-		spawn_child (realfilename, -1, -1, NULL, None, 0, True, False, SndFullname, NULL);
-		free (realfilename);
-	} else {
+	if (assoundplayer)
+		spawn_child (assoundplayer, -1, -1, NULL, None, 0, True, False, SndFullname, NULL);
+	else {
 		SNDFile = fopen(SndFullname,"rb");
 		if (SNDFile == NULL) { fprintf(stdout,"Failed to open Sound File\n"); return 0; }
 
