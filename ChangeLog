@@ -1,5 +1,58 @@
 CHANGELOG
 ----------------------
+[2023-05008: Jim Turner]
+
+ * Menu icons - Make work (again?) in the "WindowList" menu, and also the 
+"Stop Running Module" and "Restart Running Module" menus and clean up that part 
+of the code a bit.  Some of this code had been commented out by a previous 
+developer leading me to suspect it either didn't work, leaked, or crashed, but 
+after extensive testing and the addition of some pointer checks and double-
+checking that things were getting properly freed, I'm convinced that this is 
+ready for prime-time!  I just now got around to this because I normally have 
+these menu mini-icons turned off via look.MenuMiniPixmaps = 0 to save memory, 
+since I hardly ever use the menus myself.  Since I was already on a roll 
+digging around and testing stuff out I don't normally use, things like this 
+suddenly became noticable to me (and SHOULD work)!
+
+ * More window-warping fixes:  Fix improper window-warping with 
+feel.AutoReverse set to 1 (I call it the "yoyo" traversal method because it 
+reverses directions automatically when reaching the beginning or end of the 
+windowlist).  I also reversed (swapped) the directions of the WarpFore and 
+WarpBack as well as the related ChangeWindowUp and ChangeWindowDown functions 
+to work more consistently with the now-fixed circulate/window list.  "Forward" 
+WarpFore() & ChangeWindowUp() should now traverse from older to newer windows 
+(normally left-to-right in WinList).  The other two, the opposite.  This became 
+noticable after we started both preserving the circurlate-list order combined 
+with making the starting-point the currently-focused or last-warped-to window, 
+or else the first or last window in the circulate-list depending on the warp 
+direction.
+
+* Sound (Sound2) - Skip "old way" initialization if ASSOUNDPLAYER set:
+If user specifies an external player, ie. "aplay" in the ASSOUNDPLAYER 
+environment variable to play sounds (the preferred "new way"), we dont need nor 
+want to initialize the PCM device on module startup (thus grabbing and 
+monopolizing) the sound card.  If neither ASSOUNDPLAYER or the older 
+SOUNDPLAYER env. vble (still not sure of how else the latter was/is used) are 
+set, we retain for now the very depreciated "old way" which may still work on 
+some old systems (OSS, librplay, etc.), which handles writing out sound data 
+directly to the PCM device (and does not work on my alsa / HDMI multi-device 
+system).
+
+* Wharf - Fix button-highlighting annoyance with some swallowed apps that grab 
+mouse-focus and/or contain transparent parts in their shaped image.  Problem 
+was when mouse moved over a swallowed button who's app. contains transparent 
+portions (wmitime, etc.) focus-highlighting of rest of the Wharf button would 
+disappear even though mouse was still over the button, when mouse moved on over 
+a transparent part if Wharf itself did not have the focus.  (Highlighting 
+should remain on as long as mouse is over any part of Wharf button)!  This and 
+nearly all the Wharf focusing / highlighting changes made and flags added 
+recently are due to the fact that when the mouse leaves a Wharf button, it is 
+difficult and tricky to determine whether the mouse has moved on over another 
+Wharf button, the screen background, another window abutting the Wharf button, 
+or into a transparent part of the button (with a swallowed app. that may or may 
+not grab some aspect of the focus) without some extra flags to retain 
+information known when the mouse previously entered the button and from where!
+
 [2023-05-04: Jim Turner]
  * Make window-warping actually work properly!  When warping between windows 
  (via [Ctrl-[Alt-[Tab]]], etc.), the window warped too often seemed random, 
@@ -72,17 +125,17 @@ CHANGELOG
  Pbm. is with media-players that change the window-title on every song-title 
  change & permit user to iconify the player window while listening.  When 
  deiconified (WITHOUT feel."FollowTitleChange" set, which has it's own issues), 
- AS (unlike most other WMs) left title set to a PREV. song when deiconifying, 
- so FIXED that!
+ AS (unlike most other WMs) left title set to the song that was playing when 
+ previously iconified, so FIXED that!
 
  * Wharf - Fix several Click-to-focus related annoyances:  Wharf somehow 
- temporarily reverts to a pseudo Focus-Follows-Mouse mode when moving mouse out 
- of a focused Wharf-swallowed (usually Perl/Tk) dockapp onto a window (usually 
- abutting Wharf itself).  Also Wharf wasn't being consistent handling button-
- functions assigned to swallowed app buttons; and wasn't properly handling  
- key-repeats (old test required waiting 1 second between keypresses to be 
- treated as non-repeating.  Now, we use a better strategy to allow user to 
- press keys rapidly byt block system key-repeating).  Also properly recognise 
+ temporarily switches to a pseudo Focus-Follows-Mouse mode when moving mouse 
+ out of a focused Wharf-swallowed (usually Perl/Tk) dockapp onto a window 
+ (usually abutting Wharf itself).  Also Wharf wasn't being consistent handling 
+ button-functions assigned to swallowed app buttons; and wasn't properly 
+ handling key-repeats (old test required waiting 1 second between keypresses to 
+ be treated as non-repeating.  Now, we use a better strategy to allow user to 
+ press keys rapidly but block system key-repeating).  Also properly recognise 
  meta-keys when focused on a swallowed dockapp.  Added a lot of code (after 
  MUCH T&E)!  This now allows adding mouse-button functions to be added to 
  Wharf folder icons, and for the corresponding [[Ctrl]+Mousebutton] and 
@@ -95,9 +148,9 @@ CHANGELOG
  (scrollwheels usually use 4-7), as Wharf doesn't use.
 
 [2022-02-03: Jim Turner]
- * asapp - Include modern https urls as valud urls (previously, AfterStep's 
+ * asapp - Include modern https urls as valid urls (previously, AfterStep's 
  asapp was only treating strings starting with the old, unencrypted "http:" 
- as URLs.
+ protocol as URLs.
 
 [2022-01-01: Jim Turner]
  * Fix issues with recently-added icon features:  Namely titlebar icons were 
@@ -124,7 +177,7 @@ CHANGELOG
 
  * Add option for WinList to take keyboard focus and be keyboard-navigatible 
    (like another window-list menu but always visible)!  The left and right 
-   arrow keys traverse the open windows and keys:  1, l, 2, m, 3, and r (the 
+   arrow keys traverse the open windows and keys:  1, 2, and 3 (the 
    same sequences previously added to Wharf) invoke the matching mouse-buttons 
    to invoke the specified WinList functions.  You can give WinList a vertical 
    titlebar and can then shade/unshade it when needing more screen realestate.  
