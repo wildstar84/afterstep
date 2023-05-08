@@ -1146,9 +1146,14 @@ void warp_func_handler (FunctionData * data, ASEvent * event, int module)
 		if (*(data->text) != '\0')
 			t = pattern2ASWindow (data->text);
 	if (t == NULL)
+/* JWT:CHGD. TO NEXT 20230505 TO REVERSE THIS (AFTER FIXING WINDOW-WARPING):
 		t = warp_aswindow_list (Scr.Windows,
 														(data->func == F_CHANGEWINDOW_DOWN
 														 || data->func == F_WARP_B));
+*/
+		t = warp_aswindow_list (Scr.Windows,
+				!(data->func == F_CHANGEWINDOW_DOWN || data->func == F_WARP_B));
+
 	if (t != NULL) {
 		event->client = t;
 		event->w = get_window_frame (t);

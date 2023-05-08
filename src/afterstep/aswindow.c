@@ -68,6 +68,7 @@ ASWindowList *init_aswindow_list ()
 			create_ashash (0, NULL, NULL, destroy_window_group);
 
 	list->circulate_list = create_asvector (sizeof (ASWindow *));
+	list->warp_curr_dir = 1;  /* JWT:ADDED 20230505 */
 	list->sticky_list = create_asvector (sizeof (ASWindow *));
 
 	list->stacking_order = create_asvector (sizeof (ASWindow *));
@@ -2037,6 +2038,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 
 	ASWindow **clients = VECTOR_HEAD (ASWindow *, *(list->circulate_list));
 
+/* JWT:REPLACED FOLLOWING BLOCK BY NEXT LINE FOLLOWING THIS REMOVED BLOCK 20230505: */
+#if 0
 	if (list->warp_curr_index < 0) {	/* need to initialize warping : */
 		/* JWT:CHGD. TO NEXT 20180325 TO ENSURE AT LEAST ONE CHECK: list->warp_curr_index = (dir > 0) ? 0 : end_i; */
 		list->warp_curr_index = (dir > 0) ? 0 : end_i-1;
@@ -2051,6 +2054,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 		dir = (list->warp_curr_dir > 0) ? -1 : 1;
 		list->warp_curr_dir = dir;
 	}
+#endif
+	dir *= list->warp_curr_dir;  /* JWT:curr_dir: 1 NOW MEANS USE SPECIFIED DIRECTION, -1 REVERSE! */
 
 	/* JWT:CHGD TO NEXT 20180322: i = (dir > 0) ? 1 : end_i - 1;	*/ /* list->warp_curr_index + dir */
 	/* JWT:ADDED NEXT 7 20230502 TO SET WARP START-POINT AT CURRENTLY-FOCUSED WINDOW, IF ANY: */
@@ -2061,6 +2066,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 				list->warp_curr_index = i;
 				break;
 			}
+	else  /* JWT:ADDED 20230505: */
+		list->warp_curr_index = (dir > 0) ? 0 : end_i-1;
 
 	i = list->warp_curr_index;
 	do {
@@ -2071,7 +2078,9 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 				i = (dir < 0) ? end_i - 1 : 0; /* 2=CONTINUOUS LOOP IN 1 DIRECTION: */
 			else if (Scr.Feel.AutoReverse == AST_ClosedLoop) {
 				i = (dir < 0) ? 0 : end_i - 1; /* 1:AT END, REVERSE DIRECTION: */
-				list->warp_curr_dir = dir = (dir < 0) ? 1 : -1;
+				/* JWT:CHGD. TO NEXT 2 20230505: list->warp_curr_dir = dir = (dir < 0) ? 1 : -1; */
+				list->warp_curr_dir = -1 * list->warp_curr_dir;
+				dir *= -1;
 				i += dir;								/* we need to skip the one that was focused at the moment ! */
 			} else
 				return NULL;                   /* 0:AT END, FULL STOP: */
