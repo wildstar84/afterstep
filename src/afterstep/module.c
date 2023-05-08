@@ -1196,13 +1196,8 @@ MenuData *make_module_menu (FunctionCode func, const char *title,
 		for (i = 0; i < max_i; ++i) {
 			ASDesktopEntry *de;
 			de = fetch_desktop_entry (AfterStepCategories, menuitems[i]->name);
-
-			if (de)
-				minipixmaps[MINIPIXMAP_Icon].filename = de->Icon;
-
-			if ((mdi =
-					 add_menu_fdata_item (md, menuitems[i],
-																&(minipixmaps[0]))) != NULL) {
+			minipixmaps[MINIPIXMAP_Icon].filename = de ? de->Icon : NULL;
+			if ((mdi = add_menu_fdata_item (md, menuitems[i], &(minipixmaps[0]))) != NULL) {
 				set_flags (mdi->flags, MD_ScaleMinipixmapDown);
 				if (de) {
 					char *comment = NULL;
@@ -1217,14 +1212,13 @@ MenuData *make_module_menu (FunctionCode func, const char *title,
 			safefree (menuitems[i]);	/* scrubba-dub-dub */
 		}
 		safefree (menuitems);
-	} else {											/* if( sort_order == ASO_Circulation || sort_order == ASO_Stacking ) */
+	} else {  /* if( sort_order == ASO_Circulation || sort_order == ASO_Stacking ) */
 
 		for (i = 0; i < max_i; ++i) {
 			ASDesktopEntry *de;
 			module_t2func_data (func, &(modules[i]), &fdata, &scut);
 			de = fetch_desktop_entry (AfterStepCategories, fdata.name);
-			if (de)
-				minipixmaps[MINIPIXMAP_Icon].filename = de->Icon;
+			minipixmaps[MINIPIXMAP_Icon].filename = de ? de->Icon : NULL;
 			if ((mdi = add_menu_fdata_item (md, &fdata, &(minipixmaps[0]))) != NULL)
 				set_flags (mdi->flags, MD_ScaleMinipixmapDown);
 		}

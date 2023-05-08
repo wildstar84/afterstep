@@ -85,8 +85,18 @@ static void free_asmenu_item (ASMenuItem * item)
 {
 	if (item->bar)
 		destroy_astbar (&(item->bar));
+
+	/* JWT:NOTE:MINIPIXMAPS FROM functions.c:assign_minipixmaps() USUALLY GET
+	   FREED HERE RATHER THAN IN functions.c:free_minipixmap_data(), AND THE
+	   MAIN MENU'S DON'T SEEM TO GET FREED UNTIL SHUT DOWN, BUT ARE RETAINED FOR
+	   AND DO NOT SEEM TO ACCUMULATE WITH SUBSEQUENT INVOCATIONS OF THE MENU
+	   (SAME NUMBER OF FREES REGARDLESS OF REPEATED INVOCATIONS (NOT LEAKING)) AFAICT.
+	*/
 	if (item->icon)
+	{
 		safe_asimage_destroy (item->icon);
+		item->icon = NULL;
+	}
 	free_func_data (&(item->fdata));
 }
 
@@ -209,7 +219,6 @@ static void set_asmenu_item_data (ASMenuItem * item, MenuDataItem * mdi)
 	} else
 		delete_astbar_tile (item->bar, -1);	/* delete all tiles */
 
-
 	if (item->icon) {
 		safe_asimage_destroy (item->icon);
 		item->icon = NULL;
@@ -217,11 +226,10 @@ static void set_asmenu_item_data (ASMenuItem * item, MenuDataItem * mdi)
 	/* we can only use images that are reference counted */
 	if (mdi->minipixmap[MINIPIXMAP_Icon].image)
 		icon_im = mdi->minipixmap[MINIPIXMAP_Icon].image;
-
-#if 0
-	else if (mdi->minipixmap[MINIPIXMAP_Icon].filename)
+	else if (mdi->minipixmap[MINIPIXMAP_Icon].filename)  /* JWT:ADDED 20230507! */
 		icon_im =
 				GetASImageFromFile (mdi->minipixmap[MINIPIXMAP_Icon].filename);
+#if 0
 	else if (mdi->fdata->func == F_CHANGE_BACKGROUND_FOREIGN
 					 && !is_web_background (mdi->fdata))
 		icon_im = GetASImageFromFile (mdi->fdata->text);
@@ -232,12 +240,11 @@ static void set_asmenu_item_data (ASMenuItem * item, MenuDataItem * mdi)
 		if (item->icon != icon_im
 				&& icon_im != mdi->minipixmap[MINIPIXMAP_Icon].image)
 			safe_asimage_destroy (icon_im);
-		if (item->icon && item->icon == mdi->minipixmap[MINIPIXMAP_Icon].image) {
-			if (item->icon->imageman != NULL)
-				item->icon = dup_asimage (item->icon);
-			else
-				item->icon = clone_asimage (item->icon, 0xFFFFFFFF);
-		}
+
+		if (item->icon && item->icon == mdi->minipixmap[MINIPIXMAP_Icon].image)
+			item->icon = (item->icon->imageman != NULL)
+					? dup_asimage (icon_im)
+					: clone_asimage (icon_im, 0xFFFFFFFF);
 	}
 
 	/* reserve space for minipixmap */
@@ -499,7 +506,6 @@ set_asmenu_data (ASMenu * menu, MenuData * md, Bool first_time,
 	MenuDataItem **subitems = NULL;
 	MenuDataItem *title_mdi = NULL;
 
-
 	if (menu->items_num < items_num) {
 		menu->items = realloc (menu->items, items_num * (sizeof (ASMenuItem)));
 		memset (&(menu->items[menu->items_num]), 0x00,
@@ -552,9 +558,8 @@ set_asmenu_data (ASMenu * menu, MenuData * md, Bool first_time,
 				if (item->fdata.func == F_POPUP
 						&& !get_flags (item->flags, AS_MenuItemDisabled)
 						&& subitems != NULL) {
-					int used =
-							extract_recent_subitems (FDataPopupName (item->fdata),
-																			 subitems, recent_items);
+					int used = extract_recent_subitems (FDataPopupName (item->fdata),
+							subitems, recent_items);
 					if (used > 0) {
 						items_num += used;
 						if (menu->items_num < items_num) {
@@ -562,19 +567,20 @@ set_asmenu_data (ASMenu * menu, MenuData * md, Bool first_time,
 							menu->items =
 									realloc (menu->items, items_num * (sizeof (ASMenuItem)));
 							memset (&(menu->items[to_zero]), 0x00,
-											(items_num - to_zero) * sizeof (ASMenuItem));
+									(items_num - to_zero) * sizeof (ASMenuItem));
 						}
 						for (i = 0; i < used; ++i) {
 							set_asmenu_item_data (&(menu->items[real_items_num]),
-																		subitems[i]);
+									subitems[i]);
 							subitems[i] = NULL;
 							set_flags (menu->items[real_items_num].flags,
-												 AS_MenuItemSubitem);
+									AS_MenuItemSubitem);
 							++real_items_num;
 						}
 					}
 				}
 			}
+
 		if (real_items_num > 0) {
 			for (i = 0; i < real_items_num; ++i) {
 				register ASMenuItem *item = &(menu->items[i]);
@@ -642,16 +648,14 @@ void set_menu_scroll_bar_look (ASTBarData * bar, MyLook * look, Bool up)
 	/* now readd it as proper type : */
 	if (look->MenuArrow)
 		add_astbar_icon (bar, 7, 0,
-										 up ? FLIP_VERTICAL : FLIP_VERTICAL | FLIP_UPSIDEDOWN,
-										 ALIGN_CENTER | RESIZE_H | RESIZE_H_SCALE,
-										 look->MenuArrow->image);
+				up ? FLIP_VERTICAL : FLIP_VERTICAL | FLIP_UPSIDEDOWN,
+				ALIGN_CENTER | RESIZE_H | RESIZE_H_SCALE,
+				look->MenuArrow->image);
 	else
-		add_astbar_label (bar, 7, 0, 0, ALIGN_CENTER, 5, 5, "...",
-											AS_Text_ASCII);
+		add_astbar_label (bar, 7, 0, 0, ALIGN_CENTER, 5, 5, "...", AS_Text_ASCII);
 
 	set_astbar_style_ptr (bar, -1, look->MSMenu[MENU_BACK_ITEM]);
-	set_astbar_style_ptr (bar, BAR_STATE_FOCUSED,
-												look->MSMenu[MENU_BACK_HILITE]);
+	set_astbar_style_ptr (bar, BAR_STATE_FOCUSED, look->MSMenu[MENU_BACK_HILITE]);
 
 	if (look->DrawMenuBorders == DRAW_MENU_BORDERS_ITEM)
 		fhilite = hilite = DEFAULT_MENU_HILITE;
@@ -952,14 +956,14 @@ static inline void run_item_submenu (ASMenu * menu, int item_no)
 		else if (item->fdata.func == F_RESTARTMODULELIST)
 			submenu = make_restart_module_menu (Scr.Feel.winlist_sort_order);
 #ifndef NO_WINDOWLIST
-		else if (item->fdata.func == F_WINDOWLIST) {
+		else if (item->fdata.func == F_WINDOWLIST)
 			submenu = make_desk_winlist_menu (Scr.Windows,
-																				(item->fdata.text == NULL) ?
-																				Scr.CurrentDesk : item->fdata.
-																				func_val[0],
-																				Scr.Feel.winlist_sort_order,
-																				False);
-		}
+					(item->fdata.text == NULL) ?
+					Scr.CurrentDesk : item->fdata.
+					func_val[0],
+					Scr.Feel.winlist_sort_order,
+					False);
+
 #endif
 		if (submenu) {
 			int x = menu->main_canvas->root_x + (int)menu->main_canvas->bw;
@@ -979,7 +983,7 @@ static inline void run_item_submenu (ASMenu * menu, int item_no)
 					(menu->item_height * (item_no - (int)menu->top_item));
 			/*  if( x > menu->main_canvas->root_x+menu->item_width-5 )
 			   x = menu->main_canvas->root_x+menu->item_width-5 ;
-			 */ close_asmenu_submenu (menu);
+			*/ close_asmenu_submenu (menu);
 			menu->submenu = run_submenu (menu, submenu, x, y);
 			if (item->fdata.func != F_POPUP) {
 				if (menu->submenu == NULL)
@@ -1154,22 +1158,22 @@ on_menu_pressure_changed (ASInternalWindow * asiw, int pressed_context)
 					&& py < menu->main_canvas->height) {
 				int pressed = -1;
 				if (menu->visible_items_num < menu->items_num) {
-					if (py < menu->scroll_bar_size) {
+					if (py < menu->scroll_bar_size)
 						set_asmenu_scroll_position (menu, menu->top_item - 1);
-					} else if (py > menu->scroll_down_bar->win_y) {
+					else if (py > menu->scroll_down_bar->win_y)
 						set_asmenu_scroll_position (menu, menu->top_item + 1);
-					} else {
+					else
 						pressed = (py - menu->scroll_bar_size) / menu->item_height;
-					}
+
 					if (pressed < 0)
 						return;
 				} else
 					pressed = py / menu->item_height;
+
 				pressed += menu->top_item;
-				if (pressed != menu->pressed_item)
-				{
+				if (pressed != menu->pressed_item) {
 					press_menu_item (menu, pressed, False);
-					  /* JWT:ALSO DO RELEASE (TO ACTIVATE) DUE TO CHANGE JUST BELOW!: */
+					/* JWT:ALSO DO RELEASE (TO ACTIVATE) DUE TO CHANGE JUST BELOW!: */
 					press_menu_item (menu, -1, False);
 				}
 			}
@@ -1198,8 +1202,7 @@ MOUSE STEADY WHILST RELEASING!):
 			select_menu_item (menu, selection, render);
 	}
 	/* THIS SEEMS TO ALLOW HOVERING OVER ".." PART TO LAUNCH SUBMENUS (DESIRABLE): */
-	if (px >
-			menu->main_canvas->width - (menu->arrow_space + DEFAULT_MENU_SPACING)
+	if (px > menu->main_canvas->width - (menu->arrow_space + DEFAULT_MENU_SPACING)
 			&& menu->submenu == NULL)
 		run_item_submenu (menu, selection);
 
@@ -1311,8 +1314,8 @@ void on_menu_pointer_event (ASInternalWindow * asiw, ASEvent * event)
 				}
 			} else
 				selection = py / menu->item_height;
-			selection += menu->top_item;
 
+			selection += menu->top_item;
 			handle_menu_selection (menu, xmev->state, px, selection, True);
 		}
 	}
@@ -1433,6 +1436,7 @@ on_menu_look_feel_changed (ASInternalWindow * asiw, ASFeel * feel,
 
 		if (tbar_width > MAX_MENU_WIDTH)
 			tbar_width = MAX_MENU_WIDTH;
+
 		if (tbar_width > menu->optimal_width) {
 			int i = menu->items_num;
 			menu->optimal_width = tbar_width;
@@ -1445,6 +1449,7 @@ on_menu_look_feel_changed (ASInternalWindow * asiw, ASFeel * feel,
 		}
 		if (menu->items && menu->items[0].bar)
 			set_astbar_focused (menu->items[0].bar, menu->main_canvas, False);
+
 		menu->selected_item = -1;
 		set_asmenu_scroll_position (menu, 0);
 
@@ -1492,9 +1497,8 @@ ASHints *make_menu_hints (ASMenu * menu)
 									 AS_MenuTitleIsUTF8) ? AS_Text_UTF8 : AS_Text_ASCII;
 	} else {
 		hints->names[0] = mystrdup (menu->name);
-		hints->names_encoding[0] =
-				get_flags (menu->state,
-									 AS_MenuNameIsUTF8) ? AS_Text_UTF8 : AS_Text_ASCII;
+		hints->names_encoding[0] = get_flags (menu->state,
+				AS_MenuNameIsUTF8) ? AS_Text_UTF8 : AS_Text_ASCII;
 	}
 	hints->names[1] = mystrdup (ASMENU_RES_CLASS);
 	/* these are merely shortcuts to the above list DON'T FREE THEM !!! */
@@ -1505,7 +1509,7 @@ ASHints *make_menu_hints (ASMenu * menu)
 	hints->flags = AS_DontCirculate | AS_SkipWinList | AS_Titlebar | AS_Border | AS_Handles | AS_AcceptsFocus | AS_Gravity | AS_MinSize | AS_MaxSize | AS_SizeInc;	/*|AS_VerticalTitle ; */
 	hints->protocols = AS_DoesWmTakeFocus;
 	hints->function_mask = ~(AS_FuncPopup |	/* everything else is allowed ! */
-													 AS_FuncMinimize | AS_FuncMaximize);
+			AS_FuncMinimize | AS_FuncMaximize);
 
 	hints->max_width = MAX_MENU_WIDTH;
 	hints->max_height =
@@ -1548,7 +1552,7 @@ void show_asmenu (ASMenu * menu, int x, int y)
 	int my_width, my_height;
 
 	LOCAL_DEBUG_OUT ("menu(%s) - encoding set in hints is %d",
-									 hints->names[0], hints->names_encoding[0]);
+			hints->names[0], hints->names_encoding[0]);
 
 	asiw->data = (ASMagic *) menu;
 
@@ -1563,8 +1567,7 @@ void show_asmenu (ASMenu * menu, int x, int y)
 	asiw->on_root_background_changed = on_menu_root_background_changed;
 	asiw->destroy = menu_destroy;
 
-	db_rec =
-			fill_asdb_record (Database, &(ASMenuStyleNames[0]), NULL, False);
+	db_rec = fill_asdb_record (Database, &(ASMenuStyleNames[0]), NULL, False);
 	merge_asdb_hints (hints, NULL, db_rec, NULL, HINT_GENERAL);
 
 	estimate_titlebar_size (hints, &tbar_width, &tbar_height);
@@ -1599,6 +1602,7 @@ void show_asmenu (ASMenu * menu, int x, int y)
 					y = (requested_y + pc->root_y) / 2;
 				else
 					y = requested_y;
+
 				if (y + my_height >= Scr.MyDisplayHeight) {
 					if (pc->root_y + pc->height - requested_y < menu->item_height)
 						y = requested_y - my_height;
@@ -1638,7 +1642,6 @@ void show_asmenu (ASMenu * menu, int x, int y)
 	}
 	hints->gravity = gravity;
 
-
 	/* status hints : */
 	memset (&status, 0x00, sizeof (ASStatusHints));
 	status.flags = AS_StartPosition |
@@ -1670,13 +1673,14 @@ void show_asmenu (ASMenu * menu, int x, int y)
 
 /*		LOCAL_DEBUG_OUT( "printing db record %p for names %p and db %p", pdb_rec, clean->names, db );
 		print_asdb_matched_rec (NULL, NULL, Database, db_rec);
-  */
+*/
 		merge_asdb_hints (hints, &raw, db_rec, &status, ASFLAGS_EVERYTHING);
 		destroy_asdb_record (db_rec, False);
 	}
 	/* lets make sure we got everything right : */
 	LOCAL_DEBUG_OUT ("menu(%s) - encoding set in hints is %d",
-									 hints->names[0], hints->names_encoding[0]);
+			hints->names[0], hints->names_encoding[0]);
+
 	check_hints_sanity (ASDefaultScr, hints, &status, menu->main_canvas->w);
 	check_status_sanity (ASDefaultScr, &status);
 
@@ -1701,6 +1705,7 @@ void show_asmenu (ASMenu * menu, int x, int y)
 	if (asiw) {
 		if (asiw->data)
 			destroy_asmenu (&menu);
+
 		free (asiw);
 	}
 	if (hints)
@@ -1717,8 +1722,8 @@ ASMenu *run_submenu (ASMenu * supermenu, MenuData * md, int x, int y)
 		menu = create_asmenu (md->name);
 		clear_flags (menu->state, AS_MenuRendered);
 		set_asmenu_data (menu, md, True,
-										 get_flags (Scr.Look.flags, MenuShowUnavailable),
-										 Scr.Feel.recent_submenu_items);
+				get_flags (Scr.Look.flags, MenuShowUnavailable),
+				Scr.Feel.recent_submenu_items);
 		set_asmenu_look (menu, &Scr.Look);
 		/* will set scroll position when ConfigureNotify arrives */
 		menu->supermenu = supermenu;
@@ -1734,7 +1739,7 @@ ASMenu *run_menu_data (MenuData * md)
 	ASMenu *menu = NULL;
 	int x = 0, y = 0;
 	Bool persistent = (get_flags (Scr.Feel.flags, PersistentMenus)
-										 || ASTopmostMenu == NULL);
+			|| ASTopmostMenu == NULL);
 
 	close_asmenu (&ASTopmostMenu);
 
@@ -1765,6 +1770,7 @@ ASMenu *find_asmenu (const char *name)
 			if (mystrcasecmp (menu->name, name) == 0 ||
 					mystrcasecmp (menu->title, name) == 0)
 				return menu;
+
 			menu = menu->submenu;
 		}
 	}
@@ -1773,9 +1779,10 @@ ASMenu *find_asmenu (const char *name)
 
 ASMenu *find_topmost_transient_menu (ASMenu * menu)
 {
-	if (menu && menu->supermenu && menu->supermenu->magic == MAGIC_ASMENU)
-		if (!get_flags (menu->supermenu->state, AS_MenuPinned))
-			return find_topmost_transient_menu (menu->supermenu);
+	if (menu && menu->supermenu && menu->supermenu->magic == MAGIC_ASMENU
+			 && !get_flags (menu->supermenu->state, AS_MenuPinned))
+		return find_topmost_transient_menu (menu->supermenu);
+
 	return menu;
 }
 
@@ -1788,9 +1795,10 @@ void pin_asmenu (ASMenu * menu)
 		if (menu == ASTopmostMenu)
 			ASTopmostMenu = NULL;
 		else if (menu->supermenu &&
-						 menu->supermenu->magic == MAGIC_ASMENU &&
-						 menu->supermenu->submenu == menu)
+				menu->supermenu->magic == MAGIC_ASMENU &&
+				menu->supermenu->submenu == menu)
 			menu->supermenu->submenu = NULL;
+
 		if (menu_to_close != menu)
 			close_asmenu (&menu_to_close);
 
@@ -1810,5 +1818,6 @@ Bool is_menu_pinnable (ASMenu * menu)
 {
 	if (menu && menu->magic == MAGIC_ASMENU)
 		return !get_flags (menu->state, AS_MenuPinned);
+
 	return False;
 }

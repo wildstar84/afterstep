@@ -485,16 +485,22 @@ ComplexFunction *find_complex_func (struct ASHashTable * list, char *name)
 
 void free_minipixmap_data (MinipixmapData * minipixmap)
 {
+	if (minipixmap == NULL)  /* JWT:ADDED 20230504: LET'S ERR ON THE SAFE SIDE! ;) */
+		return;
+
 #ifdef DEBUG_ALLOCS
 	LOCAL_DEBUG_OUT ("filename = \"%s\", image = %p", minipixmap->filename,
 									 minipixmap->image);
 #endif
-	if (minipixmap->filename)
+	if (minipixmap->filename) {
 		free (minipixmap->filename);
+		minipixmap->filename = NULL;  /* JWT:ADDED 20230504: LET'S ERR ON THE SAFE SIDE! ;) */
+	}
 	if (minipixmap->image) {
 		safe_asimage_destroy (minipixmap->image);
 		minipixmap->image = NULL;
 	}
+	minipixmap->loadCount = 0;  /* JWT:ADDED 20230504 */
 }
 
 /***************************************************************
@@ -644,6 +650,10 @@ void assign_minipixmaps (MenuDataItem * mdi, MinipixmapData * minipixmaps)
 			if (minipixmaps[i].filename) {
 				free_minipixmap_data (&(mdi->minipixmap[i]));
 				mdi->minipixmap[i].filename = mystrdup (minipixmaps[i].filename);
+				mdi->minipixmap[i].image = minipixmaps[i].image;
+			} else if (minipixmaps[i].image) {  /* JWT:ADDED 20230504: ENABLE WINLISTMENU ICONS: */
+				free_minipixmap_data (&(mdi->minipixmap[i]));
+				mdi->minipixmap[i].filename = NULL;
 				mdi->minipixmap[i].image = minipixmaps[i].image;
 			}
 		}
