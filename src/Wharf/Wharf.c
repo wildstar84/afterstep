@@ -190,13 +190,14 @@ typedef struct ASWharfState {
 
 	ASWharfButton *focused_button;
 	ASWharfButton *prev_focused_button;  /* JWT:PREVIOUSLY FOCUSED BUTTON (FOR KB-FOCUSING). */
-	Bool isFocused;             /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
 	Window focus_return;        /* JWT:SAVE WHARF'S MAIN X FOCUS WINDOW: */
 	int revert_to_return;       /* JWT:EXTRA RETURN VALUE FROM XGetInputFocus. */
+	int holdFocus;              /* JWT:TRY TO STOP FOCUS-ON-MOUSE STATE IN CERTAIN WEIRD CASES! */
+	Bool isFocused;             /* JWT:TRUE IF WHARF HAS THE KEYBOARD FOCUS. */
 	Bool key_release_pending;   /* JWT:PREVENT KEY-REPEAT FOR FUNCTION-INVOCATION KEYS! */
 	Bool ctrlkey_down;          /* JWT:TRUE BETWEEN PRESS & RELEASE OF CONTROL-KEY! */
 	Bool skipFdataFns;          /* JWT:SKIP fdata[] FUNCTION-CALLS ON FOLDERS IF CONTROL-KEY PRESSED. */
-	int holdFocus;              /* JWT:TRY TO STOP FOCUS-ON-MOUSE STATE IN CERTAIN WEIRD CASES! */
+	Bool NotifyInferiorFlag;    /* JWT:FLAG TO HANDLE BUTTON-FOCUS STATUS ON LEAVENOTIFY. */
 	time_t commandSent;         /* JWT:AVOID SENDING FDATA COMMANDS > 1 TIME! */
 
 	FunctionData *default_action[Button5];
@@ -1015,7 +1016,7 @@ void DispatchEvent (ASEvent * event)
 					Time t = Scr.last_Timestamp;
 					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
 				}
-			} else
+			} else if (event->x.type == EnterNotify)
 				WharfState.holdFocus = 0;
 
 			ASMagic *obj = fetch_object (event->w);
@@ -1025,14 +1026,17 @@ void DispatchEvent (ASEvent * event)
 						root_pointer_moved);  /* THIS SHOWS THE BALLOON, IF SET UP. */
 				root_pointer_moved = False;
 
-				if (event->x.type == EnterNotify || WharfState.isFocused)
-				{
+				if (event->x.type == EnterNotify || WharfState.isFocused) {
 					if (WharfState.focused_button && WharfState.focused_button != aswb)
 						change_button_focus (WharfState.focused_button, False);
 
 					change_button_focus (aswb, True);
+					WharfState.NotifyInferiorFlag = (event->x.xcrossing.detail == 2);
 					break;
-				}
+				} else if (event->x.type == LeaveNotify && aswb->swallowed
+						&& (event->x.xcrossing.detail == 2||
+						(event->x.xcrossing.detail == 3 && !WharfState.NotifyInferiorFlag)))
+					break;
 			}
 			if (WharfState.focused_button)
 				change_button_focus (WharfState.focused_button, False);
