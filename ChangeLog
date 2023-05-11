@@ -1,8 +1,33 @@
 CHANGELOG
 ----------------------
-[2023-05008: Jim Turner]
+[2023-05-11: Jim Turner]
 
- * Menu icons - Make work (again?) in the "WindowList" menu, and also the 
+* Add "Shift-arrow warping" to WinList (when it has keyboard-focus).  This 
+means that pressing the left or right arrow-keys while holding the Shift key 
+causes warping through all non-iconified windows in the circulate list while 
+traversing through the WinList buttons jumping between each non-iconfied window 
+represented in the WinList and raising but NOT FOCUSING them so that WinList 
+itself retains the keyboard focus while traversing.  When on one of them, one 
+can use the assigned mouse button (or keyboard equivalent) to focus or other-
+wise manipulate the desired window.  NOTE:  This feature is really only useful 
+if using the ClickToFocus focusing model.  One additional side-benefit of this 
+feature development is that now the Warp* and ChangeWindow* functions now 
+accept a "*" as an argument, which will cause them to warp to the client-
+window specified.  See "SendCommand" function.  We always skip over iconified 
+windows regardless of the "CirculateSkipIcons" feel option, as I confirmed that 
+module code, such as WinList do not currently have a known (to me at least) 
+way to access the correct value of this flag.
+
+* Fix annoying issue where a non-sticky window is initially placed on one desk, 
+iconified, then deiconfied onto another, and user then switches to another 
+desktop without first moving the window as least slightly, the window moves 
+itself back to the original desktop it was on.  I believe most users do this 
+with the intention that the window will henceforth reside on the deiconified 
+desktop until user decides otherwise.  I fixed this by simply calling for a 
+zero-pixel "move" via the moveresize_aswindow_wm() function, which takes care 
+if this nicely somehow (see functions.c).
+
+* Menu icons - Make work (again?) in the "WindowList" menu, and also the 
 "Stop Running Module" and "Restart Running Module" menus and clean up that part 
 of the code a bit.  Some of this code had been commented out by a previous 
 developer leading me to suspect it either didn't work, leaked, or crashed, but 
@@ -14,7 +39,7 @@ since I hardly ever use the menus myself.  Since I was already on a roll
 digging around and testing stuff out I don't normally use, things like this 
 suddenly became noticable to me (and SHOULD work)!
 
- * More window-warping fixes:  Fix improper window-warping with 
+* More window-warping fixes:  Fix improper window-warping with 
 feel.AutoReverse set to 1 (I call it the "yoyo" traversal method because it 
 reverses directions automatically when reaching the beginning or end of the 
 windowlist).  I also reversed (swapped) the directions of the WarpFore and 

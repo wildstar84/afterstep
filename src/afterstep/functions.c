@@ -1143,8 +1143,11 @@ void warp_func_handler (FunctionData * data, ASEvent * event, int module)
 	register ASWindow *t = NULL;
 
 	if (data->text != NULL)
-		if (*(data->text) != '\0')
+		if (*(data->text) == '*')  /* JWT:THESE 2 ADDED 20230509 TO HANDLE WINLIST SHIFT-ARROW WARPING: */
+			t = event->client;
+		else if (*(data->text) != '\0')
 			t = pattern2ASWindow (data->text);
+
 	if (t == NULL)
 /* JWT:CHGD. TO NEXT 20230505 TO REVERSE THIS (AFTER FIXING WINDOW-WARPING):
 		t = warp_aswindow_list (Scr.Windows,

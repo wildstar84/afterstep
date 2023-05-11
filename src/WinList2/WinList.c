@@ -100,7 +100,11 @@ typedef struct {
     int frame_x, frame_y ;
     unsigned int frame_width, frame_height, frame_bw ; 
     short keyboard_cursor;    /* JWT:CURRENT INDEX OF BUTTON "FOCUSED" BY KEYBOARD NAV. (-1=NONE) */
+    short prev_cursor;        /* JWT:SAVE FOCUSED BUTTON INDEX FOR SHIFT-ARROWKEYS/REFOCUSING */
     Bool key_release_pending; /* JWT:PREVENT KEY-REPEAT! */
+    Bool shiftkey_down;       /* JWT:TRUE BETWEEN PRESS & RELEASE OF SHIFT-KEY! */
+    /* JWT:PREVENT FOCUSED WINDOW'S BAR BEING REFOCUSED ON AUTO-FOCUS-IN WHEN SHIFT-ARROWKEY WARPING! */
+    Bool buttons_locked;
 
 }ASWinListState;
 
@@ -168,6 +172,11 @@ main( int argc, char **argv )
     int i ;
 
     memset( &WinListState, 0x00, sizeof(WinListState));
+    WinListState.keyboard_cursor = -1;
+    WinListState.prev_cursor = -1;
+    WinListState.key_release_pending = -1;
+    WinListState.shiftkey_down = False;
+    WinListState.buttons_locked = False;
     
     /* Save our program name - for error messages */
     set_DeadPipe_handler(DeadPipe);
@@ -459,7 +468,6 @@ process_message (send_data_type type, send_data_type *body)
             else 
                 delete_winlist_button( tbar, saved_wd );
         }
-
     }
 }
 
@@ -531,6 +539,7 @@ DispatchEvent (ASEvent * event)
             }
             break;
         case KeyPress:  /* JWT:HANDLE KEYBOARD NAVIGATION: */
+            WinListState.buttons_locked = False;
             n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
             switch (ks) {
               case XK_Left:
@@ -545,12 +554,48 @@ DispatchEvent (ASEvent * event)
                         WinListState.keyboard_cursor = WinListState.windows_num;
 
                     WinListState.keyboard_cursor--;
+                    if (WinListState.shiftkey_down && WinListState.keyboard_cursor < 0)
+                        WinListState.keyboard_cursor = WinListState.windows_num - 1;
+
                     if (WinListState.keyboard_cursor < 0
                             || WinListState.keyboard_cursor >= WinListState.windows_num)
                         break;
 
-                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
-                            True);
+                    if (WinListState.shiftkey_down)
+                    {
+                        short loop_count = 0;
+                        FunctionData fdata;
+                        fdata.func = F_CHANGEWINDOW_DOWN;
+                        fdata.text = "*";
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                        /* JWT:WE HAVE TO SKIP OVER ICONIZED WINDOWS B/C WE DON'T DEICONIFY 'EM HERE!: */
+                        while (True)
+                        {
+                            if (!get_flags (WinListState.window_order[WinListState.prev_cursor]->state_flags,
+                                    AS_Iconic))
+                            {
+                                SendCommand(&fdata, WinListState.window_order[WinListState.prev_cursor]->client);
+                                sleep_a_millisec (100);
+                                ASSync(False);
+                                if (WinListState.self && WinListState.self->client)
+                                {
+                                    char command[64];
+                                    sprintf (command, "Focus");
+                                    SendInfo (command, WinListState.self->client);
+                                    WinListState.prev_cursor = WinListState.prev_cursor;
+                                    break;
+                                }
+                            }
+                            if (--WinListState.prev_cursor < 0)
+                                WinListState.prev_cursor = WinListState.windows_num - 1;
+
+                            if (WinListState.prev_cursor == WinListState.keyboard_cursor)
+                                break;
+                        }
+                    }
+                    else
+                        set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                                True);
                 }
                 break;
               case XK_Right:
@@ -565,12 +610,48 @@ DispatchEvent (ASEvent * event)
                         WinListState.keyboard_cursor = -1;
 
                     WinListState.keyboard_cursor++;
+                    if (WinListState.shiftkey_down && WinListState.keyboard_cursor >= WinListState.windows_num)
+                        WinListState.keyboard_cursor = 0;
+
                     if (WinListState.keyboard_cursor < 0
                             || WinListState.keyboard_cursor >= WinListState.windows_num)
                         break;
 
-                    set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
-                            True);
+                    if (WinListState.shiftkey_down)
+                    {
+                        short loop_count = 0;
+                        FunctionData fdata;
+                        fdata.func = F_CHANGEWINDOW_DOWN;
+                        fdata.text = "*";
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                        /* JWT:WE HAVE TO SKIP OVER ICONIZED WINDOWS B/C WE DON'T DEICONIFY 'EM HERE!: */
+                        while (True)
+                        {
+                            if (!get_flags (WinListState.window_order[WinListState.prev_cursor]->state_flags,
+                                    AS_Iconic))
+                            {
+                                SendCommand(&fdata, WinListState.window_order[WinListState.prev_cursor]->client);
+                                sleep_a_millisec (100);
+                                ASSync(False);
+                                if (WinListState.self && WinListState.self->client)
+                                {
+                                    char command[64];
+                                    sprintf (command, "Focus");
+                                    SendInfo (command, WinListState.self->client);
+                                    WinListState.prev_cursor = WinListState.prev_cursor;
+                                    break;
+                                }
+                            }
+                            if (++WinListState.prev_cursor >= WinListState.windows_num)
+                                WinListState.prev_cursor = 0;
+
+                            if (WinListState.prev_cursor == WinListState.keyboard_cursor)
+                                break;
+                        }
+                    }
+                    else
+                        set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                                True);
                 }
                 break;
               case XK_space:   /* TREAT [SPACE] & [RETURN] AS MOUSE-BUTTON (ACTION) 1: */
@@ -582,7 +663,22 @@ DispatchEvent (ASEvent * event)
                 if (WinListState.keyboard_cursor < 0 || get_flags(WinListState.self->state_flags, AS_Shaded))
                     SendInfo ("Shade", WinListState.main_window);  /* Toggle shade! */
                 else
+                {
                     activate_button_with_keypress(1);
+                    if (WinListState.shiftkey_down)
+                    {
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                           sleep_a_millisec (100);
+                        ASSync(False);
+                        WinListState.shiftkey_down = False; /* MUST FORCE RESET HERE TO AVOID STICKLES! */
+                        if (WinListState.self && WinListState.self->client)
+                        {
+                            char command[64];
+                            sprintf (command, "Focus");
+                            SendInfo (command, WinListState.self->client);
+                        }
+                    }
+                }
                 break;
               case XK_Escape:
                 if (WinListState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
@@ -594,28 +690,66 @@ DispatchEvent (ASEvent * event)
               default:
                 if (WinListState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
                     break;
+                else if (ks == XK_Shift_L || ks == XK_Shift_R)
+                {
+                    WinListState.shiftkey_down = True;
+                    break;
+                }
                 WinListState.key_release_pending = True;
 
                 /* JWT:DO CORRESPONDING MOUSE-BUTTON# PRESS & RELEASE ACTION: */
-                if (!get_flags(WinListState.self->state_flags, AS_Shaded)
-                        && buf[0] >= '1' && buf[0] <= '3')
-                    activate_button_with_keypress(buf[0]-'0');
+                if (!get_flags(WinListState.self->state_flags, AS_Shaded))
+                {
+                    Bool isShift = False;
+                    if (buf[0] >= '1' && buf[0] <= '3')
+                        activate_button_with_keypress(buf[0]-'0');
+                    else if (buf[0] == '!') {
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                           activate_button_with_keypress(1);
+                           isShift = True;
+                    } else if (buf[0] == '@') {
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                           activate_button_with_keypress(2);
+                           isShift = True;
+                    } else if (buf[0] == '#') {
+                        WinListState.prev_cursor = WinListState.keyboard_cursor;
+                           activate_button_with_keypress(3);
+                           isShift = True;
+                    }
+
+                    if (isShift)
+                    {
+                        sleep_a_millisec (100);
+                        ASSync(False);
+                        if (WinListState.self && WinListState.self->client)
+                        {
+                            char command[64];
+                            sprintf (command, "Focus");
+                            SendInfo (command, WinListState.self->client);
+                        }
+                        WinListState.shiftkey_down = False; /* MUST FORCE RESET HERE TO AVOID STICKLES! */
+                    }
+                }
                 break;
             }
             break;
         case KeyRelease:
-			/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
-			if (XEventsQueued(dpy, QueuedAfterReading)) {
-				XEvent nev;
-				XPeekEvent(dpy, &nev);
-				if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
-						nev.xkey.keycode == *(&(event->x).xkey.keycode)) {
-					break;
-				}
-			}
+            /* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
+            if (XEventsQueued(dpy, QueuedAfterReading))
+            {
+                XEvent nev;
+                XPeekEvent(dpy, &nev);
+                if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
+                        nev.xkey.keycode == *(&(event->x).xkey.keycode))
+                    break;
+            }
             WinListState.key_release_pending = False;
+            n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+            if (ks == XK_Shift_L || ks == XK_Shift_R)
+                WinListState.shiftkey_down = False;
             break;
         case ButtonPress:
+            WinListState.buttons_locked = False;
             if( pointer_wd )
                 press_winlist_button( pointer_wd );
             break;
@@ -625,12 +759,30 @@ DispatchEvent (ASEvent * event)
             break;
         case FocusIn:  /* JWT:WHEN WINLIST TAKES KEYBOARD FOCUS: */
             WinListState.keyboard_cursor = -1;
-            WinListState.key_release_pending = False;
+            if (WinListState.prev_cursor >= 0)
+            {
+                   ASSync(False);
+                WinListState.buttons_locked = False;
+                WinListState.keyboard_cursor = WinListState.prev_cursor;
+                set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor],
+                        True);
+                WinListState.buttons_locked = True;
+            } else {
+                WinListState.shiftkey_down = False;
+                WinListState.key_release_pending = False;
+                WinListState.buttons_locked = False;
+            }
+
+            WinListState.prev_cursor = -1;
             break;
         case FocusOut:  /* JWT:WHEN WINLIST LOOSES KB FOCUS: */
+            WinListState.buttons_locked = False;
             if (WinListState.keyboard_cursor >= 0
                     && WinListState.keyboard_cursor < WinListState.windows_num)
+            {
+                sleep_a_millisec(100);
                 set_just_winlist_button_focus(WinListState.window_order[WinListState.keyboard_cursor], False);
+            }
             break;
         case EnterNotify :
         case LeaveNotify :
@@ -647,10 +799,9 @@ DispatchEvent (ASEvent * event)
             break ;
         case ClientMessage:
             if ((event->x.xclient.format == 32) &&
-                (event->x.xclient.data.l[0] == _XA_WM_DELETE_WINDOW))
-            {
+                    (event->x.xclient.data.l[0] == _XA_WM_DELETE_WINDOW))
                 DeadPipe(0);
-            }
+
             break;
         case PropertyNotify:
             if( event->w == Scr.Root || event->w == Scr.wmprops->selection_window ) 
@@ -665,12 +816,14 @@ DispatchEvent (ASEvent * event)
                     for( i = 0 ; i < WinListState.windows_num ; ++i )
                         if( update_astbar_transparency( WinListState.window_order[i]->bar, WinListState.main_canvas, True ) )
                             render_astbar( WinListState.window_order[i]->bar, WinListState.main_canvas );
+
                     if( is_canvas_dirty( WinListState.main_canvas ) )
                     {
                         LOCAL_DEBUG_OUT( "update main canvas%s","");
                         update_canvas_display( WinListState.main_canvas );
                     }
-                }else if( event->x.xproperty.atom == _AS_STYLE )
+                }
+                else if( event->x.xproperty.atom == _AS_STYLE )
                 {
                     int i ;
                     LOCAL_DEBUG_OUT( "AS Styles updated!%s","");
@@ -683,7 +836,8 @@ DispatchEvent (ASEvent * event)
                         rearrange_winlist_window( False );
                     for( i = 0 ; i < WinListState.windows_num ; ++i )
                         refresh_winlist_button( WinListState.window_order[i]->bar, WinListState.window_order[i], False );
-                }else if( event->x.xproperty.atom == _AS_TBAR_PROPS )
+                }
+                else if( event->x.xproperty.atom == _AS_TBAR_PROPS )
                 {
                     int i ;
                     retrieve_winlist_astbar_props();        
@@ -692,8 +846,9 @@ DispatchEvent (ASEvent * event)
                     for( i = 0 ; i < WinListState.windows_num ; ++i )
                         refresh_winlist_button( WinListState.window_order[i]->bar, WinListState.window_order[i], False );
                 }
-            }else if( event->x.xproperty.atom == _XA_NET_WM_ICON )
-            {                  /* Maybe name change on the client !!! */
+            }
+            else if( event->x.xproperty.atom == _XA_NET_WM_ICON )
+            {   /* Maybe name change on the client !!! */
                 /*handle_tab_name_change( event->w ); */
             }
             break;
@@ -1522,6 +1677,9 @@ void set_just_winlist_button_focus( ASWindowData *wd, Bool focus )
 {
     timer_remove_by_data( wd->bar );  /* just in case */
 
+    if (WinListState.buttons_locked)
+        return;
+
     if (focus)
         set_astbar_style_ptr( wd->bar, BAR_STATE_FOCUSED, Scr.Look.MSWindow[BACK_FOCUSED] );
 
@@ -1726,7 +1884,7 @@ Bool
 refresh_winlist_button( ASTBarData *tbar, ASWindowData *wd, Bool focus_only )
 {
 LOCAL_DEBUG_OUT("tbar = %p, wd = %p", tbar, wd );
-    if( tbar )
+    if( tbar && !WinListState.buttons_locked)
     {
         int i = find_window_index( wd ) ;
         if( i < WinListState.windows_num )
@@ -1869,5 +2027,4 @@ switch_deskviewport( int new_desk, int new_vx, int new_vy )
     if( check_avoid_collision() )
         rearrange_winlist_window( False );
 }
-
 
