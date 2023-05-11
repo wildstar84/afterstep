@@ -2016,8 +2016,17 @@ do_change_aswindow_desktop (ASWindow * asw, int new_desk, Bool force)
 		/* desktop changing : */
 		if (new_desk == Scr.CurrentDesk) {
 			quietly_reparent_aswindow (asw, Scr.Root, True);
+			/* JWT:ADDED 20230509:PRETEND TO "MOVE" WINDOW, SO WINDOW DEICONIFIED ON DIFFERENT DESKTOP STAYS THERE!: */
+			if (!ASWIN_GET_FLAGS (asw, AS_Sticky)) {
+				int x = asw->status->x;
+				int y = asw->status->y;
+				int width = asw->status->width;
+				int height = asw->status->height;
+				moveresize_aswindow_wm (asw, x, y, width, height, False);
+			}
 		} else if (old_desk == Scr.CurrentDesk)
 			quietly_reparent_aswindow (asw, Scr.ServiceWin, True);
+
 		broadcast_config (M_CONFIGURE_WINDOW, asw);
 	}
 }
