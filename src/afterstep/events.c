@@ -436,9 +436,9 @@ void DigestEvent (ASEvent * event)
 		 * when we have re-parented windows, we need to find out the real
 		 * window where the event occurred */
 		if (!ASWIN_GET_FLAGS (asw, AS_Iconic)) {
-			if (w != asw->client_canvas->w)
-				if (xk->subwindow != None)
-					w = xk->subwindow;
+			if (w != asw->client_canvas->w && xk->subwindow != None)
+				w = xk->subwindow;
+
 			if (w == asw->client_canvas->w) {
 				canvas = asw->client_canvas;
 				event->context = C_CLIENT;
@@ -634,9 +634,8 @@ Bool KeyboardShortcuts (XEvent * xevent, int return_event, int move_size)
 
 void DispatchEvent (ASEvent * event, Bool deffered)
 {
-	if (Scr.moveresize_in_progress)
-		if (check_moveresize_event (event))
-			return;
+	if (Scr.moveresize_in_progress && check_moveresize_event (event))
+		return;
 
 	/* handle menu events specially */
 	/* if (HandleMenuEvent (NULL, event) == True)
@@ -776,14 +775,15 @@ void HandleFocusIn (ASEvent * event)
 		if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->focused
 				&& event->client != NULL
 				&& !get_flags (AfterStepState, ASS_HousekeepingMode)
-				&& !strcmp (ASWIN_NAME (Scr.Windows->focused), "Wharf")) {
+				&& !strcmp (ASWIN_NAME (Scr.Windows->focused), "Wharf"))
 			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
-		} else
+		else
 			unset_focused_window();
 	}
 	if (event->client == NULL
 			&& get_flags (AfterStepState, ASS_HousekeepingMode))
 		return;
+
 	/* note that hilite_aswindow changes value of Scr.Hilite!!! */
 	hilite_aswindow (event->client);
 }
@@ -809,11 +809,12 @@ void HandleKeyPress (ASEvent * event)
 		int keycode;
 		if (keysym == NoSymbol)
 			continue;
-		if ((keycode = XKeysymToKeycode (dpy, keysym)) == 0)
+		else if ((keycode = XKeysymToKeycode (dpy, keysym)) == 0)
 			continue;
+
 		xk->keycode = keycode;
 
-		for (key = Scr.Feel.FuncKeyRoot; key != NULL; key = key->next) {
+		for (key = Scr.Feel.FuncKeyRoot; key != NULL; key = key->next)
 			if ((key->keycode == xk->keycode) &&
 					((key->mods == (modifier & (~LockMask))) ||
 					 (key->mods == AnyModifier)) && (key->cont & event->context)) {
@@ -821,7 +822,6 @@ void HandleKeyPress (ASEvent * event)
 				ExecuteFunction (key->fdata, event, -1);
 				return;
 			}
-		}
 	}
 	/* if a key has been pressed and it's not one of those that cause
 	   warping, we know the warping is finished */
@@ -851,7 +851,7 @@ void HandleKeyPress (ASEvent * event)
  *	HandlePropertyNotify - property notify event handler
  *
  ***********************************************************************/
-#define MAX_NAME_LEN 200L				/* truncate to this many */
+#define MAX_NAME_LEN 200L				  /* truncate to this many */
 #define MAX_ICON_NAME_LEN 200L	/* ditto */
 
 
@@ -859,12 +859,13 @@ Bool update_transp_iter_func (void *data, void *aux_data)
 {
 	ASWindow *asw = (ASWindow *) data;
 
-	if (!check_window_offscreen (asw))
-		if (asw->internal && asw->internal->on_root_background_changed)
-			asw->internal->on_root_background_changed (asw->internal);
+	if (!check_window_offscreen (asw)
+			 && asw->internal && asw->internal->on_root_background_changed)
+		asw->internal->on_root_background_changed (asw->internal);
 
 	if (!check_frame_offscreen (asw))
 		update_window_transparency (asw, True);
+
 	return True;
 }
 
@@ -931,7 +932,6 @@ void HandlePropertyNotify (ASEvent * event)
 	if (atom == _XROOTPMAP_ID && event->w == Scr.Root) {
 		read_xrootpmap_id (Scr.wmprops, (xprop->state == PropertyDelete));
 		if (Scr.RootImage) {
-
 			safe_asimage_destroy (Scr.RootImage);
 			Scr.RootImage = NULL;
 		}
@@ -947,7 +947,7 @@ void HandlePropertyNotify (ASEvent * event)
 												 NULL, NULL, False);
 
 		/* use move_menu() to update transparent menus; this is a kludge, but it works */
-#if 0														/* reimplement menu redrawing : */
+#if 0					/* reimplement menu redrawing : */
 		if ((*Scr.MSMenuTitle).texture_type == 129
 				|| (*Scr.MSMenuItem).texture_type == 129
 				|| (*Scr.MSMenuHilite).texture_type == 129) {
@@ -963,20 +963,18 @@ void HandlePropertyNotify (ASEvent * event)
 
 	if ((asw = event->client) == NULL || ASWIN_GET_FLAGS (asw, AS_Dead)) {
 		if (event->w != Scr.Root)
-			while (XCheckTypedWindowEvent
-						 (dpy, event->w, PropertyNotify, &prop_xev)) ;
+			while (XCheckTypedWindowEvent (dpy, event->w, PropertyNotify, &prop_xev));
+
 		return;
 	} else {
 		char *prop_name = NULL;
-		LOCAL_DEBUG_OUT ("property %s",
-										 (prop_name = XGetAtomName (dpy, atom)));
+		LOCAL_DEBUG_OUT ("property %s", (prop_name = XGetAtomName (dpy, atom)));
 		if (prop_name)
 			XFree (prop_name);
 	}
 	if (IsNameProp (atom)) {
-		char *old_name =
-				get_flags (asw->internal_flags,
-									 ASWF_NameChanged) ? NULL : mystrdup (ASWIN_NAME (asw));
+		char *old_name = get_flags (asw->internal_flags,
+				ASWF_NameChanged) ? NULL : mystrdup (ASWIN_NAME (asw));
 
 		/* we want to check if there were some more events generated
 		 * as window names tend to change multiple properties : */
@@ -991,9 +989,9 @@ void HandlePropertyNotify (ASEvent * event)
 		if (get_flags (Scr.Feel.flags, FollowTitleChanges))
 			on_window_hints_changed (asw);  /* JWT:THIS PUTS A BORDER AROUND WHARF (WTF?!) */
 		else if (update_property_hints_manager (asw->w, xprop->atom,
-					Scr.Look.supported_hints,
-					Database,
-					asw->hints, asw->status))
+				Scr.Look.supported_hints,
+				Database,
+				asw->hints, asw->status))
 		{
 			/* JWT:REMOVED NEXT 2 20230227 - B/C SOME APPS (LIKE MY "Fauxdacious Mediaplayer") CAN
 			   CHANGE TITLES WHILST ICONIFIED AND AS IS THE ONLY WM I KNOW THAT DOESN'T UPDATE THE
@@ -1050,10 +1048,8 @@ void HandlePropertyNotify (ASEvent * event)
 	} else if (atom == XA_WM_HINTS) {
 		if (check_wm_hints_changed (asw))
 			on_window_hints_changed (asw);
-		else {
-			LOCAL_DEBUG_OUT ("ignoring WM_HINTS change - data is the same%s",
-											 "");
-		}
+		else
+			LOCAL_DEBUG_OUT ("ignoring WM_HINTS change - data is the same%s","");
 	} else if (atom == XA_WM_NORMAL_HINTS) {
 		if (check_wm_normal_hints_changed (asw))
 			on_window_hints_changed (asw);
@@ -1155,9 +1151,9 @@ void HandleClientMessage (ASEvent * event)
 		translate_atom_list (&extwm_flags, EXTWM_State, &props[0], 2);
 		/* now we need to translate EXTWM flags into AS flags : */
 		as_flags = extwm_state2as_state_flags (extwm_flags);
-		if (xcli->data.l[0] == EXTWM_StateRemove) {
+		if (xcli->data.l[0] == EXTWM_StateRemove)
 			as_flags = ASWIN_GET_FLAGS (event->client, as_flags);
-		} else if (xcli->data.l[0] == EXTWM_StateAdd)
+		else if (xcli->data.l[0] == EXTWM_StateAdd)
 			as_flags = as_flags & (~ASWIN_GET_FLAGS (event->client, as_flags));
 
 		if (props[0] == _XA_NET_WM_STATE_DEMANDS_ATTENTION || props[1] == _XA_NET_WM_STATE_DEMANDS_ATTENTION) {	/* requires special treatment as it competes with ICCCM HintUrgency in WM_HINTS */
@@ -1204,9 +1200,8 @@ void HandleExpose (ASEvent * event)
  ***********************************************************************/
 void HandleDestroyNotify (ASEvent * event)
 {
-	if (event->client) {
+	if (event->client)
 		Destroy (event->client, True);
-	}
 }
 
 /***********************************************************************
@@ -1230,7 +1225,7 @@ void HandleMapRequest (ASEvent * event)
 
 /*        if( (event->client = AddWindow (event->w, True)) == NULL ) */
 		return;
-	} else												/* If no hints, or currently an icon, just "deiconify" */
+	} else		/* If no hints, or currently an icon, just "deiconify" */
 		set_window_wm_state (event->client, False, True);
 }
 
@@ -1251,9 +1246,9 @@ void HandleMapNotify (ASEvent * event)
 
 	LOCAL_DEBUG_OUT ("asw->w = %lX, event->w = %lX", asw->w, event->w);
 	if (event->w != asw->w) {
-		if (asw->wm_state_transition == ASWT_Withdrawn2Iconic && event->w == asw->status->icon_window) {	/* we finally reached iconic state : */
+		if (asw->wm_state_transition == ASWT_Withdrawn2Iconic && event->w == asw->status->icon_window) /* we finally reached iconic state : */
 			complete_wm_state_transition (asw, IconicState);
-		}
+
 		return;
 	}
 
@@ -1270,10 +1265,9 @@ void HandleMapNotify (ASEvent * event)
 		if (ASWIN_GET_FLAGS (asw, AS_Iconic))
 			set_window_wm_state (asw, False, False);	/* client has requested deiconification */
 		return;											/* otherwise it is redundand event */
-	}
-	if (get_flags (asw->wm_state_transition, ASWT_FROM_ICONIC))
-		if (get_flags (Scr.Feel.flags, ClickToFocus))
-			force_activation = True;
+	} else if (get_flags (asw->wm_state_transition, ASWT_FROM_ICONIC)
+			&& get_flags (Scr.Feel.flags, ClickToFocus))
+		force_activation = True;
 
 	ASWIN_SET_FLAGS (asw, AS_Mapped);
 	ASWIN_CLEAR_FLAGS (asw, AS_IconMapped);
@@ -1319,10 +1313,9 @@ void HandleUnmapNotify (ASEvent * event)
 	if (Scr.Windows->focused == asw)
 		focus_next_aswindow (asw);
 
-	if (get_flags (asw->wm_state_transition, ASWT_TO_WITHDRAWN)) {	/* redundand UnmapNotify - ignoring */
+	if (get_flags (asw->wm_state_transition, ASWT_TO_WITHDRAWN)) /* redundand UnmapNotify - ignoring */
 		return;
-	}
-	if (get_flags (asw->wm_state_transition, ASWT_TO_ICONIC)) {	/* we finally reached iconic state : */
+	else if (get_flags (asw->wm_state_transition, ASWT_TO_ICONIC)) {	/* we finally reached iconic state : */
 		complete_wm_state_transition (asw, IconicState);
 		return;
 	}
@@ -1335,12 +1328,11 @@ void HandleUnmapNotify (ASEvent * event)
 	destroyed = ASCheckTypedWindowEvent (event->w, DestroyNotify, &dummy);
 	LOCAL_DEBUG_OUT ("wm_state_transition = 0x%X", asw->wm_state_transition);
 	if (!get_flags (asw->wm_state_transition, ASWT_FROM_WITHDRAWN))
-		asw->wm_state_transition =
-				ASWIN_GET_FLAGS (asw,
-												 AS_Iconic) ? ASWT_Iconic2Withdrawn :
-				ASWT_Normal2Withdrawn;
+		asw->wm_state_transition = ASWIN_GET_FLAGS (asw, AS_Iconic)
+				? ASWT_Iconic2Withdrawn : ASWT_Normal2Withdrawn;
 	else
 		asw->wm_state_transition = ASWT_Withdrawn2Withdrawn;
+
 	Destroy (asw, destroyed);			/* do not need to mash event before */
 	ungrab_server ();
 	ASFlush ();
@@ -1366,48 +1358,43 @@ void HandleButtonPress (ASEvent * event, Bool deffered)
 	/* click to focus stuff goes here */
 	if (asw != NULL) {
 		LOCAL_DEBUG_OUT ("deferred = %d, button = %X", deffered,
-										 (event->context & (~C_TButtonAll)));
+				 (event->context & (~C_TButtonAll)));
 		/* if all we do is pressing titlebar buttons - then we should not raise/focus window !!! */
 		if (!deffered) {
 			if ((event->context & (~C_TButtonAll)) != 0) {
 				if (get_flags (Scr.Feel.flags, ClickToFocus)) {
 					LOCAL_DEBUG_OUT ("asw = %p, ungrabbed = %p, nonlock_mods = %x",
-													 asw, Scr.Windows->ungrabbed,
-													 (xbtn->state & nonlock_mods));
+							asw, Scr.Windows->ungrabbed, (xbtn->state & nonlock_mods));
 					if (asw != Scr.Windows->ungrabbed
 							&& (xbtn->state & nonlock_mods) == 0) {
 						if (get_flags (Scr.Feel.flags, EatFocusClick)) {
-							if (Scr.Windows->focused != asw)
-								if ((focus_accepted =
-										 activate_aswindow (asw, False, False)))
+							if (Scr.Windows->focused != asw
+									&& (focus_accepted = activate_aswindow (asw, False, False))
 									/* JWT:NEXT CONDITION LINE ADDED 20180327 TO ALLOW FOCUS+MOVE IN ONE MOUSE MOTION */
-									if ((event->context & C_WINDOW) != 0)
-										eat_click = True;
+									&& (event->context & C_WINDOW) != 0)
+								eat_click = True;
 						} else if (Scr.Windows->focused != asw)
 							activate_window = True;
+
 						LOCAL_DEBUG_OUT ("eat_click = %d", eat_click);
 					}
 				}
 
 				if (get_flags (Scr.Feel.flags, ClickToRaise))
 					raise_on_click = (Scr.Feel.RaiseButtons == 0
-														|| (Scr.Feel.
-																RaiseButtons & (1 << xbtn->button)));
+							|| (Scr.Feel.RaiseButtons & (1 << xbtn->button)));
 			}
 
 			if (!ASWIN_GET_FLAGS (asw, AS_Iconic)) {
 				XSync (dpy, 0);
 				XAllowEvents (dpy,
-											(event->context ==
-											 C_WINDOW) ? ReplayPointer : AsyncPointer,
-											CurrentTime);
+						(event->context == C_WINDOW) ? ReplayPointer : AsyncPointer, CurrentTime);
 				XSync (dpy, 0);
 			}
 		}
 		/* !deffered */
 		press_aswindow (asw, event->context);
 	}
-
 
 	if (!deffered && !eat_click) {
 		LOCAL_DEBUG_OUT ("checking for associated functions...%s", "");
@@ -1448,7 +1435,7 @@ void HandleButtonPress (ASEvent * event, Bool deffered)
 	if (!deffered && !AShandled && !eat_click && xbtn->window == Scr.Root) {
 		XUngrabPointer (dpy, CurrentTime);
 		XSendEvent (dpy, Scr.wmprops->wm_event_proxy, False,
-								SubstructureNotifyMask, &(event->x));
+				SubstructureNotifyMask, &(event->x));
 	}
 }
 
@@ -1481,16 +1468,16 @@ void HandleEnterNotify (ASEvent * event)
 	int i;
 /*fprintf (stderr, "XCROSSING: EnterNotify for window %lX\n", ewp->window); fflush(stderr);*/
 	/* look for a matching leaveNotify which would nullify this enterNotify */
-	if (ewp->window != Scr.Root)
-		if (ASCheckTypedWindowEvent (ewp->window, LeaveNotify, &d)) {
+	if (ewp->window != Scr.Root
+			&& ASCheckTypedWindowEvent (ewp->window, LeaveNotify, &d)) {
 /*fprintf (stderr, "XCROSSING: LeaveNotify in queue for window %lX\n", ewp->window); fflush(stderr);*/
-			on_astbar_pointer_action (NULL, 0, True, False);
-			if ((d.xcrossing.mode == NotifyNormal)
-					&& (d.xcrossing.detail != NotifyInferior)) {
+		on_astbar_pointer_action (NULL, 0, True, False);
+		if ((d.xcrossing.mode == NotifyNormal)
+				&& (d.xcrossing.detail != NotifyInferior)) {
 /*fprintf (stderr, "XCROSSING: ignoring EnterNotify for window %lX\n", ewp->window); fflush(stderr);*/
-				return;
-			}
+			return;
 		}
+	}
 /* an EnterEvent in one of the PanFrameWindows activates the Paging */
 #ifndef NO_VIRTUAL
 	for (i = 0; i < PAN_FRAME_SIDES; i++) {
@@ -1512,9 +1499,7 @@ void HandleEnterNotify (ASEvent * event)
 /*fprintf (stderr, "XCROSSING: EnterNotify for panframe %d\n", i); fflush(stderr);*/
 			/* this was in the HandleMotionNotify before, HEDU */
 			HandlePaging (Scr.Feel.EdgeScrollX, Scr.Feel.EdgeScrollY,
-										&(ewp->x_root), &(ewp->y_root), &delta_x, &delta_y,
-										True, event);
-
+					&(ewp->x_root), &(ewp->y_root), &delta_x, &delta_y, True, event);
 			return;
 		}
 	}
@@ -1531,12 +1516,13 @@ void HandleEnterNotify (ASEvent * event)
 	/* make sure its for one of our windows */
 	if (asw == NULL)
 		return;
+
 /*fprintf (stderr, "XCROSSING: focused = %lX active = %lX\n", Scr.Windows->focused?Scr.Windows->focused->w:0, Scr.Windows->active?Scr.Windows->active->w:0); fflush(stderr);*/
-	if (ASWIN_FOCUSABLE (asw)) {
-		if (!get_flags (Scr.Feel.flags, ClickToFocus) || asw->internal != NULL) {
+	else if (ASWIN_FOCUSABLE (asw)) {
+		if (!get_flags (Scr.Feel.flags, ClickToFocus) || asw->internal != NULL)
 			if (Scr.Windows->focused != asw)
 				activate_aswindow (asw, False, False);
-		}
+
 		if (!ASWIN_GET_FLAGS (asw, AS_Iconic) && event->context == C_WINDOW)
 			InstallWindowColormaps (asw);
 	}
@@ -1557,15 +1543,12 @@ void HandleLeaveNotify (ASEvent * event)
 	 * need to de-focus and unhighlight to make sure that we
 	 * don't end up with more than one highlighted window at a time */
 /*fprintf (stderr, "XCROSSING: LeaveNotify for window %lX\n", ewp->window); fflush(stderr);*/
-	if (ewp->window == Scr.Root) {
-		if (ewp->mode == NotifyNormal) {
-			if (ewp->detail != NotifyInferior) {
-				if (Scr.Windows->focused != NULL)
-					hide_focus ();
-				if (Scr.Windows->hilited != NULL)
-					hide_hilite ();
-			}
-		}
+	if (ewp->window == Scr.Root && ewp->mode == NotifyNormal
+			&& ewp->detail != NotifyInferior) {
+		if (Scr.Windows->focused != NULL)
+			hide_focus ();
+		if (Scr.Windows->hilited != NULL)
+			hide_hilite ();
 	}
 }
 
@@ -1640,17 +1623,14 @@ void HandleConfigureRequest (ASEvent * event)
 		return;
 	}
 
-	if (cre->value_mask & CWStackMode) {
-		if (!ASWIN_HFLAGS (asw, AS_IgnoreRestackRequest)) {
-			restack_window (asw,
-											(cre->value_mask & CWSibling) ? cre->above : None,
-											cre->detail);
-		} else {
+	if (cre->value_mask & CWStackMode)
+		if (!ASWIN_HFLAGS (asw, AS_IgnoreRestackRequest))
+			restack_window (asw, (cre->value_mask & CWSibling) ? cre->above : None,
+					cre->detail);
+		else
 			LOCAL_DEBUG_OUT
 					("Ignoring Stacking order Request for client %p as required by hints",
 					 asw);
-		}
-	}
 
 	if ((ASWIN_HFLAGS (asw, AS_IgnoreConfigRequest)
 			 && !get_flags (cre->value_mask, CWWidth | CWHeight))
@@ -1713,12 +1693,11 @@ void HandleSelectionClear (ASEvent * event)
 			 event->x.xselectionclear.time, Scr.wmprops->selection_window,
 			 Scr.wmprops->_XA_WM_S, Scr.wmprops->selection_time);
 	if (event->x.xselectionclear.window == Scr.wmprops->selection_window
-			&& event->x.xselectionclear.selection == Scr.wmprops->_XA_WM_S) {
-		/* must give up window manager's selection if time of the event
-		 * after time of us accuring the selection */
-		if (event->x.xselectionclear.time > Scr.wmprops->selection_time)
-			Done (False, NULL);
-	}
+			&& event->x.xselectionclear.selection == Scr.wmprops->_XA_WM_S
+			/* must give up window manager's selection if time of the event
+			 * after time of us accuring the selection */
+			&& event->x.xselectionclear.time > Scr.wmprops->selection_time)
+		Done (False, NULL);
 }
 
 /***********************************************************************
@@ -1735,9 +1714,7 @@ void HandleShapeNotify (ASEvent * event)
 	Bool needs_update = (sev->kind == ShapeBounding);
 	Bool shaped = sev->shaped;
 
-	if (!event->client)
-		return;
-	if (event->client->w != sev->window)
+	if (!event->client || event->client->w != sev->window)
 		return;
 
 	w = event->client->w;
@@ -1808,7 +1785,7 @@ void afterstep_wait_pipes_input (int timeout_sec)
 				AS_FD_SET (list[i].fd, &in_fdset);
 				if (list[i].output_queue != NULL)
 					FD_SET (list[i].fd, &out_fdset);
-			} else										/* man, this modules is dead! get rid of it - it stinks! */
+			} else		/* man, this modules is dead! get rid of it - it stinks! */
 				vector_remove_index (Modules, i);
 		}
 	}
@@ -1824,19 +1801,18 @@ void afterstep_wait_pipes_input (int timeout_sec)
 	}
 
 	LOCAL_DEBUG_OUT ("selecting ... ");
-	retval =
-			PORTABLE_SELECT (min (max_fd + 1, fd_width), &in_fdset, &out_fdset,
-											 NULL, t);
+	retval = PORTABLE_SELECT (min (max_fd + 1, fd_width), &in_fdset, &out_fdset,
+			NULL, t);
 
 	LOCAL_DEBUG_OUT ("select ret val = %d", retval);
 	if (retval > 0) {
 		register module_t *list;
 		register int i;
 		/* check for incoming module connections */
-		if (Module_fd >= 0)
-			if (FD_ISSET (Module_fd, &in_fdset))
-				if (AcceptModuleConnection (Module_fd) != -1)
-					show_progress ("accepted module connection");
+		if (Module_fd >= 0 && FD_ISSET (Module_fd, &in_fdset)
+				&& AcceptModuleConnection (Module_fd) != -1)
+			show_progress ("accepted module connection");
+
 		/* note that we have to do it AFTER we accepted incoming connections as those alter the list */
 		list = MODULES_LIST;
 		i = MIN (MODULES_NUM, Module_npipes);
@@ -1848,9 +1824,9 @@ void afterstep_wait_pipes_input (int timeout_sec)
 				if (has_input || has_output)
 					HandleModuleInOut (i, has_input, has_output);
 			}
-		if (ASDBus_fd >= 0)
-			if (FD_ISSET (ASDBus_fd, &in_fdset))
-				asdbus_process_messages ();
+
+		if (ASDBus_fd >= 0 && FD_ISSET (ASDBus_fd, &in_fdset))
+			asdbus_process_messages ();
 	}
 
 	/* handle timeout events */

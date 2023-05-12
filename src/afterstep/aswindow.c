@@ -68,7 +68,7 @@ ASWindowList *init_aswindow_list ()
 			create_ashash (0, NULL, NULL, destroy_window_group);
 
 	list->circulate_list = create_asvector (sizeof (ASWindow *));
-	list->warp_curr_dir = 1;  /* JWT:ADDED 20230505 */
+	list->warp_curr_dir = 1;  /* JWT:ADDED 20230505 (SAVE LAST DIRECTION SO feel.AutoReverse 1 WILL WORK) */
 	list->sticky_list = create_asvector (sizeof (ASWindow *));
 
 	list->stacking_order = create_asvector (sizeof (ASWindow *));
@@ -528,11 +528,11 @@ Bool close_aswindow_iter_func (void *data, void *aux_data)
 	struct ASCloseWindowAuxData *auxd = (struct ASCloseWindowAuxData*)aux_data;
 	if (asw == NULL)
 		return False;
-
-	if (!ASWIN_HFLAGS (asw, AS_Module)
+	else if (!ASWIN_HFLAGS (asw, AS_Module)
 			&& get_flags (asw->hints->protocols, AS_DoesWmDeleteWindow)) {
 		if (auxd->skipSessionManaged && asw->group && asw->group->sm_client_id)
 			return True;
+
 		LOCAL_DEBUG_OUT ("sending delete window request to 0x%lX", (unsigned long)asw->w);
 		send_wm_protocol_request (asw->w, _XA_WM_DELETE_WINDOW, CurrentTime);
 	}
@@ -549,22 +549,21 @@ void close_aswindow_list (ASWindowList * list, Bool skip_session_managed)
 
 void destroy_aswindow_list (ASWindowList ** list, Bool restore_root)
 {
-	if (list)
-		if (*list) {
-			if (restore_root)
-				InstallRootColormap ();
+	if (list && *list) {
+		if (restore_root)
+			InstallRootColormap ();
 
-			destroy_asbidirlist (&((*list)->clients));
-			destroy_ashash (&((*list)->aswindow_xref));
-			destroy_ashash (&((*list)->layers));
-			destroy_ashash (&((*list)->bookmarks));
-			destroy_asvector (&((*list)->sticky_list));
-			destroy_asvector (&((*list)->circulate_list));
-			destroy_asvector (&((*list)->stacking_order));
+		destroy_asbidirlist (&((*list)->clients));
+		destroy_ashash (&((*list)->aswindow_xref));
+		destroy_ashash (&((*list)->layers));
+		destroy_ashash (&((*list)->bookmarks));
+		destroy_asvector (&((*list)->sticky_list));
+		destroy_asvector (&((*list)->circulate_list));
+		destroy_asvector (&((*list)->stacking_order));
 
-			free (*list);
-			*list = NULL;
-		}
+		free (*list);
+		*list = NULL;
+	}
 }
 
 /*************************************************************************
@@ -576,22 +575,24 @@ void destroy_aswindow_list (ASWindowList ** list, Bool restore_root)
 ASWindow *window2ASWindow (Window w)
 {
 	ASHashData hdata = { 0 };
-	if (Scr.Windows->aswindow_xref)
-		if (get_hash_item
+	if (Scr.Windows->aswindow_xref
+			&& get_hash_item
 				(Scr.Windows->aswindow_xref, AS_HASHABLE (w),
 				 &hdata.vptr) != ASH_Success)
-			hdata.vptr = NULL;
+		hdata.vptr = NULL;
+
 	return hdata.vptr;
 }
 
 ASWindowGroup *window2ASWindowGroup (Window w)
 {
 	ASHashData hdata = { 0 };
-	if (Scr.Windows->window_groups)
-		if (get_hash_item
+	if (Scr.Windows->window_groups
+			&& get_hash_item
 				(Scr.Windows->window_groups, AS_HASHABLE (w),
 				 &hdata.vptr) != ASH_Success)
-			hdata.vptr = NULL;
+		hdata.vptr = NULL;
+
 	return hdata.vptr;
 }
 
@@ -640,6 +641,7 @@ Bool bookmark_aswindow (ASWindow * asw, char *bookmark)
 						hd.vptr) == ASH_Success);
 			if (!success)
 				free (tmp);
+
 			LOCAL_DEBUG_OUT
 					("Added Bookmark for window %p, ID=%8.8lX, -> \"%s\"", asw,
 					 asw->w, bookmark);
@@ -685,6 +687,7 @@ ASWindow *pattern2ASWindow (const char *pattern)
 					break;
 				else
 					asw = NULL;
+
 				LIST_GOTO_NEXT (e);
 			}
 		}
@@ -760,23 +763,24 @@ ASWindow *complex_pattern2ASWindow (char *pattern)
 			int matches = 0;
 			LOCAL_DEBUG_OUT ("matching res_class \"%s\"",
 											 curr->hints->res_class);
-			if (res_class_wrexp != NULL)
-				if (match_wild_reg_exp (curr->hints->res_class, res_class_wrexp) ==
-						0)
-					++matches;
+			if (res_class_wrexp != NULL
+					&& match_wild_reg_exp (curr->hints->res_class, res_class_wrexp) == 0)
+				++matches;
+
 			LOCAL_DEBUG_OUT ("matching res_name \"%s\"", curr->hints->res_name);
-			if (res_name_wrexp != NULL)
-				if (match_wild_reg_exp (curr->hints->res_name, res_name_wrexp) ==
-						0)
-					++matches;
+			if (res_name_wrexp != NULL
+					&& match_wild_reg_exp (curr->hints->res_name, res_name_wrexp) == 0)
+				++matches;
+
 			LOCAL_DEBUG_OUT ("matching name \"%s\"", curr->hints->names[0]);
-			if (name_wrexp != NULL)
-				if (match_wild_reg_exp (curr->hints->names[0], name_wrexp) == 0 ||
-						match_wild_reg_exp (curr->hints->icon_name, name_wrexp) == 0)
-					++matches;
+			if (name_wrexp != NULL
+					&& (match_wild_reg_exp (curr->hints->names[0], name_wrexp) == 0 ||
+						match_wild_reg_exp (curr->hints->icon_name, name_wrexp) == 0))
+				++matches;
 
 			if (matches < matches_reqired)
 				continue;
+
 			asw = curr;
 			--res_name_no;
 			LOCAL_DEBUG_OUT ("matches = %d, res_name_no = %d, asw = %p", matches,
@@ -799,14 +803,12 @@ ASWindow *complex_pattern2ASWindow (char *pattern)
 Bool on_dead_aswindow (Window w)
 {
 	ASWindow *asw = window2ASWindow (w);
-	if (asw) {
-		if (w == asw->w && asw->status != NULL) {
-			ASWIN_SET_FLAGS (asw, AS_Dead);
-			show_progress
-					("marking client's window as destroyed for client \"%s\", window 0x%X",
-					 ASWIN_NAME (asw), w);
-			return True;
-		}
+	if (asw && w == asw->w && asw->status != NULL) {
+		ASWIN_SET_FLAGS (asw, AS_Dead);
+		show_progress
+				("marking client's window as destroyed for client \"%s\", window 0x%X",
+				 ASWIN_NAME (asw), w);
+		return True;
 	}
 	return False;
 }
@@ -857,6 +859,7 @@ void destroy_window_group (ASHashableValue value, void *data)
 				 g->leader, g->sm_client_id ? g->sm_client_id : "none");
 		if (g->sm_client_id)
 			free (g->sm_client_id);
+
 		destroy_asvector (&(g->members));
 		free (data);
 	}
@@ -899,15 +902,15 @@ static void add_member_to_group (ASWindow * asw)
 			read_string_property (g->leader, _XA_SM_CLIENT_ID,
 														&(g->sm_client_id));
 		}
-		if (g != NULL) {
 #if 0
+		if (g != NULL) {
 			if (group_lead->group_members == NULL)
 				group_lead->group_members = create_asvector (sizeof (ASWindow *));
 			/* ATTN: Inserting pointer to a member into the beginning of the list */
 			vector_insert_elem (group_lead->group_members, &member, 1, NULL,
 													True);
-#endif
 		}
+#endif
 		asw->group = g;
 	}
 }
@@ -939,8 +942,8 @@ void remove_aswindow_from_layer (ASWindow * asw, int layer)
 						 src_layer->members->used) {
 				vector_remove_elem (src_layer->members, &asw);
 				LOCAL_DEBUG_OUT ("after deletion can be found at index %d(used%d)",
-												 vector_find_data (src_layer->members, &asw),
-												 src_layer->members->used);
+						vector_find_data (src_layer->members, &asw),
+						src_layer->members->used);
 			}
 		}
 	}
@@ -969,6 +972,7 @@ void tie_aswindow (ASWindow * t)
 			if (transient_owner->transients == NULL)
 				transient_owner->transients =
 						create_asvector (sizeof (ASWindow *));
+
 /* ATTN: Inserting pointer to a transient into the beginning of the list */
 			vector_insert_elem (transient_owner->transients, &t, 1, NULL, True);
 		}
@@ -985,6 +989,7 @@ void untie_aswindow (ASWindow * t)
 			&& t->transient_owner->magic == MAGIC_ASWINDOW) {
 		if (t->transient_owner != NULL)
 			vector_remove_elem (t->transient_owner->transients, &t);
+
 		t->transient_owner = NULL;
 	}
 	if (t->transients && PVECTOR_USED (t->transients) > 0) {
@@ -1052,9 +1057,9 @@ void delist_aswindow (ASWindow * t)
 {
 	if (Scr.Windows == NULL)
 		return;
-
-	if (AS_ASSERT (t))
+	else if (AS_ASSERT (t))
 		return;
+
 	/* set desktop for window */
 	if (t->w != Scr.Root)
 		vector_remove_elem (Scr.Windows->circulate_list, &t);
@@ -1082,7 +1087,7 @@ static int get_sorted_layers_vector (ASVector ** layers)
 		realloc_vector (*layers, Scr.Windows->layers->items_num);
 /* Layers are sorted in descending order  (see init_winlist) */
 	return sort_hash_items (Scr.Windows->layers, NULL,
-													(void **)VECTOR_HEAD_RAW (**layers), 0);
+			(void **)VECTOR_HEAD_RAW (**layers), 0);
 }
 
 static void stack_transients (ASWindow * asw, ASVector * list)
@@ -1093,14 +1098,13 @@ static void stack_transients (ASWindow * asw, ASVector * list)
 		ASWindow **sublist = PVECTOR_HEAD (ASWindow *, asw->transients);
 		int curr;
 		for (curr = 0; curr < tnum; ++curr)
-			if (!ASWIN_GET_FLAGS (sublist[curr], AS_Dead)) {
-				if (vector_find_data (list, &sublist[curr]) >= PVECTOR_USED (list)) {
-					LOCAL_DEBUG_OUT
-							("Adding transient #%d - %p, w = %lX, frame = %lX", curr,
-							 sublist[curr], sublist[curr]->w, sublist[curr]->frame);
+			if (!ASWIN_GET_FLAGS (sublist[curr], AS_Dead)
+					&& vector_find_data (list, &sublist[curr]) >= PVECTOR_USED (list)) {
+				LOCAL_DEBUG_OUT
+						("Adding transient #%d - %p, w = %lX, frame = %lX", curr,
+						 sublist[curr], sublist[curr]->w, sublist[curr]->frame);
 /* ATTN: Inserting pointer to a transient into the END of the stacking list */
-					vector_insert_elem (list, &sublist[curr], 1, NULL, False);
-				}
+				vector_insert_elem (list, &sublist[curr], 1, NULL, False);
 			}
 	}
 }
@@ -1138,7 +1142,7 @@ static inline void stack_layer_windows (ASLayer * layer, ASVector * list)
 				stack_transients (asw, list);
 
 			LOCAL_DEBUG_OUT ("Adding client - %p, w = %lX, frame = %lX", asw,
-											 asw->w, asw->frame);
+					asw->w, asw->frame);
 /* ATTN: Inserting pointer to a window into the END of the stacking list */
 			vector_insert_elem (list, &asw, 1, NULL, False);
 
@@ -1269,19 +1273,20 @@ void apply_stacking_order (int desk)
 			if (ASWIN_DESK (stack[i]) == Scr.CurrentDesk) {
 				/* if window is not on root currently - stacking order fails with BadMatch */
 				LOCAL_DEBUG_OUT ("name \"%s\", frame id = 0x%lX",
-												 ASWIN_NAME (stack[i]), stack[i]->frame);
+						ASWIN_NAME (stack[i]), stack[i]->frame);
 				vector_insert_elem (ids, &(stack[i]->frame), 1, NULL, False);
 			}
 
 		windows_num = PVECTOR_USED (ids);
 		LOCAL_DEBUG_OUT ("Setting stacking order: windows_num = %d, ",
-										 windows_num);
+				windows_num);
 		if (windows_num > 0) {
 			Window *windows = PVECTOR_HEAD (Window, ids);
 
 			XRaiseWindow (dpy, windows[0]);
 			if (windows_num > 1)
 				XRestackWindows (dpy, windows, windows_num);
+
 			XSync (dpy, False);
 		}
 		raise_scren_panframes (ASDefaultScr);
@@ -1324,7 +1329,7 @@ void publish_aswindow_list (ASWindowList * list, Bool stacking_only)
 			vector_insert_elem (ids, &(stack[i]->w), 1, NULL, False);
 
 		set_stacking_order (Scr.wmprops, PVECTOR_HEAD (Window, ids),
-												PVECTOR_USED (ids));
+				PVECTOR_USED (ids));
 	}
 }
 
@@ -1386,13 +1391,13 @@ inline Bool is_rect_overlaping (ASRectangle * above, ASRectangle * below)
 {
 	if (above == NULL)
 		return False;
-	if (below == NULL)
+	else if (below == NULL)
 		return True;
 
 	return (above->x < below->x + below->width
-					&& above->x + above->width > below->x
-					&& above->y < below->y + below->height
-					&& above->y + above->height > below->y);
+			&& above->x + above->width > below->x
+			&& above->y < below->y + below->height
+			&& above->y + above->height > below->y);
 }
 
 inline Bool
@@ -1404,9 +1409,9 @@ is_status_overlaping (ASStatusHints * above, ASStatusHints * below)
 		return True;
 
 	return (above->x < below->x + below->width
-					&& above->x + above->width > below->x
-					&& above->y < below->y + below->height
-					&& above->y + above->height > below->y);
+			&& above->x + above->width > below->x
+			&& above->y < below->y + below->height
+			&& above->y + above->height > below->y);
 }
 
 static inline Bool is_canvas_overlaping (ASCanvas * above, ASCanvas * below)
@@ -1446,9 +1451,9 @@ static inline Bool is_overlaping_b (ASWindow * a, ASWindow * b)
 	if (b->transients) {
 		sublist = PVECTOR_HEAD (ASWindow *, b->transients);
 		for (i = 0; i < PVECTOR_USED (b->transients); ++i)
-			if (!ASWIN_GET_FLAGS (sublist[i], AS_Dead))
-				if (IS_OVERLAPING (a, sublist[i]))
-					return True;
+			if (!ASWIN_GET_FLAGS (sublist[i], AS_Dead)
+					&& IS_OVERLAPING (a, sublist[i]))
+				return True;
 	}
 #if 0														/* TODO do we really need that ??? */
 	if (b->group_members) {
@@ -1472,9 +1477,8 @@ static inline Bool is_overlaping (ASWindow * a, ASWindow * b)
 	if (a->transients) {
 		sublist = PVECTOR_HEAD (ASWindow *, a->transients);
 		for (i = 0; i < PVECTOR_USED (a->transients); ++i)
-			if (!ASWIN_GET_FLAGS (sublist[i], AS_Dead))
-				if (is_overlaping_b (sublist[i], b))
-					return True;
+			if (!ASWIN_GET_FLAGS (sublist[i], AS_Dead) && is_overlaping_b (sublist[i], b))
+				return True;
 	}
 #if 0														/* TODO do we really need that ??? */
 	if (a->group_members) {
@@ -1497,7 +1501,7 @@ Bool is_window_obscured (ASWindow * above, ASWindow * below)
 		return is_overlaping (above, below);
 
 	if (above == NULL && below != NULL) {	/* checking if window "below" is completely obscured by any of the
-																				   windows with the same layer above it in stacking order */
+				windows with the same layer above it in stacking order */
 		register int i, end_i;
 
 		l = get_aslayer (ASWIN_LAYER (below), Scr.Windows);
@@ -1508,30 +1512,28 @@ Bool is_window_obscured (ASWindow * above, ASWindow * below)
 		members = VECTOR_HEAD (ASWindow *, *(l->members));
 		for (i = 0; i < end_i; i++) {
 			register ASWindow *t;
-			if ((t = members[i]) == below) {
+			if ((t = members[i]) == below)
 				return False;
-			} else if (ASWIN_DESK (t) == ASWIN_DESK (below)) {
-				if (is_overlaping (t, below)) {
-					return True;
-				}
-			}
+			else if (ASWIN_DESK (t) == ASWIN_DESK (below) && is_overlaping (t, below))
+				return True;
 		}
 	} else if (above != NULL) {		/* checking if window "above" is completely obscuring any of the
-																   windows with the same layer below it in stacking order,
-																   or any of its transients !!! */
+				windows with the same layer below it in stacking order,
+				or any of its transients !!! */
 		register int i;
 
 		l = get_aslayer (ASWIN_LAYER (above), Scr.Windows);
 		if (AS_ASSERT (l))
 			return False;
+
 		members = VECTOR_HEAD (ASWindow *, *(l->members));
 		for (i = VECTOR_USED (*(l->members)) - 1; i >= 0; i--) {
 			register ASWindow *t;
 			if ((t = members[i]) == above)
 				return False;
-			else if (ASWIN_DESK (t) == ASWIN_DESK (above))
-				if (is_overlaping (above, t))
-					return True;
+			else if (ASWIN_DESK (t) == ASWIN_DESK (above)
+					&& is_overlaping (above, t))
+				return True;
 		}
 	}
 	return False;
@@ -1556,15 +1558,14 @@ void restack_window (ASWindow * t, Window sibling_window, int stack_mode)
 	LOCAL_DEBUG_CALLER_OUT ("%p,%lX,%d", t, sibling_window, stack_mode);
 	src_layer = get_aslayer (ASWIN_LAYER (t), Scr.Windows);
 
-	if (sibling_window)
-		if ((sibling = window2ASWindow (sibling_window)) != NULL) {
-			if (sibling->transient_owner == t)
-				sibling = NULL;					/* can't restack relative to its own transient */
-			else if (ASWIN_DESK (sibling) != ASWIN_DESK (t))
-				sibling = NULL;					/* can't restack relative to window on the other desk */
-			else
-				dst_layer = get_aslayer (ASWIN_LAYER (sibling), Scr.Windows);
-		}
+	if (sibling_window && (sibling = window2ASWindow (sibling_window)) != NULL) {
+		if (sibling->transient_owner == t)
+			sibling = NULL;					/* can't restack relative to its own transient */
+		else if (ASWIN_DESK (sibling) != ASWIN_DESK (t))
+			sibling = NULL;					/* can't restack relative to window on the other desk */
+		else
+			dst_layer = get_aslayer (ASWIN_LAYER (sibling), Scr.Windows);
+	}
 
 	if (dst_layer == NULL)
 		dst_layer = src_layer;
@@ -1596,12 +1597,11 @@ void restack_window (ASWindow * t, Window sibling_window, int stack_mode)
 	if (!((stack_mode == TopIf && occlusion == OCCLUSION_BELOW) ||
 				(stack_mode == BottomIf && occlusion == OCCLUSION_ABOVE) ||
 				(stack_mode == Opposite && occlusion != OCCLUSION_NONE) ||
-				stack_mode == Above || stack_mode == Below)) {
-		return;											/* nothing to be done */
-	}
+				stack_mode == Above || stack_mode == Below))
+		return;   /* nothing to be done */
 
 	above = (stack_mode == Above || stack_mode == TopIf ||
-					 (stack_mode == Opposite && occlusion == OCCLUSION_BELOW));
+			(stack_mode == Opposite && occlusion == OCCLUSION_BELOW));
 
 	if (stack_mode != Above && stack_mode != Below)
 		sibling = NULL;
@@ -1680,19 +1680,16 @@ ASWindow *get_next_window (ASWindow * curr_win, char *action, int dir)
 				return clients[i + dir];
 		}
 */
-	if (dir > 0) {
-		for (i = end_i; i >= 0; i--)
-		{
+	else if (dir > 0)
+		for (i = end_i; i >= 0; i--) {
 			if (clients[i] == curr_win)
 				return i == 0 ? clients[end_i] : clients[i - 1];
 		}
-	} else {
-		for (i = 0; i <= end_i; i++)
-		{
+	else
+		for (i = 0; i <= end_i; i++) {
 			if (clients[i] == curr_win)
 				return i == end_i ? clients[0] : clients[i + 1];
 		}
-	}
 
 	return NULL;
 }
@@ -1718,13 +1715,13 @@ void hide_focus ()
 		grab_aswindow_buttons (Scr.Windows->ungrabbed, False);
 
 	LOCAL_DEBUG_CALLER_OUT ("CHANGE Scr.Windows->focused from %p to NULL",
-													Scr.Windows->focused);
+			Scr.Windows->focused);
 
 	unset_focused_window();
 	Scr.Windows->ungrabbed = NULL;
 	XRaiseWindow (dpy, Scr.ServiceWin);
 	LOCAL_DEBUG_OUT ("XSetInputFocus(window= %lX (service_win), time = %lu)",
-									 Scr.ServiceWin, Scr.last_Timestamp);
+			Scr.ServiceWin, Scr.last_Timestamp);
 	XSetInputFocus (dpy, Scr.ServiceWin, RevertToParent, Scr.last_Timestamp);
 	XSync (dpy, False);
 }
@@ -1737,14 +1734,12 @@ void commit_circulation ()
 /* JWT:REMOVED 20230502 - CIRCULATE LIST NOW == LIST OF WINDOWS IN ORDER CREATED (SEE WINLIST). */
 #if 0
 	ASWindow *asw = Scr.Windows->active;
-	LOCAL_DEBUG_OUT ("circulation completed with active window being %p",
-									 asw);
+	LOCAL_DEBUG_OUT ("circulation completed with active window being %p", asw);
 	if (asw)
 		if (vector_remove_elem (Scr.Windows->circulate_list, &asw) == 1) {
 			LOCAL_DEBUG_OUT
 					("reinserting %p into the head of circulation list : ", asw);
-			vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL,
-													True);
+			vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL, True);
 		}
 	Scr.Windows->warp_curr_index = -1;
 #endif
@@ -1756,9 +1751,7 @@ void autoraise_aswindow (void *data)
 	time_t msec = Scr.Feel.AutoRaiseDelay;
 	time_t exp_sec =
 			Scr.Windows->last_focus_change_sec + (msec * 1000 +
-																						Scr.Windows->
-																						last_focus_change_usec) /
-			1000000;
+			Scr.Windows->last_focus_change_usec) / 1000000;
 	time_t exp_usec =
 			(msec * 1000 + Scr.Windows->last_focus_change_usec) % 1000000;
 
@@ -1778,11 +1771,9 @@ Bool focus_window (ASWindow * asw, Window w)
 {
 	LOCAL_DEBUG_CALLER_OUT ("asw = %p, w = %lX", asw, w);
 
-	if (asw != NULL)
-		if (get_flags (asw->hints->protocols, AS_DoesWmTakeFocus)
-				&& !ASWIN_GET_FLAGS (asw, AS_Dead))
-			send_wm_protocol_request (asw->w, _XA_WM_TAKE_FOCUS,
-																Scr.last_Timestamp);
+	if (asw != NULL && get_flags (asw->hints->protocols, AS_DoesWmTakeFocus)
+			&& !ASWIN_GET_FLAGS (asw, AS_Dead))
+		send_wm_protocol_request (asw->w, _XA_WM_TAKE_FOCUS, Scr.last_Timestamp);
 
 	ASSync (False);
 	LOCAL_DEBUG_OUT ("focusing window %lX, client %lX, frame %lX, asw %p", w,
@@ -1849,9 +1840,9 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 	if (asw) {
 /* JWT:REMOVED 20230502 - CIRCULATE LIST NOW == LIST OF WINDOWS IN ORDER CREATED (SEE WINLIST). */
 #if 0
-		if (!get_flags (AfterStepState, ASS_WarpingMode))
-			if (vector_remove_elem (Scr.Windows->circulate_list, &asw) == 1)
-				vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL, True);
+		if (!get_flags (AfterStepState, ASS_WarpingMode)
+				&& vector_remove_elem (Scr.Windows->circulate_list, &asw) == 1)
+			vector_insert_elem (Scr.Windows->circulate_list, &asw, 1, NULL, True);
 #endif
 
 #if 0
@@ -1886,9 +1877,9 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 	}
 	if (!do_nothing && do_hide_focus)
 		hide_focus ();
+
 	if (do_nothing || do_hide_focus)
 		return False;
-
 
 	Bool click2focus = get_flags (Scr.Feel.flags, ClickToFocus);
 
@@ -1954,16 +1945,14 @@ Bool focus_active_window ()
 {
 	/* don't fiddle with focus if we are in housekeeping mode !!! */
 	LOCAL_DEBUG_CALLER_OUT ("checking if we are in housekeeping mode (%ld)",
-													get_flags (AfterStepState,
-																		 ASS_HousekeepingMode));
+			get_flags (AfterStepState, ASS_HousekeepingMode));
 	if (get_flags (AfterStepState, ASS_HousekeepingMode)
 			|| Scr.Windows->active == NULL)
 		return False;
-
-	if (Scr.Windows->focused == Scr.Windows->active)
-		return True;								/* already has focus */
-
-	return focus_aswindow (Scr.Windows->active, FOCUS_ASW_CAN_AUTORAISE);
+	else if (Scr.Windows->focused == Scr.Windows->active)
+		return True;  /* already has focus */
+	else
+		return focus_aswindow (Scr.Windows->active, FOCUS_ASW_CAN_AUTORAISE);
 }
 
 /* second version of above : */
@@ -2055,7 +2044,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 		list->warp_curr_dir = dir;
 	}
 #endif
-	dir *= list->warp_curr_dir;  /* JWT:curr_dir: 1 NOW MEANS USE SPECIFIED DIRECTION, -1 REVERSE! */
+	/* JWT:warp_curr_dir: 1 NOW MEANS USE SPECIFIED DIRECTION (2ND PARAMETER), -1 REVERSE OF THAT!: */
+	dir *= list->warp_curr_dir;
 
 	/* JWT:CHGD TO NEXT 20180322: i = (dir > 0) ? 1 : end_i - 1;	*/ /* list->warp_curr_index + dir */
 	/* JWT:ADDED NEXT 7 20230502 TO SET WARP START-POINT AT CURRENTLY-FOCUSED WINDOW, IF ANY: */
@@ -2075,17 +2065,17 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 										 i, end_i, dir, Scr.Feel.AutoReverse);
 		if (0 > i || i >= end_i) {
 			if (Scr.Feel.AutoReverse == AST_OpenLoop)
-				i = (dir < 0) ? end_i - 1 : 0; /* 2=CONTINUOUS LOOP IN 1 DIRECTION: */
+				i = (dir < 0) ? end_i - 1 : 0; /* 2=CONTINUOUS LOOP IN SPECIFIED DIRECTION: */
 			else if (Scr.Feel.AutoReverse == AST_ClosedLoop) {
-				i = (dir < 0) ? 0 : end_i - 1; /* 1:AT END, REVERSE DIRECTION: */
+				i = (dir < 0) ? 0 : end_i - 1; /* 1=AT END, REVERSE DIRECTION ("YOYO-LIKE"): */
 				/* JWT:CHGD. TO NEXT 2 20230505: list->warp_curr_dir = dir = (dir < 0) ? 1 : -1; */
-				list->warp_curr_dir = -1 * list->warp_curr_dir;
-				dir *= -1;
-				i += dir;								/* we need to skip the one that was focused at the moment ! */
+				list->warp_curr_dir = -1 * list->warp_curr_dir;  /* REVERSE DIRECTION ("YOYO"), */
+				dir *= -1;  /* AND SAVE IT! */
+				i += dir;   /* we need to skip the one that was focused at the moment ! */
 			} else
-				return NULL;                   /* 0:AT END, FULL STOP: */
+				return NULL;                   /* 0=AT END, FULL STOP: */
 
-			if (++loop_count >= 2)
+			if (++loop_count >= 2)  /* PREVENT ANY POSSIBLE INFINITE LOOPS! */
 				return NULL;
 		}
 
@@ -2100,7 +2090,8 @@ ASWindow *warp_aswindow_list (ASWindowList * list, Bool backwards)
 		}
 		i += dir;
 	} while (1);
-	return NULL;
+
+	return NULL;  /* SHOULDN'T GET HERE, BUT OK IF WE DO */
 }
 
 /********************************************************************************/
@@ -2111,14 +2102,15 @@ ASWindow2func_data (FunctionCode func, ASWindow * asw,
 										FunctionData * fdata, char *scut, Bool icon_name)
 {
 	fdata->func = F_RAISE_IT;
-	fdata->name =
-			mystrdup (icon_name ? ASWIN_ICON_NAME (asw) : ASWIN_NAME (asw));
+	fdata->name = mystrdup (icon_name ? ASWIN_ICON_NAME (asw) : ASWIN_NAME (asw));
 	if (!icon_name)
 		fdata->name_encoding = ASWIN_NAME_ENCODING (asw);
+
 	fdata->func_val[0] = (long)asw;
 	fdata->func_val[1] = (long)asw->w;
 	if (++(*scut) == ('9' + 1))
 		(*scut) = 'A';							/* Next shortcut key */
+
 	fdata->hotkey = (*scut);
 }
 
@@ -2196,19 +2188,16 @@ MenuData *make_desk_winlist_menu (ASWindowList * list, int desk,
 																	 ((ASWindow *) (menuitems[i]->ref_data))->hints, 32);
 			else
 				minipixmaps[MINIPIXMAP_Icon].image = NULL;
-			if ((mdi =
-					 add_menu_fdata_item (md, &(menuitems[i]->fdata),
-																&(minipixmaps[0]))) != NULL)
+
+			if ((mdi = add_menu_fdata_item (md, &(menuitems[i]->fdata), &(minipixmaps[0]))) != NULL)
 				set_flags (mdi->flags, MD_ScaleMinipixmapDown);
+
 			safefree (menuitems[i]);	/* scrubba-dub-dub */
 		}
 		safefree (menuitems);
-	} else {											/* if( sort_order == ASO_Circulation || sort_order == ASO_Stacking ) */
-
+	} else {  /* if( sort_order == ASO_Circulation || sort_order == ASO_Stacking ) */
 		for (i = 0; i < max_i; ++i) {
-			MinipixmapData minipixmaps[MINIPIXMAP_TypesNum] = { {0}
-			, {0}
-			};
+			MinipixmapData minipixmaps[MINIPIXMAP_TypesNum] = { {0} , {0} };
 			if ((ASWIN_DESK (clients[i]) == desk || !IsValidDesk (desk))
 					&& !ASWIN_HFLAGS (clients[i], AS_SkipWinList)) {
 				ASWindow2func_data (F_RAISE_IT, clients[i], &fdata, &scut,
@@ -2218,6 +2207,7 @@ MenuData *make_desk_winlist_menu (ASWindowList * list, int desk,
 							get_client_icon_image (ASDefaultScr, clients[i]->hints, 32);
 				else
 					minipixmaps[MINIPIXMAP_Icon].image = NULL;
+
 				if ((mdi =
 						 add_menu_fdata_item (md, &fdata, &(minipixmaps[0]))) != NULL)
 					set_flags (mdi->flags, MD_ScaleMinipixmapDown);
