@@ -1113,8 +1113,9 @@ void DispatchEvent (ASEvent * event)
 			change_button_focus (WharfState.focused_button, True);
 
 		/* SAVE "WHARF WINDOW" THAT GETS FOCUS ON FOCUS IN!: */
-		if (! WharfState.focus_return)
+/*		if (! WharfState.focus_return) // CAUSES FOCUS ISSUES AFTER RESTART, SO MUST ALWAYS REINITIALIZE! */
 			XGetInputFocus(dpy, &WharfState.focus_return, &WharfState.revert_to_return);
+
 		WharfState.isFocused = True;
 		break;
 	case FocusOut:  /* JWT:UNHIGHLIGHT THE KB-FOCUSED BUTTON WHEN WHARF LOOSES KB FOCUS: */

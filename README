@@ -44,7 +44,7 @@ See the file "README.org" for their actual README (which is very dated)!
 
 Here's some notes on how I build:
 
-$>git clone git://github.com/wildstar84/afterstep afterstep-2.2.12 ~/afterstep-src
+$>git clone https://github.com/wildstar84/afterstep.git afterstep-2.2.12 ~/afterstep-src
 
 $>export CFLAGS="-march=native -O2"
 
@@ -75,6 +75,10 @@ In file included from import.c:106:0:
             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  pixmap.c
 
+NOTE:  For some reason, the Sound module doesn't seem to get built for me, if 
+this is the case for you, and you want the sound-effects option, you'll need to 
+cd to ~/afterstep-src/Sound2 and run make, then sudo make install again from 
+there.
 
 $>CLOSE DOWN AfterStep/X (go to a console)
 

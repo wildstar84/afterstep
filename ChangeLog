@@ -1,5 +1,15 @@
 CHANGELOG
 ----------------------
+[2023-06-04: Jim Turner]
+
+* Fix weird bug that caused Wharf to lose focus on all mouse-outs when focused 
+IF Wharf was stopped and then restarted (without restarting AfterStep itself) 
+on some systems (The window variable is an object variable and SHOULD be re-
+initialized at startup, but aparently still contained lingering garbage, now 
+we ALWAYS fetch it)!
+
+* Tweak the README file a bit and update the changelog.
+
 [2023-05-11: Jim Turner]
 
 * Cleaned up aswindow.c and events.c code to be more readable and possibly 
