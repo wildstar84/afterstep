@@ -243,7 +243,7 @@ socket_write_int16 (ASSocketBuffer *sb, CARD16 *data, size_t items )
 #ifndef TRANSLATE_HOST_TO_NET
 	socket_buffered_write( sb, data, items*sizeof(CARD16));
 #else
-	CARD16  buf ;
+	CARD32  buf ;
 	register int i = 0;
 	while( i < items )
 	{
