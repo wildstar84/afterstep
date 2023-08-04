@@ -227,7 +227,7 @@ void addTimeout();
  * gvm_check_dvd_only)
  */
 static gboolean
-gvm_check_dvd_only (const char *udi, const char *device, const char *mount_point)
+gvm_check_dvd_only (const char *device, const char *mount_point)
 {
 	char *path;
 	gboolean retval;
@@ -252,7 +252,7 @@ static gboolean
 check_dvd_video (GVolume *volume)
 {
 	GFile *file;
-	char *udi, *device_path, *mount_path;
+	char *device_path, *mount_path;
 	gboolean result;
 	GMount *mount;
 
@@ -275,13 +275,10 @@ check_dvd_video (GVolume *volume)
 
 	device_path = g_volume_get_identifier (volume,
 					       G_VOLUME_IDENTIFIER_KIND_UNIX_DEVICE);
-	udi = g_volume_get_identifier (volume,
-				       G_VOLUME_IDENTIFIER_KIND_HAL_UDI);
 
-	result = gvm_check_dvd_only (udi, device_path, mount_path);
+	result = gvm_check_dvd_only (device_path, mount_path);
 
 	g_free (device_path);
-	g_free (udi);
 	g_free (mount_path);
 	return result;
 }
