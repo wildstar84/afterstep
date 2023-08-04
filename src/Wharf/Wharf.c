@@ -214,7 +214,8 @@ Atom _AS_WHARF_CLOSE = None;
 #define WHARF_BUTTON_EVENT_MASK   (ButtonReleaseMask |\
                                    ButtonPressMask | LeaveWindowMask | EnterWindowMask |\
                                    StructureNotifyMask | SubstructureRedirectMask | KeyPressMask | KeyReleaseMask)
-#define WHARF_FOLDER_EVENT_MASK   (StructureNotifyMask | KeyPressMask | KeyReleaseMask | FocusChangeMask)
+#define WHARF_FOLDER_EVENT_MASK   (StructureNotifyMask | KeyPressMask | KeyReleaseMask | FocusChangeMask |\
+                                   LeaveWindowMask | EnterWindowMask)
 
 
 void HandleEvents ();
@@ -281,7 +282,7 @@ int main (int argc, char **argv)
 	memset (&WharfState, 0x00, sizeof (WharfState));
 	/* JWT:INITIALIZE OUR STUFF: */
 	WharfState.isFocused = False;
-	WharfState.focus_return = 0;
+	WharfState.focus_return = None;
 	WharfState.revert_to_return = 0;
 	WharfState.key_release_pending = False;
 	WharfState.ctrlkey_down = False;
@@ -1015,6 +1016,8 @@ void DispatchEvent (ASEvent * event)
 				if (WharfState.isFocused) {
 					Time t = Scr.last_Timestamp;
 					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+					change_button_focus (WharfState.focused_button, True);
+					break;
 				}
 			} else if (event->x.type == EnterNotify)
 				WharfState.holdFocus = 0;
@@ -1101,6 +1104,8 @@ void DispatchEvent (ASEvent * event)
 		}
 		break;
 	case FocusIn:  /* JWT:(RE)HIGHLIGHT A BUTTON WHEN WHARF TAKES KEYBOARD FOCUS: */
+		Window focus_return = None;
+
 		if (! WharfState.focused_button && WharfState.prev_focused_button)
 			WharfState.focused_button = WharfState.prev_focused_button;
 		if (! WharfState.focused_button) {
@@ -1113,13 +1118,14 @@ void DispatchEvent (ASEvent * event)
 			change_button_focus (WharfState.focused_button, True);
 
 		/* SAVE "WHARF WINDOW" THAT GETS FOCUS ON FOCUS IN!: */
-/*		if (! WharfState.focus_return) // CAUSES FOCUS ISSUES AFTER RESTART, SO MUST ALWAYS REINITIALIZE! */
-			XGetInputFocus(dpy, &WharfState.focus_return, &WharfState.revert_to_return);
+		XGetInputFocus(dpy, &focus_return, &WharfState.revert_to_return);
+		if (focus_return != None && focus_return != 1)
+			WharfState.focus_return = focus_return;
 
 		WharfState.isFocused = True;
 		break;
 	case FocusOut:  /* JWT:UNHIGHLIGHT THE KB-FOCUSED BUTTON WHEN WHARF LOOSES KB FOCUS: */
-		if (WharfState.holdFocus > 1) {
+		if (WharfState.holdFocus >= 1) {
 			WharfState.holdFocus = 0;
 			/* JWT:FIXME: THIS HACK NEEDED TO KEEP WHARF FROM LOSING FOCUS WHEN MOVING MOUSE OFF
 			   OF SOME SWALLOWED WINDOWS (PerlTk DOCKLETS ARE KNOWN FOR THIS).  WHEN THIS HAPPENS,
