@@ -793,15 +793,13 @@ void DispatchEvent (ASEvent * event)
 					ASWharfButton *aswb = WharfState.focused_button;
 					if (aswb->swallowed && WharfState.isFocused) {
 						/* focus_window (NULL, w); */
-						Time t = Scr.last_Timestamp;
-						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
+						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
 						event->w = aswb->swallowed->current->w;
 						event->x.xkey.window = aswb->swallowed->current->w;
 						XSendEvent (dpy, aswb->swallowed->current->w, False,
 								KeyPressMask, &(event->x));
 						/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
-						t = Scr.last_Timestamp;
-						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
 					}
 					release_pressure (1, aswb);
 				}
@@ -844,8 +842,7 @@ void DispatchEvent (ASEvent * event)
 					if (aswb && WharfState.isFocused) {
 						if (aswb->swallowed) {
 							/* focus_window (NULL, w); */
-							Time t = Scr.last_Timestamp;
-							XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
+							XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
 							event->w = aswb->swallowed->current->w;
 							event->x.xkey.window = aswb->swallowed->current->w;
 							/* JWT:SEND ALL KEYPRESS EVENTS TO SWALLOWED APPS (IF KB-FOCUSED): */
@@ -879,8 +876,7 @@ void DispatchEvent (ASEvent * event)
 									show_warning("ERROR - COULD NOT SEND BUTTON-UP EVENT!");
 							}
 							/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
-							t = CurrentTime;
-							XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+							XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
 						} else if (buf[0]) {  /* NOT SWALLOWED (REGULAR AS BUTTON) */
 							/* JWT:ONLY NEED TO HANDLE THE 3 MAIN MOUSE-BUTTONS: */
 							if (buf[0] == '1')
@@ -925,8 +921,7 @@ void DispatchEvent (ASEvent * event)
 			}
 			if (aswb && WharfState.isFocused) {
 				if (aswb->swallowed) {  /* JWT:PASS OTHER USEFUL KEY-UP EVENTS TO SWALLOWED WIDGETS: */
-					Time t = Scr.last_Timestamp;
-					XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, t);
+					XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
 					event->w = aswb->swallowed->current->w;
 					event->x.xkey.window = aswb->swallowed->current->w;
 					if (!XSendEvent (dpy, aswb->swallowed->current->w, False,
@@ -952,8 +947,7 @@ void DispatchEvent (ASEvent * event)
 							show_warning("ERROR - COULD NOT SEND BUTTON-UP EVENT!");
 					}
 					/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
-					t = CurrentTime;
-					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
 				}
 				if (buf[0]) {
 					if (buf[0] == '1')
@@ -1008,20 +1002,14 @@ void DispatchEvent (ASEvent * event)
 		}
 	case LeaveNotify:  /* NOTE: ALSO CATCHES EnterNotify EVENTS WHEN NOT CROSSING ROOT WINDOW!: */
 		{
-			if (event->x.type == LeaveNotify) {
-				if (event->x.xcrossing.subwindow)
-					WharfState.holdFocus++;
-
+			if (event->x.type == LeaveNotify && event->x.xcrossing.subwindow) {
 				/* DON'T LET FOCUS FOLLOWS MOUSE OUT OF WHARF (DOESN'T AFFECT USER-SET FFM MODE)!: */
-				if (WharfState.isFocused) {
-					Time t = Scr.last_Timestamp;
-					XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
-					change_button_focus (WharfState.focused_button, True);
+				if (WharfState.isFocused && event->x.xcrossing.window == WharfState.focus_return) {
+					/* MOUSE COMPLETELY LEFT FOCUSED WHARF, SO WE PUT IT BACK ON WHARF: */
+					WharfState.holdFocus++;
 					break;
 				}
-			} else if (event->x.type == EnterNotify)
-				WharfState.holdFocus = 0;
-
+			}
 			ASMagic *obj = fetch_object (event->w);
 			if (obj != NULL && obj->magic == MAGIC_WHARF_BUTTON) {
 				ASWharfButton *aswb = (ASWharfButton *) obj;
@@ -1037,7 +1025,7 @@ void DispatchEvent (ASEvent * event)
 					WharfState.NotifyInferiorFlag = (event->x.xcrossing.detail == 2);
 					break;
 				} else if (event->x.type == LeaveNotify && aswb->swallowed
-						&& (event->x.xcrossing.detail == 2||
+						&& (event->x.xcrossing.detail == 2 ||
 						(event->x.xcrossing.detail == 3 && !WharfState.NotifyInferiorFlag)))
 					break;
 			}
@@ -1104,6 +1092,7 @@ void DispatchEvent (ASEvent * event)
 		}
 		break;
 	case FocusIn:  /* JWT:(RE)HIGHLIGHT A BUTTON WHEN WHARF TAKES KEYBOARD FOCUS: */
+		{
 		Window focus_return = None;
 
 		if (! WharfState.focused_button && WharfState.prev_focused_button)
@@ -1124,6 +1113,7 @@ void DispatchEvent (ASEvent * event)
 
 		WharfState.isFocused = True;
 		break;
+		}
 	case FocusOut:  /* JWT:UNHIGHLIGHT THE KB-FOCUSED BUTTON WHEN WHARF LOOSES KB FOCUS: */
 		if (WharfState.holdFocus >= 1) {
 			WharfState.holdFocus = 0;
@@ -1133,8 +1123,9 @@ void DispatchEvent (ASEvent * event)
 			   FIXME #2: get_flags(Scr.Feel.flags, ClickToFocus) DOES NOT WORK IN WHARF?!
 			   GOOD NEWS IS THAT THIS HACK SHOULD ONLY AFFECT CLICK-2-FOCUS MODE!
 			*/
-			Time t = Scr.last_Timestamp;  /* JWT:FORCE WHARF TO KEEP FOCUS ON SIMPLE MOUSE-OUT: */
-			XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, t);
+			/* JWT:FORCE WHARF TO KEEP FOCUS ON SIMPLE MOUSE-OUT: */
+			XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
+			XSync (dpy, False);
 		} else {
 			if (WharfState.focused_button)
 				change_button_focus (WharfState.focused_button, False);

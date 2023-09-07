@@ -1787,25 +1787,15 @@ Bool focus_window (ASWindow * asw, Window w)
 	 * in the queue, those events will not have any effect if you try setting
 	 * focus using their time, as X aready used its own friggin current time.
 	 * Don't ask, its a mess.
-	 * */
-	if (w != None && ASWIN_HFLAGS (asw, AS_AcceptsFocus)) {
-		Time t =
-				/*(Scr.Windows->focused == NULL)?CurrentTime: */
-				Scr.last_Timestamp;
-		LOCAL_DEBUG_OUT ("XSetInputFocus(window= %lX, time = %lu)", w, t);
-		XSetInputFocus (dpy, w, RevertToParent, t);
-
-		/* JWT:(20190323):ADDED NEXT 8 TO RE-TRY FAILED FOCUS DUE TO TIMING ISSUE? */
-		ASSync (False);
-		/* sleep_a_millisec (100); */ /* JWT:TRIED THIS BUT CAUSES C2F ON TITLEBAR TO CATCH & DRAG! */
-		Window focus_return; int revert_to_return;
-		XGetInputFocus(dpy, &focus_return, &revert_to_return);
-
-		if (focus_return != w) { /* JWT:last_Timestamp FAILED, TRY AGAIN W/CurrentTime!: */
-			t = CurrentTime;
-			XSetInputFocus (dpy, w, RevertToParent, t);
-		}
-	}
+	 *
+	 * JWT:Take 3: 2023/08 - This seems to frequently fail with Wharf now allowed
+	 * to regrab focus needed after mousing off when focused when using Click2Focus
+	 * but using CurrentTime seems to work reliably now with modern X and Perl/Tk!
+	 * See also JWT mods in events.c and Wharf.c.
+	 *
+	*/
+	if (w != None && ASWIN_HFLAGS (asw, AS_AcceptsFocus))
+		XSetInputFocus (dpy, w, RevertToParent, CurrentTime);
 
 	ASSync (False);
 	return (w != None);
@@ -1903,7 +1893,7 @@ Bool focus_aswindow (ASWindow * asw, Bool suppress_autoraise)
 
 	if (w == None)
 		show_warning ("unable to focus window %lX for client %lX, frame %lX",
-									w, asw->w, asw->frame);
+				w, asw->w, asw->frame);
 	else if (!ASWIN_GET_FLAGS (asw, AS_Mapped))
 		if (click2focus)
 			focus_prev_aswindow (asw);  /* JWT:c2f - HIDDEN/ICONIFIED WINDOW, FOCUS ON PREV. WINDOW. */

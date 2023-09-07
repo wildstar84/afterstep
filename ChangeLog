@@ -1,5 +1,31 @@
 CHANGELOG
 ----------------------
+[2023-09-04: Jim Turner]
+
+* Fix a cpl. more click-2-focus "edge cases", namely *occasional* failure to 
+take focus from Wharf when clicking on window that previously had focus when 
+user gave focus to Wharf by clicking on a Wharf dockapp.  Personal note - some 
+parts of this seem rather "hackey" to me!  The intermittance of these issues 
+seemed related to slight timing issues / inconsistancies.  Ultimately we try 
+to deal with this in events.c since we can not call (#include) the higher-level 
+AS focusing functions in Wharf (or other plugin apps) due to namespace 
+conflicts.  Also tested with both focus-follows-mouse and sloppy-focus, and 
+with Wharf set to NOT take focus ('Style "*Wharf" NoFocus' in database file) to 
+verify that those focusing models were not affected by these "hacks".  
+Unfortunately, there does remain one edge case (introduced) where under certain 
+cases moving pointer very rapidly off a focused Wharf onto a window very close 
+to or abutting Wharf, more likely if the dockapp or window is a Perl/Tk app. 
+where focus still "partially follows the mouse" onto that window and Wharf 
+fails to hold it leaving neither Wharf or that window "fully" focused.  
+I've worked all thru this code and still can't fully grasp exactly why it does 
+what it does, but it works mucn less annoyingly now than ever before!  It's 
+much less annoying to me to have Wharf lose focus to an app. window once in a 
+while than to refuse to give it up when deliberately clicking on a window to 
+focus!
+
+* Make Wharf-specific focus handling (ClickToFocus + Wharf allowed to take 
+focus) work on all Wharfs (not just the main/default one named "Wharf").
+
 [2023-06-04: Jim Turner]
 
 * Fix weird bug that caused Wharf to lose focus on all mouse-outs when focused 

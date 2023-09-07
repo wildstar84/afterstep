@@ -767,18 +767,26 @@ void HandleFocusIn (ASEvent * event)
 		ChangeWarpingFocus (event->client);
 
 	LOCAL_DEBUG_OUT ("focused = %p, this event for %p", Scr.Windows->focused,
-									 event->client);
-	if (Scr.Windows->focused != event->client) {
-		LOCAL_DEBUG_OUT ("CHANGE Scr.Windows->focused from %p to NULL",
-										 Scr.Windows->focused);
-		/* JWT:ADD THIS TEST TO HANDLE C2F & MY STUPID Perl/Tk WHARF DOCKAPPS: */
-		if (get_flags (Scr.Feel.flags, ClickToFocus) && Scr.Windows->focused
-				&& !get_flags (AfterStepState, ASS_HousekeepingMode)
-				&& !strcmp (ASWIN_NAME (Scr.Windows->focused), "Wharf"))
+			event->client);
+	LOCAL_DEBUG_OUT ("CHANGE Scr.Windows->focused from %p to NULL",
+			Scr.Windows->focused);
+
+	/* JWT:ADD THIS TEST TO HANDLE C2F WHEN Wharf RECLAIMS FOCUS WHEN MOUSING OFF FOCUSED Wharf: */
+	if (get_flags (Scr.Feel.flags, ClickToFocus)
+			&& !get_flags (AfterStepState, ASS_HousekeepingMode)) {
+		if (Scr.Windows->focused && !strcmp (ASWIN_RES_NAME (Scr.Windows->focused), "Wharf")) {
+			int revert_to_return;
+			Window wharf_window = None;
+			XGetInputFocus(dpy, &wharf_window, &revert_to_return);
+			if (Scr.Windows->focused->w != wharf_window)
+				focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
+		} else if (event->client && !strcmp (ASWIN_RES_NAME (event->client), "Wharf"))
 			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
-		else
+		else if (Scr.Windows->focused != event->client)
 			unset_focused_window();
-	}
+	} else if (Scr.Windows->focused != event->client)
+		unset_focused_window();
+
 	if (event->client == NULL
 			&& get_flags (AfterStepState, ASS_HousekeepingMode))
 		return;
