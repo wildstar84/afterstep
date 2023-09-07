@@ -202,7 +202,7 @@ void EndWarping ()
 	if (get_flags (AfterStepState, ASS_WarpingMode)) {
 		clear_warping_focus ();
 		clear_flags (AfterStepState, ASS_WarpingMode);
-		commit_circulation ();
+		/* JWT:NOW EMPTY FUNCTION (SEE aswindow.c): commit_circulation (); */
 	}
 }
 
