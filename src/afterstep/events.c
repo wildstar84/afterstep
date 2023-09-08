@@ -780,7 +780,9 @@ void HandleFocusIn (ASEvent * event)
 			XGetInputFocus(dpy, &wharf_window, &revert_to_return);
 			if (Scr.Windows->focused->w != wharf_window)
 				focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
-		} else if (event->client && !strcmp (ASWIN_RES_NAME (event->client), "Wharf"))
+		} else if (Scr.Windows->focused && event->client
+				&& (!strcmp (ASWIN_RES_NAME (event->client), "Wharf")
+					|| !strcmp (ASWIN_RES_NAME (event->client), "WharfWithdrawn")))
 			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
 		else if (Scr.Windows->focused != event->client)
 			unset_focused_window();

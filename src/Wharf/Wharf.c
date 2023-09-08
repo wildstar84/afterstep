@@ -1124,7 +1124,7 @@ void DispatchEvent (ASEvent * event)
 			   GOOD NEWS IS THAT THIS HACK SHOULD ONLY AFFECT CLICK-2-FOCUS MODE!
 			*/
 			/* JWT:FORCE WHARF TO KEEP FOCUS ON SIMPLE MOUSE-OUT: */
-			XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
+			XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, CurrentTime);
 			XSync (dpy, False);
 		} else {
 			if (WharfState.focused_button)
