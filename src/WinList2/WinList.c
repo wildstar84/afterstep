@@ -1596,7 +1596,9 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
     {
         if( merge_hints (&raw, Database, NULL, list, HINT_NAME|HINT_GENERAL, &clean, wd->client) )
         {
-            icon_im = get_client_icon_image( ASDefaultScr, &clean, 32);
+            int desired_size = (Config->UseName >= ASN_NameTypes && Config->MaxColWidth)
+                    ? Config->MaxColWidth : 32;  /* JWT:USE BOX-WIDTH FOR ICON-SIZE IF ICONSONLY. */
+            icon_im = get_client_icon_image( ASDefaultScr, &clean, desired_size);
             destroy_hints( &clean, True );
         }
         destroy_raw_hints ( &raw, True);
