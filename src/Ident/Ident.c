@@ -125,7 +125,10 @@ main( int argc, char **argv )
 		MyArgs.src_window = get_target_window();
 
 	/* And at long last our main loop : */
-    HandleEvents();
+	/* JWT:PUNT IF WINDOW IS None OR Scr.Root (ELSE SEGFAULTS)!: */
+	if (MyArgs.src_window != Scr.Root && MyArgs.src_window != None)
+	    HandleEvents();
+
 	return 0 ;
 }
 
@@ -398,17 +401,17 @@ Window
 get_target_window ()
 {
 	XEvent eventp;
-	int val = -10, trials;
+	int val = -10;
+	int trials = 0;
 	Window target = None;
 
-	trials = 0;
 	while ((trials < 100) && (val != GrabSuccess))
     {
 		val = XGrabPointer (dpy, Scr.Root, True,
-				  		   	ButtonReleaseMask,
-			  				GrabModeAsync, GrabModeAsync, Scr.Root,
-			  				XCreateFontCursor (dpy, XC_crosshair),
-			  				CurrentTime);
+				ButtonPressMask,
+				GrabModeAsync, GrabModeAsync, Scr.Root,
+				XCreateFontCursor (dpy, XC_crosshair),
+				CurrentTime);
       	if( val != GrabSuccess )
 			sleep_a_little (100);
 		trials++;
@@ -418,14 +421,18 @@ get_target_window ()
     	show_error( "Couldn't grab the cursor!\n", MyName);
       	DeadPipe(0);
     }
-  	XMaskEvent (dpy, ButtonReleaseMask, &eventp);
+	XMaskEvent (dpy, ButtonPressMask, &eventp);
   	XUngrabPointer (dpy, CurrentTime);
   	ASSync(0);
+	if (eventp.xbutton.button != Button1)  /* JWT:ALLOW USER TO CANCEL BY PRESSING BUTTON OTHER THAN 1: */
+		return Scr.Root;
+
   	target = eventp.xbutton.window;
 	LOCAL_DEBUG_OUT( "window = %lX, root = %lX, subwindow = %lX", 
 					 eventp.xbutton.window, eventp.xbutton.root, eventp.xbutton.subwindow );
-  	if( eventp.xbutton.subwindow != None )
-    	target = eventp.xbutton.subwindow;
+	if (eventp.xbutton.subwindow != None)
+		target = eventp.xbutton.subwindow;
+
 	return target;
 }
 

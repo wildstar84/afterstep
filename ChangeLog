@@ -1,5 +1,13 @@
 CHANGELOG
 ----------------------
+[2023-09-12: Jim Turner]
+
+* Fix Ident (Identify) to now work properly (ability to select a window using 
+the mouse ("crosshair" cursor) without a a window argument, ie. when called 
+from the general Windows menu (vs. from the titlebutton Window menu associated 
+with a specific window).  This makes it posible to get identification info. 
+from windows without a titlebar.
+
 [2023-09-04: Jim Turner]
 
 * Fix a cpl. more click-2-focus "edge cases", namely *occasional* failure to 
