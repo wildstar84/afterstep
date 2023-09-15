@@ -774,13 +774,14 @@ void HandleFocusIn (ASEvent * event)
 	/* JWT:ADD THIS TEST TO HANDLE C2F WHEN Wharf RECLAIMS FOCUS WHEN MOUSING OFF FOCUSED Wharf: */
 	if (get_flags (Scr.Feel.flags, ClickToFocus)
 			&& !get_flags (AfterStepState, ASS_HousekeepingMode)) {
-		if (Scr.Windows->focused && !strcmp (ASWIN_RES_NAME (Scr.Windows->focused), "Wharf")) {
+		if (Scr.Windows->focused && ASWIN_RES_NAME (Scr.Windows->focused) != NULL
+				&& !strcmp (ASWIN_RES_NAME (Scr.Windows->focused), "Wharf")) {
 			int revert_to_return;
 			Window wharf_window = None;
 			XGetInputFocus(dpy, &wharf_window, &revert_to_return);
 			if (Scr.Windows->focused->w != wharf_window)
 				focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
-		} else if (Scr.Windows->focused && event->client
+		} else if (Scr.Windows->focused && event->client && ASWIN_RES_NAME (event->client) != NULL
 				&& (!strcmp (ASWIN_RES_NAME (event->client), "Wharf")
 					|| !strcmp (ASWIN_RES_NAME (event->client), "WharfWithdrawn")))
 			focus_aswindow (Scr.Windows->focused, FOCUS_ASW_CAN_AUTORAISE);
