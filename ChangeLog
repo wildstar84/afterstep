@@ -1,5 +1,18 @@
 CHANGELOG
 ----------------------
+[2023-10-05: Jim Turner]
+
+* Add new option to toggle the focused window's titlebar's "style" to the 
+"sticky_window_style" (from "focused_window_style") while pressing and holding 
+down the mouse over the window's titlebar to provide additional "pressed" 
+state feedback (even if titlebar is not styled with bevels).  Repurposed 
+dormant "TitlebarNoPush" look option to turn this back OFF if set.
+
+* Fixed old AfterStep bug that inconsistantly rendered unfocused window's 
+titlebar bevels when focus lost due to another window's titlebar being clicked 
+to change window focus - found bug whilst working on the new titlebar option 
+described above (and not caused by it).
+
 [2023-09-12: Jim Turner]
 
 * Fix Ident (Identify) to now work properly (ability to select a window using 
