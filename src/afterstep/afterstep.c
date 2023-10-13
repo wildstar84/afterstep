@@ -668,7 +668,7 @@ void DoAutoexec (Bool restarting)
 			func.name = &(screen_func_name[0]);
 	}
 	ExecuteFunction (&func, &event, -1);
-	//HandleEventsWhileFunctionsPending ();
+	/* JWT:SCREWS UP WINLIST PLACEMENT!: HandleEventsWhileFunctionsPending (); */
 }
 
 /***********************************************************************
