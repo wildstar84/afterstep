@@ -977,7 +977,8 @@ handle_asxml_tag_recall( ASImageXMLState *state, xml_elem_t* doc, xml_elem_t* pa
 			if( state->verbose > 1 ) 
 				show_progress("Recalling image id [%s] from imman %p.", ptr->parm, state->imman);
 			result = fetch_asimage(state->imman, ptr->parm );
-			if (!result)
+			/* JWT:CHGD. TO NEXT 20231012 TO ELIMINATE SPAM (THIS STUPID FILE DOESN'T EXIST!): if (!result) */
+			if (!result && strcmp (ptr->parm, "menu.folder_pixmap"))
 				show_warning("Image recall failed for id [%s].", ptr->parm);
 		}	
 		ptr = ptr->next ;
