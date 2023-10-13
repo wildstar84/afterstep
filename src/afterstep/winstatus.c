@@ -1407,6 +1407,26 @@ void on_window_hilite_changed (ASWindow * asw, Bool focused)
 	}
 }
 
+void update_frames_and_sides (ASWindow * asw, ASOrientation *od, int pressed_context)
+{
+	register int i = FRAME_PARTS;
+	/* frame decor : */
+	for (i = FRAME_PARTS; --i >= 0;)
+		set_astbar_pressed (asw->frame_bars[i],
+				asw->frame_sides[od->tbar2canvas_xref[i]],
+				pressed_context & (C_FrameN << i));
+
+	/* now posting all the changes on display : */
+	for (i = FRAME_SIDES; --i >= 0;)
+		if (is_canvas_dirty (asw->frame_sides[i]))
+			update_canvas_display (asw->frame_sides[i]);
+
+	if (asw->internal && asw->internal->on_pressure_changed)
+			asw->internal->on_pressure_changed (asw->internal,
+			pressed_context & C_CLIENT);
+	return;
+}
+
 void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 {
 	LOCAL_DEBUG_CALLER_OUT ("(%p,%s)", asw, context2text (pressed_context));
@@ -1414,13 +1434,54 @@ void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 	if (AS_ASSERT (asw) || asw->status == NULL)
 		return;
 
-	Bool DoNotPressTitlebar = get_flags (Scr.Look.flags, TitlebarNoPush);
+	Bool OnlyToggleBevels = get_flags (Scr.Look.flags, TitlebarNoPush);
 	ASOrientation *od = get_orientation_data (asw);
+	/* JWT:TRUE IF LAST PRESS WAS ON AS DECORATIONS (OUTSIDE APP-WINDOW): */
+	static Bool pressed_wason_asdecor;
 
 	if (!ASWIN_GET_FLAGS (asw, AS_Iconic)) {
-		if (DoNotPressTitlebar)
-			set_astbar_btn_pressed (asw->tbar, pressed_context);	/* must go before next call to properly redraw :  */
-		else {
+		ASWindow * prev_asw = Scr.Windows->hilited;
+		if (pressed_context & C_TButtonAll)  /* JUST PRESS A TITLEBAR-BUTTON: */
+			set_astbar_btn_pressed (asw->tbar, pressed_context);
+		else if (OnlyToggleBevels) {  /* JUST "PRESS" (TOGGLE) THE BEVELS (OLD WAY): */
+			if (pressed_context & (C_TITLE | C_FRAME)) { /* PRESSED TITLEBAR: */
+				pressed_wason_asdecor = True;
+				XSync (dpy, True);  /* JWT:PURGE ANY PENDING FOCUS EVENTS UNTIL MOUSE-UP (RELEASE)! */
+				/* (NOTE:MUST NOT DEFER FOCUSING UNLESS ON DECORATIONS, ELSE APP. POPUP MENUS GET HIDDEN)!!! */
+
+				if (prev_asw && prev_asw != asw)
+					on_window_pressure_changed (prev_asw, C_NO_CONTEXT);
+			} else {   /* RELEASE (UNPRESS) - OR - PRESSED ON ANOTHER FRAME ELEMENT: */
+				if (pressed_context)
+					pressed_wason_asdecor = False;
+				else if (pressed_wason_asdecor && asw != prev_asw) {
+					/* JWT:WINDOW OTHER THAN THIS ONE HAS FOCUS, SO UNFOCUS IT NOW: */
+					unset_focused_window();
+					hide_hilite ();
+				}
+				set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
+				set_astbar_pressed (asw->tbar, asw->frame_sides[od->tbar_side],
+						pressed_context & C_TITLE);
+
+				/* JWT:NOW MANUALLY FOCUS WINDOW, IF NOT ALREADY (PURGED ON MOUSEDOWN BY PREV. Xsync): */
+				if (asw != prev_asw) {
+					update_frames_and_sides (asw, od, pressed_context);
+					if (pressed_wason_asdecor) {
+						if (asw->internal && prev_asw && !strcmp (ASWIN_CLASS(asw), "ASMenu")
+								&& is_window_obscured (asw, prev_asw))
+							hilite_aswindow (prev_asw);  /* JWT:WE'RE AN ASMENU & THEY'RE WEIRD! */
+						else if (focus_aswindow (asw, FOCUS_ASW_CAN_AUTORAISE))
+							hilite_aswindow (asw);
+					}
+					set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
+					/* Titlebar */
+					set_astbar_pressed (asw->tbar, asw->frame_sides[od->tbar_side],
+							pressed_context & C_TITLE);
+					return;
+				}
+			}
+			set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
+		} else {
 			/* JWT:SUPPORT "PRESSING" TITLEBARS TO SHOW "STICKY STYLE" WHILE PRESSED TO
 			   GIVE MORE VISIBLE FEEDBACK WHEN PRESSING THE TITLEBAR (ADD THE
 			   "TitlebarNoPush" LOOK FLAG (NOTE CASE) TO *NOT* DO THIS)!:
@@ -1430,8 +1491,9 @@ void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 			ASFlagType *frame_bevel, title_bevel;
 			int title_cm, title_hue = -1, title_sat = -1;
 			char *titlebar_mystyle;
+			int bar_state = BAR_STATE_UNFOCUSED;
 
-			if (pressed_context & C_TITLE) { /* PRESS TITLEBAR: */
+			if (pressed_context & (C_TITLE | C_FRAME)) { /* PRESSED TITLEBAR: */
 				/* JWT:FORCED TO USE "STICKY" STYLE, SINCE ADDING ALL THE REQUIRED
 				   FIELDS FOR A FOURTH STYLE (IE. "BACK_PRESSED") EXCEEDS THE *LIMIT*
 				   OF "LOOK" FIELD SLOTS OF 32 (BITS) BY 1 IN libAfterStep/mylook.h!!
@@ -1443,15 +1505,59 @@ void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 				   AN AS DESIGN BUG/ISSUE, AS IT SEEMS TO ALSO BE TRUE IF JUST USING
 				   AS'S TRADITIONAL BEVELING TO INDICATE TITLEBAR PRESS/UNPRESS!;
 				*/
-				back_type = BACK_STICKY;
-				frame_bevel = &(frame_data->part_sbevel[0]);
-				title_bevel = frame_data->title_sbevel;
-				title_cm = frame_data->title_scm;
-				if (get_flags (frame_data->set_title_attr, MYFRAME_TitleSHueSet))
-					title_hue = frame_data->title_shue;
-				if (get_flags (frame_data->set_title_attr, MYFRAME_TitleSSatSet))
-					title_sat = frame_data->title_ssat;
+				pressed_wason_asdecor = True;
+				XSync (dpy, True);  /* JWT:PURGE ANY PENDING FOCUS EVENTS UNTIL MOUSE-UP (RELEASE)! */
+				/* (NOTE:MUST NOT DEFER FOCUSING UNLESS ON DECORATIONS, ELSE APP. POPUP MENUS GET HIDDEN)!!! */
 
+				if (pressed_context & C_TITLE) {
+					bar_state = (Scr.Windows->hilited != Scr.Windows->focused
+							|| Scr.Windows->focused != asw)
+							? BAR_STATE_UNFOCUSED : BAR_STATE_FOCUSED;
+					back_type = BACK_STICKY;
+					frame_bevel = &(frame_data->part_sbevel[0]);
+					title_bevel = frame_data->title_sbevel;
+					title_cm = frame_data->title_scm;
+					if (get_flags (frame_data->set_title_attr, MYFRAME_TitleSHueSet))
+						title_hue = frame_data->title_shue;
+					if (get_flags (frame_data->set_title_attr, MYFRAME_TitleSSatSet))
+						title_sat = frame_data->title_ssat;
+
+					titlebar_mystyle = asw->hints->mystyle_names[back_type];
+					if (frame_data->title_style_names[back_type])
+						titlebar_mystyle = frame_data->title_style_names[back_type];
+					if (titlebar_mystyle == NULL)
+						titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
+					if (titlebar_mystyle == NULL)
+						titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
+					if (titlebar_mystyle && asw->tbar) {
+						set_astbar_style
+								(asw->tbar, bar_state, titlebar_mystyle);
+						set_astbar_hilite (asw->tbar, bar_state, title_bevel);
+						set_astbar_composition_method
+								(asw->tbar, bar_state, title_cm);
+						set_astbar_huesat
+								(asw->tbar, bar_state, title_hue, title_sat);
+					}
+				}
+				if (prev_asw && prev_asw != asw)
+					on_window_pressure_changed (Scr.Windows->hilited, C_NO_CONTEXT);
+			} else {   /* RELEASE (UNPRESS) - OR - PRESSED ON ANOTHER FRAME ELEMENT: */
+				if (pressed_context)
+					pressed_wason_asdecor = False;
+				else if (pressed_wason_asdecor && asw != prev_asw) {
+					/* JWT:WINDOW OTHER THAN THIS ONE HAS FOCUS, SO UNFOCUS IT NOW: */
+					unset_focused_window();
+					hide_hilite ();
+				}
+				back_type = ASWIN_GET_FLAGS (asw, AS_Sticky) ? BACK_STICKY : BACK_UNFOCUSED;
+				bar_state = BAR_STATE_UNFOCUSED;
+				frame_bevel = &(frame_data->part_ubevel[0]);
+				title_bevel = frame_data->title_ubevel;
+				title_cm = frame_data->title_ucm;
+				if (get_flags (frame_data->set_title_attr, MYFRAME_TitleUHueSet))
+					title_hue = frame_data->title_uhue;
+				if (get_flags (frame_data->set_title_attr, MYFRAME_TitleUSatSet))
+					title_sat = frame_data->title_usat;
 				titlebar_mystyle = asw->hints->mystyle_names[back_type];
 				if (frame_data->title_style_names[back_type])
 					titlebar_mystyle = frame_data->title_style_names[back_type];
@@ -1459,8 +1565,32 @@ void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 					titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
 				if (titlebar_mystyle == NULL)
 					titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
-			} else {   /* RELEASE (UNPRESS) - OR PRESSED ON ANOTHER FRAME ELEMENT: */
+				if (titlebar_mystyle && asw->tbar) {
+					set_astbar_style
+							(asw->tbar, bar_state, titlebar_mystyle);
+					set_astbar_hilite (asw->tbar, bar_state, title_bevel);
+					set_astbar_composition_method
+							(asw->tbar, bar_state, title_cm);
+					set_astbar_huesat
+							(asw->tbar, bar_state, title_hue, title_sat);
+				}
+				set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
+				set_astbar_pressed (asw->tbar, asw->frame_sides[od->tbar_side],
+						pressed_context & C_TITLE);
+				update_frames_and_sides (asw, od, pressed_context);
+
+				/* JWT:NOW MANUALLY FOCUS WINDOW, IF NOT ALREADY (PURGED ON MOUSEDOWN BY PREV. Xsync): */
+				if (pressed_wason_asdecor && asw != prev_asw) {
+					if (asw->internal && prev_asw && !strcmp (ASWIN_CLASS(asw), "ASMenu")
+							&& is_window_obscured (asw, prev_asw))
+						hilite_aswindow (prev_asw);  /* JWT:WE'RE AN ASMENU & THEY'RE WEIRD! */
+					else if (focus_aswindow (asw, FOCUS_ASW_CAN_AUTORAISE))
+						hilite_aswindow (asw);
+				}
+
+				char *titlebar_mystyle2;
 				back_type = BACK_FOCUSED;
+				bar_state = BAR_STATE_FOCUSED;
 				frame_bevel = &(frame_data->part_fbevel[0]);
 				title_bevel = frame_data->title_fbevel;
 				title_cm = frame_data->title_fcm;
@@ -1468,44 +1598,34 @@ void on_window_pressure_changed (ASWindow * asw, int pressed_context)
 					title_hue = frame_data->title_fhue;
 				if (get_flags (frame_data->set_title_attr, MYFRAME_TitleFSatSet))
 					title_sat = frame_data->title_fsat;
-				titlebar_mystyle = asw->hints->mystyle_names[back_type];
+				titlebar_mystyle2 = asw->hints->mystyle_names[back_type];
 				if (frame_data->title_style_names[back_type])
-					titlebar_mystyle = frame_data->title_style_names[back_type];
-				if (titlebar_mystyle == NULL)
-					titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
-				if (titlebar_mystyle == NULL)
-					titlebar_mystyle = Scr.Look.MSWindow[back_type]->name;
+					titlebar_mystyle2 = frame_data->title_style_names[back_type];
+				if (titlebar_mystyle2 == NULL)
+					titlebar_mystyle2 = Scr.Look.MSWindow[back_type]->name;
+				if (titlebar_mystyle2 == NULL)
+					titlebar_mystyle2 = Scr.Look.MSWindow[back_type]->name;
+				if (titlebar_mystyle2 && asw->tbar) {
+					set_astbar_style
+							(asw->tbar, bar_state, titlebar_mystyle2);
+					set_astbar_hilite (asw->tbar, bar_state, title_bevel);
+					set_astbar_composition_method
+							(asw->tbar, bar_state, title_cm);
+					set_astbar_huesat
+							(asw->tbar, bar_state, title_hue, title_sat);
+				}
+				set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
+				set_astbar_pressed (asw->tbar, asw->frame_sides[od->tbar_side],
+						pressed_context & C_TITLE);
+				return;
 			}
-			if (titlebar_mystyle && asw->tbar) {
-				set_astbar_style
-						(asw->tbar, BAR_STATE_FOCUSED, titlebar_mystyle);
-				set_astbar_hilite (asw->tbar, BAR_STATE_FOCUSED, title_bevel);
-				set_astbar_composition_method
-						(asw->tbar, BAR_STATE_FOCUSED, title_cm);
-				set_astbar_huesat
-						(asw->tbar, BAR_STATE_FOCUSED, title_hue, title_sat);
-			}
-			set_astbar_btn_pressed (asw->tbar, pressed_context & C_TITLE);	/* must go before next call to properly redraw :  */
+			set_astbar_btn_pressed (asw->tbar, pressed_context); /* must go before next call to properly redraw :  */
 		}
 
-		register int i = FRAME_PARTS;
 		/* Titlebar */
 		set_astbar_pressed (asw->tbar, asw->frame_sides[od->tbar_side],
 				pressed_context & C_TITLE);
-
-		/* frame decor : */
-		for (i = FRAME_PARTS; --i >= 0;)
-			set_astbar_pressed (asw->frame_bars[i],
-					asw->frame_sides[od->tbar2canvas_xref[i]],
-					pressed_context & (C_FrameN << i));
-		/* now posting all the changes on display : */
-		for (i = FRAME_SIDES; --i >= 0;)
-			if (is_canvas_dirty (asw->frame_sides[i])) {
-				update_canvas_display (asw->frame_sides[i]);
-			}
-		if (asw->internal && asw->internal->on_pressure_changed)
-			asw->internal->on_pressure_changed (asw->internal,
-					pressed_context & C_CLIENT);
+		update_frames_and_sides (asw, od, pressed_context);
 	} else {											/* Iconic !!! */
 
 		set_astbar_pressed (asw->icon_button, asw->icon_canvas,

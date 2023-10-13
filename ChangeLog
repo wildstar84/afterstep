@@ -1,5 +1,19 @@
 CHANGELOG
 ----------------------
+[2023-10-13: Jim Turner]
+
+* Redo latest titlebar-push feature to also make work when pressing on 
+unfocused windows, fix issue with frame elements and/or bevels sometimes 
+remaining pressed after moving focus to another window.  Also fixed regression 
+that caused AfterStep menus and apps with menubars to sometimes fail to pop up 
+when clicking on a menubar button on an unfocused window.  Pbm. was that we 
+must suppress the automatic focus-in event on mousepress and then focus in 
+manually when the mouse is released on the titlebar or other window frame 
+elements in order to properly visualize the "press & release" animation, but 
+must NOT do this (must allow the auto focus-in event on mousepress) when 
+pressing on the internal parts of the app. window such as a menubar button, or 
+AS menu!
+
 [2023-10-05: Jim Turner]
 
 * Add new option to toggle the focused window's titlebar's "style" to the 

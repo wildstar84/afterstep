@@ -26,7 +26,6 @@
 #include "../../configure.h"
 
 #include "asinternals.h"
-void HandleFocusOut (struct ASEvent *event);
 
 #include <limits.h>
 #include <sys/types.h>
@@ -688,9 +687,6 @@ void DispatchEvent (ASEvent * event, Bool deffered)
 	case FocusIn:
 		HandleFocusIn (event);
 		break;
-	case FocusOut:
-		HandleFocusOut (event);
-		break;
 	case Expose:
 		HandleExpose (event);
 		break;
@@ -800,21 +796,6 @@ void HandleFocusIn (ASEvent * event)
 
 	/* note that hilite_aswindow changes value of Scr.Hilite!!! */
 	hilite_aswindow (event->client);
-}
-
-/***********************************************************************
- *  JWT:ADDED Procedure:
- *  HandleFocusOut - client received focus
- ************************************************************************/
-void HandleFocusOut (ASEvent * event)
-{
-	/* JWT:MUST DO THIS HERE SO THAT PRESS-BEVELS ARE CONSISTANTLY UNPRESSED
-	   WHEN CLICKING ON TITLEBAR OF ANOTHER WINDOW TO SWITCH FOCUS
-	   (PREV. WINDOW TITLEBAR SOMETIMES STILL APPEAR "PRESSED" AFTER
-	   LOSING FOCUS)!:
-	*/
-	if (Scr.Windows->pressed != event->client)
-		release_pressure ();
 }
 
 /***********************************************************************
