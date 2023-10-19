@@ -140,8 +140,11 @@ void SelectDecor (ASWindow * t)
 	if (!get_flags (hints->function_mask, AS_FuncResize)
 			|| !get_flags (Scr.Look.flags, DecorateFrames)) {
 		/* a wide border, with corner tiles */
+/* JWT:NEXT 2 REMOVED 20231017 TO ALLOW WINDOWS LIKE WinList TO HAVE A "Frame framename"
+   DATABASE ENTRY, IE. TO ROTATE BEVELS FOR VERTICAL TITLEBARS AND BEVEL "PROPERLY", ETC.:
 		if (get_flags (tflags, AS_Frame))
 			clear_flags (t->hints->flags, AS_Frame);
+*/
 	}
 }
 
