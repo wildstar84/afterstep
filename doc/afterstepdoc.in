@@ -9,4 +9,4 @@
 # First try standard path, then local, then other possible paths
 #
 
-exec sensible-browser "file://@datarootdir@/doc/afterstep/html/index.html"
+exec sensible-browser "file://@datarootdir@/afterstep/doc/html/index.html"
