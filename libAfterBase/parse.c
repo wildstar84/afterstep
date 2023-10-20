@@ -524,7 +524,8 @@ const char *parse_argb_color( const char *color, CARD32 *pargb )
 						free( ptr );
 				}
 			}
-			if( !success && strlen(color) < 30 )
+/* JWT:CHGD TO NEXT 20231019 TO NOT COMPLAIN A/B THE TRANSPARENT FILE "empty.*":			if( !success && strlen(color) < 30 ) */
+			if( !success && strlen(color) < 30 && !strstr(color,"empty"))
 				show_warning( "unable to parse color \"%s\"", color );
 			return success?&(color[i]):color;
 		}
