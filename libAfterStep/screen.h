@@ -86,7 +86,7 @@ typedef struct ScreenInfo
 
 	Bool localhost ;
 	char *rdisplay_string, *display_string;
-	
+
 	struct ASWMProps    *wmprops;              /* window management properties */
 
 	struct ASVisual *asv ;  /* ASVisual for libAfterImage */
@@ -141,9 +141,9 @@ typedef struct ScreenInfo
 
 	Cursor  standard_cursors[MAX_CURSORS];
 
-	GC DrawGC;          /* GC to draw lines for move and resize */
-	GC RootGC;      /* GC to draw on the root window - 
-						   separate as it may have different color depth */
+	GC DrawGC;   /* GC to draw lines for move and resize */
+	GC RootGC;   /* GC to draw on the root window -
+					separate as it may have different color depth */
 
 	int xinerama_screens_num ;
 	XRectangle *xinerama_screens;
@@ -189,6 +189,7 @@ void get_Xinerama_rectangles (ScreenInfo * scr);
 #endif
 Bool set_synchronous_mode (Bool enable);
 
+void setupScreenSize (ScreenInfo *scr);
 int ConnectXDisplay (Display *display, ScreenInfo * scr, Bool as_manager);
 /* this is a shortcut to above : */
 int ConnectX (ScreenInfo * scr, unsigned long event_mask);

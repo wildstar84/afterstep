@@ -36,26 +36,18 @@
 
 TermDef MyBackgroundTerms[] = {
 	{TF_NO_MYNAME_PREPENDING | TF_SYNTAX_START, "MyBackground", 12,
-	 TT_QUOTED_TEXT, BGR_MYBACKGROUND, NULL}
-	,
+			TT_QUOTED_TEXT, BGR_MYBACKGROUND, NULL},
 	{TF_NO_MYNAME_PREPENDING | TF_DONT_SPLIT | TF_DONT_REMOVE_COMMENTS |
-	 TF_INDEXED, "Use", 3, TT_OPTIONAL_PATHNAME,
-	 BGR_USE, NULL}
-	,
-	{TF_NO_MYNAME_PREPENDING, "Cut", 3, TT_GEOMETRY, BGR_CUT, NULL}
-	,
+			TF_INDEXED, "Use", 3, TT_OPTIONAL_PATHNAME, BGR_USE, NULL},
+	{TF_NO_MYNAME_PREPENDING, "Cut", 3, TT_GEOMETRY, BGR_CUT, NULL},
 	{TF_NO_MYNAME_PREPENDING | TF_DONT_REMOVE_COMMENTS, "Tint", 4, TT_COLOR,
-	 BGR_TINT, NULL}
-	,
-	{TF_NO_MYNAME_PREPENDING, "Scale", 5, TT_GEOMETRY, BGR_SCALE, NULL}
-	,
-	{TF_NO_MYNAME_PREPENDING, "Align", 5, TT_INTEGER, BGR_ALIGN, NULL}
-	,
-	{TF_NO_MYNAME_PREPENDING | TF_INDEXED, "Pad", 3, TT_COLOR, BGR_PAD, NULL}
-	,
+			BGR_TINT, NULL},
+	{TF_NO_MYNAME_PREPENDING, "Scale", 5, TT_GEOMETRY, BGR_SCALE, NULL},
+	{TF_NO_MYNAME_PREPENDING, "Align", 5, TT_INTEGER, BGR_ALIGN, NULL},
+	{TF_NO_MYNAME_PREPENDING, "Mirror", 6, TT_INTEGER, BGR_MIRROR, NULL},
+	{TF_NO_MYNAME_PREPENDING | TF_INDEXED, "Pad", 3, TT_COLOR, BGR_PAD, NULL},
 	{TF_NO_MYNAME_PREPENDING | TF_SYNTAX_TERMINATOR, "~MyBackground", 13,
-	 TT_FLAG, BGR_MYBACKGROUND_END, NULL}
-	,
+			TT_FLAG, BGR_MYBACKGROUND_END, NULL},
 	{0, NULL, 0, 0, 0}
 };
 
@@ -253,6 +245,10 @@ MyBackgroundConfig *ParseMyBackgroundOptions (FreeStorageElem * Storage,
 		case BGR_SCALE:
 			config->scale = item.data.geometry;
 			config->flags |= BGFLAG_SCALE;
+			break;
+		case BGR_MIRROR:
+			config->mirror = item.data.integer;
+			config->flags |= BGFLAG_MIRROR;
 			break;
 		case BGR_ALIGN:
 			config->flags &=
@@ -487,6 +483,10 @@ void myback_parse (char *tline, FILE * fd, char **myname, int *mylook)
 		else
 			myback->align_flags = ALIGN_LEFT;
 	}
+	myback->mirror = 0;
+	if (get_flags (back_config->flags, BGFLAG_MIRROR))
+		myback->mirror = back_config->mirror;
+
 	if (get_flags (back_config->flags, BGFLAG_PAD_VERT)) {
 		if (get_flags (back_config->flags, BGFLAG_ALIGN_BOTTOM))
 			myback->align_flags |= ALIGN_BOTTOM;

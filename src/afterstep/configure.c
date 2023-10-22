@@ -54,8 +54,6 @@
 
 #include "../../libAfterConf/afterconf.h"
 
-#include <time.h>
-
 
 typedef struct AfterStepConfig {
 	ASModuleConfig asmodule_config;
@@ -1983,30 +1981,18 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
 																 MenuMiniPixmaps) ?
 											"Reloading menu pixmaps :" :
 											"Unloading menu pixmaps :");
-		time_t startTime = time(NULL);
-		int all_count = 0;
-		if( start_hash_iteration( Scr.Feel.Popups, &i ) ) {
-			do { ++all_count;  } while ( next_hash_item( &i ) );
-		}
-		const int procentage_count = all_count / 25 + 1; // to show about 25 dots of progressbar
-		                                                 // +1 to make sure it's grater than 0
-
 		if (start_hash_iteration (Scr.Feel.Popups, &i))
 			do {
 				MenuData *md = curr_hash_data (&i);
 				if (!get_flags (Scr.Look.flags, MenuMiniPixmaps))
-				{
-					++count;
 					free_menu_pmaps (md);
-				}
 				else {
 					char *name = md->name;
+					Bool newline = (count % 10 == 0);
 					if (isdigit (name[0]))
 						if (md->first != NULL && md->first->fdata->func == F_TITLE)
 							name = md->first->item;
-					if (count % procentage_count == 0) {
-						display_progress( False, ".");
-					}
+					display_progress (newline, newline ? "    %s" : "%s", name);
 					++count;
 
 					reload_menu_pmaps (md, get_flags (what, PARSE_BASE_CONFIG));
@@ -2014,9 +2000,6 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
 
 			} while (next_hash_item (&i));
 
-	    time_t endTime = time(NULL);
-	    display_progress( False, "Done.");
-	    fprintf(stderr, "(Re)loaded %d menu items in %d seconds\n", count, (int)difftime(endTime,startTime));
 		display_progress (True, "Advertising titlebar properties ...");
 		advertise_tbar_props ();
 		display_progress (False, "Done.");
