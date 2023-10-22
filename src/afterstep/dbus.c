@@ -43,6 +43,8 @@
 #  define AFTERSTEP_APP_ID			            "afterstep-test"
 # endif
 
+#undef ASDBUS_DISPATCH
+
 #define AFTERSTEP_DBUS_SERVICE_NAME	      "org.afterstep." AFTERSTEP_APP_ID
 #define AFTERSTEP_DBUS_INTERFACE			    "org.afterstep." AFTERSTEP_APP_ID
 #define AFTERSTEP_DBUS_ROOT_PATH			    "/org/afterstep/" AFTERSTEP_APP_ID
@@ -107,13 +109,14 @@ static ASDBusOjectDescr dbusUPower = {"Power Management Daemon", True, UPOWER_NA
 typedef struct ASDBusContext {
 	DBusConnection *system_conn;
 	DBusConnection *session_conn;
-	int watch_fd;
+	ASVector *watchFds;  // vector of ASDBusFds
 	char *gnomeSessionPath;
 	Bool sessionManagerCanShutdown;
 	int kdeSessionVersion;
+	ASBiDirList *dispatches;
 } ASDBusContext;
 
-static ASDBusContext ASDBus = { NULL, NULL, -1, NULL, False, 0 };
+static ASDBusContext ASDBus = { NULL, NULL, NULL, NULL, False, 0, NULL };
 
 static DBusHandlerResult asdbus_handle_message (DBusConnection *,
 																								DBusMessage *, void *);
@@ -203,24 +206,187 @@ _asdbus_get_system_connection()
 }
 
 /******************************************************************************/
+/* Watch functions */
+/******************************************************************************/
+static dbus_bool_t add_watch(DBusWatch *w, void *data)
+{
+	if (!dbus_watch_get_enabled(w))
+		return TRUE;
+
+	ASDBusFd *fd = safecalloc (1, sizeof(ASDBusFd));
+	fd->fd =  dbus_watch_get_unix_fd(w);
+	unsigned int flags = dbus_watch_get_flags(w);
+	if (get_flags(flags, DBUS_WATCH_READABLE))
+		fd->readable = True;
+    /*short cond = EV_PERSIST;
+    if (flags & DBUS_WATCH_READABLE)
+        cond |= EV_READ;
+    if (flags & DBUS_WATCH_WRITABLE)
+        cond |= EV_WRITE; */
+
+      // TODO add to the list of FDs
+	dbus_watch_set_data(w, fd, NULL);
+	if (ASDBus.watchFds == NULL)
+		ASDBus.watchFds = create_asvector (sizeof(ASDBusFd*));
+
+	append_vector(ASDBus.watchFds, &fd, 1);
+
+	show_debug(__FILE__,__FUNCTION__,__LINE__,"added dbus watch fd=%d watch=%p readable =%d\n", fd->fd, w, fd->readable);
+	return TRUE;
+}
+
+static void remove_watch(DBusWatch *w, void *data)
+{
+    ASDBusFd* fd = dbus_watch_get_data(w);
+
+    vector_remove_elem (ASDBus.watchFds, &fd);
+    dbus_watch_set_data(w, NULL, NULL);
+    show_debug(__FILE__,__FUNCTION__,__LINE__,"removed dbus watch watch=%p\n", w);
+}
+
+static void toggle_watch(DBusWatch *w, void *data)
+{
+    show_debug(__FILE__,__FUNCTION__,__LINE__,"toggling dbus watch watch=%p\n", w);
+    if (dbus_watch_get_enabled(w))
+        add_watch(w, data);
+    else
+        remove_watch(w, data);
+}
+#ifdef ASDBUS_DISPATCH
+typedef struct ASDBusDispatch {
+	DBusConnection *connection;
+	void *data;
+}ASDBusDispatch;
+
+static ASDBusDispatch *asdbus_create_dispatch(DBusConnection *connection, void *data){
+    ASDBusDispatch *d = safecalloc (1, sizeof(ASDBusDispatch));
+    d->data = data;
+    d->connection = connection;
+    return d;
+}
+
+static void queue_dispatch(DBusConnection *connection, DBusDispatchStatus new_status, void *data){
+	if (new_status == DBUS_DISPATCH_DATA_REMAINS){
+	        show_debug(__FILE__,__FUNCTION__,__LINE__,"ADDED dbus dispatch=%p\n", data);
+		append_bidirelem (ASDBus.dispatches, asdbus_create_dispatch(connection, data));
+	}
+}
+#endif
+static void  asdbus_handle_timer (void *vdata) {
+	show_debug(__FILE__,__FUNCTION__,__LINE__,"dbus_timeout_handle data=%p\n", vdata);
+	dbus_timeout_handle (vdata);
+}
+
+static void asdbus_set_dbus_timer (struct timeval *expires, DBusTimeout *timeout) {
+	int interval = dbus_timeout_get_interval(timeout);
+	gettimeofday (expires, NULL);
+	tv_add_ms(expires, interval);
+	show_debug(__FILE__,__FUNCTION__,__LINE__,"time = %d, adding dbus timeout data=%p, interval = %d\n", time(NULL), timeout, interval);
+	timer_new (interval, asdbus_handle_timer, timeout);
+}
+
+static dbus_bool_t add_timeout(DBusTimeout *timeout, void *data){
+	/* add expiration data to timeout */
+	struct timeval *expires = dbus_malloc(sizeof(struct timeval));
+	if (!expires)
+		return FALSE;
+	dbus_timeout_set_data(timeout, expires, dbus_free);
+
+	asdbus_set_dbus_timer (expires, timeout);
+	return TRUE;
+}
+
+static void toggle_timeout(DBusTimeout *timeout, void *data){
+	/* reset expiration data */
+	struct timeval *expires = dbus_timeout_get_data(timeout);
+	timer_remove_by_data (timeout);
+
+	asdbus_set_dbus_timer (expires, timeout);
+}
+
+static void remove_timeout(DBusTimeout *timeout, void *data){
+	show_debug(__FILE__,__FUNCTION__,__LINE__,"removing dbus timeout =%p\n", timeout);
+	timer_remove_by_data (timeout);
+}
+#ifdef ASDBUS_DISPATCH
+
+void asdbus_dispatch_destroy (void *data) {
+    free (data);
+}
+#endif
+static _asdbus_add_match (DBusConnection *conn, const char* iface, const char* member) {
+	char match[256];
+	sprintf(match,	member?"type='signal',interface='%s',member='%s'":"type='signal',interface='%s'", iface, member);
+	DBusError error;
+	dbus_error_init(&error);
+	dbus_bus_add_match(conn, match, &error);
+	show_debug(__FILE__,__FUNCTION__,__LINE__, "added match :[%s]", match);
+	if (dbus_error_is_set(&error)) {
+		show_error("dbus_bus_add_match() %s failed: %s\n",   member, error.message);
+		dbus_error_free(&error);
+	}
+}
+
+/******************************************************************************/
 /* External interfaces : */
 /******************************************************************************/
 int asdbus_init ()
 {																/* return connection unix fd */
 	char *tmp;
-	if (!ASDBus.session_conn)
+#ifdef ASDBUS_DISPATCH
+	if (!ASDBus.dispatches)
+		ASDBus.dispatches = create_asbidirlist(asdbus_dispatch_destroy);
+#endif
+	if (!ASDBus.session_conn) {
 		ASDBus.session_conn = _asdbus_get_session_connection();
+		if (!dbus_connection_set_watch_functions(ASDBus.session_conn, add_watch, remove_watch,  toggle_watch, ASDBus.session_conn, NULL))
+			show_error("dbus_connection_set_watch_functions() failed");
 
-	if (!ASDBus.system_conn)
+		_asdbus_add_match (ASDBus.session_conn,  SESSIONMANAGER_INTERFACE, NULL);
+		//_asdbus_add_match (ASDBus.session_conn,  IFACE_SESSION_PRIVATE, "QueryEndSession");
+		//_asdbus_add_match (ASDBus.session_conn,  IFACE_SESSION_PRIVATE, "EndSession");
+		//_asdbus_add_match (ASDBus.session_conn,  IFACE_SESSION_PRIVATE, "Stop");
+		dbus_connection_set_timeout_functions(ASDBus.session_conn, add_timeout, remove_timeout, toggle_timeout, NULL, NULL);
+#ifdef ASDBUS_DISPATCH
+		dbus_connection_set_dispatch_status_function(ASDBus.session_conn, queue_dispatch, NULL, NULL);
+		queue_dispatch(ASDBus.session_conn, dbus_connection_get_dispatch_status(ASDBus.session_conn), NULL);
+#endif
+	}
+
+	if (!ASDBus.system_conn){
 		ASDBus.system_conn = _asdbus_get_system_connection();
+		/*if (!dbus_connection_set_watch_functions(ASDBus.system_conn, add_watch, remove_watch,  toggle_watch, ASDBus.system_conn, NULL)) {
+			show_error("dbus_connection_set_watch_functions() failed");
+		}*/
+	}
 
-	if (ASDBus.session_conn && ASDBus.watch_fd < 0)
-		dbus_connection_get_unix_fd (ASDBus.session_conn, &(ASDBus.watch_fd));
+	/*if (ASDBus.session_conn && ASDBus.watchFds == NULL){
+		//dbus_connection_get_unix_fd (ASDBus.session_conn, &(ASDBus.watch_fd));
+		//dbus_watch_get_unix_fd (ASDBus.session_conn, &(ASDBus.watch_fd));
+	}*/
 
 	if ((tmp = getenv ("KDE_SESSION_VERSION")) != NULL)
 		ASDBus.kdeSessionVersion = atoi(tmp);
 
-	return ASDBus.watch_fd;
+	return (ASDBus.session_conn != NULL) ? 1 : 0;
+}
+
+ASVector* asdbus_getFds() {
+	return ASDBus.watchFds;
+}
+
+void asdbus_handleDispatches (){
+#ifdef ASDBUS_DISPATCH
+	void *data;
+	while ((data = extract_first_bidirelem (ASDBus.dispatches)) != NULL){
+		ASDBusDispatch *d = (ASDBusDispatch*)data;
+		while (dbus_connection_get_dispatch_status(d->data) == DBUS_DISPATCH_DATA_REMAINS){
+			dbus_connection_dispatch(d->data);
+			show_debug(__FILE__,__FUNCTION__,__LINE__,"dispatching dbus  data=%p\n", d->data);
+		}
+		free (d);
+	}
+#endif
 }
 
 void asdbus_shutdown ()
@@ -240,13 +406,13 @@ Bool get_gnome_autosave ()
 {
 	Bool autosave = False;
 #ifdef HAVE_GIOLIB
-#ifndef GLIB_VERSION_2_36
 	static Bool g_types_inited = False;
 	if (!g_types_inited) {
-		g_type_init();
+#ifndef GLIB_VERSION_2_36
+		g_type_init ();
+#endif
 		g_types_inited = True;
 	}
-#endif
 	if (ASDBus.gnomeSessionPath) {
 #if defined(HAVE_GSETTINGS)
 		GSettings *gsm_settings = g_settings_new (GSM_MANAGER_SCHEMA);
@@ -264,33 +430,31 @@ Bool get_gnome_autosave ()
 /******************************************************************************/
 void asdbus_EndSessionOk ();
 
-void asdbus_process_messages ()
+void asdbus_process_messages (ASDBusFd* fd)
 {
-/*	show_progress ("checking Dbus messages"); */
-#if 1
+	//show_progress ("checking dbus messages for fd = %d", fd->fd);
+#ifndef ASDBUS_DISPATCH
 	while (ASDBus.session_conn) {
 		DBusMessage *msg;
 		const char *interface, *member;
 		/* non blocking read of the next available message */
-		dbus_connection_read_write (ASDBus.session_conn, 300);
+		dbus_connection_read_write (ASDBus.session_conn, 0);
 		msg = dbus_connection_pop_message (ASDBus.session_conn);
 
 		if (NULL == msg) {
 			/* show_progress ("no more Dbus messages..."); */
-			show_progress
-					("time(%ld):Dbus message not received during the timeout - sleeping...",
-					 time (NULL));
+			//show_progress("time(%ld):dbus message not received during the timeout - sleeping...", time (NULL));
 			return;
 		}
 		interface = dbus_message_get_interface (msg);
 		member = dbus_message_get_member (msg);
-
+		show_debug(__FILE__,__FUNCTION__, __LINE__, "dbus msg iface = \"%s\", member = \"%s\"", interface?interface:"(nil)", member?member:"(nil)");
 		if (interface == NULL || member == NULL) {
-			show_progress ("time(%ld):Dbus message cannot be parsed...",
+			show_progress ("time(%ld):dbus message cannot be parsed...",
 										 time (NULL));
 		} else {
 			show_progress
-					("time(%ld):Dbus message received from \"%s\", member \"%s\"",
+					("time(%ld):dbus message received from \"%s\", member \"%s\"",
 					 time (NULL), interface, member);
 			if (strcmp (interface, IFACE_SESSION_PRIVATE) == 0) {
 				if (strcmp (member, "QueryEndSession") == 0) {	/* must replay yes  within 10 seconds */
@@ -336,6 +500,7 @@ void asdbus_process_messages ()
 /******************************************************************************/
 /******************************************************************************/
 #else
+/* "NO-DBUS" VERSIONS OF NEEDED FUNCTIONS!: */
 
 int asdbus_init ()
 {
@@ -344,22 +509,21 @@ int asdbus_init ()
 
 void asdbus_shutdown ()
 {
+	show_warning ("e:Shutdown feature requires AfterStep compiled with dbus enabled!");
+	return;
 }
-
-void asdbus_process_messages ()
-{
-};
 
 Bool get_gnome_autosave ()
 {
-	Bool autosave = False;
-	return autosave;
+	show_warning ("e:Gnome Autosave feature requires AfterStep compiled with dbus enabled!");
+	return False;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 #endif
+
 /*****************************************************************************/
 /* Gnome Session Manager's dbus Protocol :
 
@@ -1044,7 +1208,7 @@ int main (int argc, char **argv)
 	InitMyApp ("test_asdbus", argc, argv, NULL, NULL, 0);
 
 	ASDBus_fd = asdbus_init ();
-	if (ASDBus_fd < 0) {
+	if (ASDBus_fd <= 0) {
 		show_error ("Failed to accure Session DBus connection.");
 		return 0;
 	}

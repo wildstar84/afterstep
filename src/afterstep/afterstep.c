@@ -45,7 +45,7 @@ ASFlagType AfterStepState = 0;	/* default status */
 ASFlagType AfterStepStartupFlags = 0;
 
 /* DBUS stuff is separated into dbus.c */
-int ASDBus_fd = -1;
+int ASDBusConnected = 0;
 char *GnomeSessionClientID = NULL;
 
 /* Config : */
@@ -194,7 +194,7 @@ int main (int argc, char **argv, char **envp)
 	}
 
 
-	ASDBus_fd = asdbus_init ();
+	ASDBusConnected = asdbus_init ();
 
 	XSetWindowBackground (dpy, Scr.Root, Scr.asv->black_pixel);
 	Scr.Look.desktop_animation_tint = get_random_tint_color ();
@@ -208,7 +208,7 @@ int main (int argc, char **argv, char **envp)
 		display_progress (True, "AfterStep v.%s is starting up ...", VERSION);
 	}
 
-	if (ASDBus_fd >= 0) {
+	if (ASDBusConnected > 0) {
 		show_progress ("Successfully accured Session DBus connection.");
 		GnomeSessionClientID = asdbus_RegisterSMClient (SMClientID_string);
 		if (GnomeSessionClientID != NULL) {
@@ -217,7 +217,6 @@ int main (int argc, char **argv, char **envp)
 					 GnomeSessionClientID);
 		}
 	}
-
 
 	SHOW_CHECKPOINT;
 	InitSession ();
@@ -922,7 +921,7 @@ void Done (Bool restart, char *command)
 	/* Really make sure that the connection is closed and cleared! */
 	XSync (dpy, 0);
 
-	if (ASDBus_fd >= 0) {
+	if (ASDBusConnected > 0) {
 		if (GnomeSessionClientID != NULL)
 			asdbus_UnregisterSMClient (GnomeSessionClientID);
 		asdbus_shutdown ();

@@ -393,7 +393,7 @@ extern int           fd_width, x_fd;
 
 extern struct ASWindow *ColormapWin;
 
-extern int 			 ASDBus_fd;
+extern int           ASDBusConnected;
 
 extern struct ASVector *Modules;               /* dynamically resizable array of module_t data structures */
 #define MODULES_LIST    VECTOR_HEAD(module_t,*Modules)
@@ -570,12 +570,19 @@ void desktop_cover_cleanup();
 void display_progress( Bool new_line, const char *msg_format, ... );
 
 /*************************** dbus.c ***************************************/
+typedef struct 	ASDBusFd  {
+	int fd;
+	Bool readable;
+} ASDBusFd;
+
 int asdbus_init();
+ASVector* asdbus_getFds();
+void asdbus_handleDispatches ();
 void asdbus_shutdown();
-void asdbus_process_messages ();
+void asdbus_process_messages (ASDBusFd*);
 
 char *asdbus_RegisterSMClient(const char *sm_client_id);
-void asdbus_UnregisterSMClient (const char *sm_client_path);
+void asdbus_UnregisterSMClient(const char *sm_client_id);
 void asdbus_Notify(const char *summary, const char *body, int timeout);
 
 typedef enum {

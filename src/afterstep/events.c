@@ -74,6 +74,9 @@ _exec_while_x_pending ()
 			DispatchEvent (&event, False);
 			++handled_count;
 		}
+#ifdef HAVE_DBUS1
+		asdbus_process_messages (0);
+#endif
 		ASSync (False);
 		/* before we exec any function - we ought to process any Unmap and Destroy
 		 * events to handle all the pending window destroys : */
@@ -84,6 +87,9 @@ _exec_while_x_pending ()
 			DispatchEvent (&event, False);
 			++handled_count;
 		}
+#ifdef HAVE_DBUS1
+		asdbus_process_messages (0);
+#endif
 		ExecutePendingFunctions ();
 	}
 	return handled_count;
@@ -710,6 +716,12 @@ void DispatchEvent (ASEvent * event, Bool deffered)
 					 event->x.xconfigure.width, event->x.xconfigure.height,
 					 event->x.xconfigure.x, event->x.xconfigure.y);
 			on_window_moveresize (event->client, event->w);
+		} else if (event->w == Scr.Root) {
+					("ConfigureNotify:(RootWindow,%dx%d)",
+					 event->x.xconfigure.width, event->x.xconfigure.height);
+			setupScreenSize(&Scr);
+			//Scr.MyDisplayWidth = event->x.xconfigure.width;
+			//Scr.MyDisplayHeight = event->x.xconfigure.height;
 		}
 		break;
 	case ConfigureRequest:
@@ -1775,6 +1787,13 @@ void afterstep_wait_pipes_input (int timeout_sec)
 	struct timeval tv;
 	struct timeval *t = NULL;
 	int max_fd = 0;
+	ASVector *asdbus_fds = NULL;
+
+#ifdef HAVE_DBUS1
+	if (ASDBusConnected > 0)
+		asdbus_fds = asdbus_getFds();
+#endif
+
 	LOCAL_DEBUG_OUT ("waiting pipes%s", "");
 	FD_ZERO (&in_fdset);
 	FD_ZERO (&out_fdset);
@@ -1784,7 +1803,23 @@ void afterstep_wait_pipes_input (int timeout_sec)
 #define AS_FD_SET(fd,fdset) \
 	do{ if (fd>=0) { FD_SET((fd),(fdset)); if ((fd)>max_fd) max_fd = (fd);}}while(0)
 
-	AS_FD_SET (ASDBus_fd, &in_fdset);
+#ifdef HAVE_DBUS1
+	LOCAL_DEBUG_OUT ("asdbus_fds = %p", asdbus_fds);
+	if (asdbus_fds != NULL) {
+		register int i;
+		LOCAL_DEBUG_OUT ("asdbus_fds->used = %d", asdbus_fds->used);
+		for ( i = 0 ; i < asdbus_fds->used; ++i) {
+			ASDBusFd* fd = PVECTOR_HEAD(ASDBusFd*,asdbus_fds)[i];
+			LOCAL_DEBUG_OUT ("asdbus_fds[%d] = %p", i, fd);
+			if (fd && fd->readable){
+				AS_FD_SET (fd->fd, &in_fdset);
+				LOCAL_DEBUG_OUT ("adding asdbus_fds[%d].fd = %d", i, fd->fd);
+			}
+		}
+	}
+	LOCAL_DEBUG_OUT ("done with asdbus_fds", "");
+#endif
+
 	AS_FD_SET (Module_fd, &in_fdset);
 
 	if (Modules != NULL) {				/* adding all the modules pipes to our wait list */
@@ -1810,7 +1845,7 @@ void afterstep_wait_pipes_input (int timeout_sec)
 		tv.tv_usec = 0;
 	}
 
-	LOCAL_DEBUG_OUT ("selecting ... ");
+	show_debug (__FILE__, __FUNCTION__, __LINE__,"selecting ... max_fd = %d, timeout : sec = %d, usec = %d", max_fd, t?t->tv_sec:-1, t?t->tv_usec:-1);
 	retval = PORTABLE_SELECT (min (max_fd + 1, fd_width), &in_fdset, &out_fdset,
 			NULL, t);
 
@@ -1835,10 +1870,24 @@ void afterstep_wait_pipes_input (int timeout_sec)
 					HandleModuleInOut (i, has_input, has_output);
 			}
 
-		if (ASDBus_fd >= 0 && FD_ISSET (ASDBus_fd, &in_fdset))
-			asdbus_process_messages ();
+#ifdef HAVE_DBUS1
+		if (asdbus_fds != NULL) {
+			register int i;
+			for ( i = 0 ; i < asdbus_fds->used; ++i) {
+				ASDBusFd* fd = PVECTOR_HEAD(ASDBusFd*,asdbus_fds)[i];
+				show_debug(__FILE__,__FUNCTION__,__LINE__, "dbus fd = %d, isset = %d", fd->fd, FD_ISSET (fd->fd, &in_fdset));
+				if (fd && FD_ISSET (fd->fd, &in_fdset)){
+					asdbus_process_messages (fd);
+					break;
+				}
+			}
+		}
+#endif
 	}
 
 	/* handle timeout events */
 	timer_handle ();
+#ifdef HAVE_DBUS1
+	asdbus_handleDispatches ();
+#endif
 }
