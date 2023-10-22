@@ -134,14 +134,14 @@ dnl# now we need to play abot with CFLAGS :
 
 dnl# Add -Wall
 
-#debian# dnl# Add -fPIC for IA64 compilation
-#debian# AC_CYGWIN
-#debian# if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
-#debian#   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
-#debian#     CFLAGS="$CFLAGS -fPIC"
-#debian#   fi
-#debian#   LDFLAGS="$LDFLAGS -rdynamic"
-#debian# fi
+dnl# Add -fPIC for IA64 compilation
+AC_CYGWIN
+if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
+  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+    CFLAGS="$CFLAGS -fPIC"
+  fi
+  LDFLAGS="$LDFLAGS -rdynamic"
+fi
 
 dnl# Add -g
 STRIP_BINARIES=
@@ -159,14 +159,14 @@ if test "x$enable_gdb" = "xyes"; then
 	LDFLAGS="$LDFLAGS -w"
   fi
 else
-#debian#   STRIP_BINARIES="-s"
-#debian#   DIRTY_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -DNO_DEBUG_OUTPUT"
-#debian# for f in $DIRTY_CFLAGS; do
-#debian#         if test "x$f" != "x-g"; then
-#debian# 	   CFLAGS="$CFLAGS $f"
-#debian#	fi
-#debian#   done
+  STRIP_BINARIES="-s"
+  DIRTY_CFLAGS="$CFLAGS"
+  CFLAGS="-DNO_DEBUG_OUTPUT"
+  for f in $DIRTY_CFLAGS; do
+        if test "x$f" != "x-g"; then
+	   CFLAGS="$CFLAGS $f"
+	fi
+  done
 fi
 
 dnl# Add -pg
@@ -314,8 +314,6 @@ FROM_AFTERSTEP_CONFIGURE=yes
 export FROM_AFTERSTEP_CONFIGURE
 
 _def_lib_conf_opts=" \
-	--build=${build_alias} \
-	--host=${host_alias} \
 	--prefix=${prefix} \
 	--exec-prefix=${exec_prefix} \
 	--bindir=${bindir} \
@@ -423,7 +421,7 @@ if test "$with_readline" != no; then
 fi
 
 if test -z "$PKG_CONFIG"; then
-   		AC_PATH_TOOL(PKG_CONFIG, pkg-config,no)
+   		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
 fi
 
 have_gnome_session=
@@ -740,7 +738,7 @@ if test "x$enable_ascp" = "xyes"; then
   		fi;
 	fi;
 	if test -z "$PKG_CONFIG"; then
-    		AC_PATH_TOOL(PKG_CONFIG, pkg-config,no)
+    		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
 	fi
 	if test "x$have_gtk" = "xyes" ; then
 		ASCP_GTK=ascp_gtk

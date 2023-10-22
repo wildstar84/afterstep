@@ -41,7 +41,6 @@ LIB_SOURCES=	ashash.c aslist.c asvector.c audit.c \
 
 # end specifics
 ################################################################
-
 # generic makefile stuff :
 
 LIB_DIR_NAME	= libAfterBase
@@ -85,9 +84,8 @@ INSTALL_SCRIPT	= @INSTALL@ -m 755
 INCS_X		= @X_CFLAGS@
 INCLUDES	= $(INCS_X) $(INCS_PRIVATE)
 
-
 USER_LD_FLAGS	= @user_ldflags@
-LIBS_X		= @x_libs@ -lXext
+LIBS_X		= @x_libs@
 LIB_EXECINFO	= @lib_execinfo@
 
 
@@ -137,6 +135,7 @@ install.script:
 install.dyn:
 		@( echo "$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR)"; \
 		$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR); \
+		$(INSTALL_SCRIPT) afterimage-libs afterimage-config $(AFTER_BIN_DIR); \
 		$(RM) -f $(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED); \
 		$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR); \
 		$(LN_S) -f $(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED); \
@@ -301,7 +300,8 @@ deps:
 		echo "" >> .shared ;
 
 show_flags_cc:	$(LIB_SOURCES) $(LIB_INCS)  Makefile
-		@touch show_flags_cc
+		@touch show_flags_cc ; \
+		echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
 
 $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS)
 		$(RMF) $(LIB_STATIC)
@@ -310,10 +310,10 @@ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS)
 
 %.o : %.c Makefile | show_flags_cc 
 		@echo " $*.c"
-		$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
 
 .c.s:
-		$(CC) $(CCFLAGS) $(DEBCCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
+		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
 
 #
 # include dependency files if they exist
@@ -338,11 +338,9 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
 	$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIB_SHARED).$(LIBVERMAJOR)
 
 $(LIB_SHARED).$(LIBVER): $(LIB_OBJS) $(LIB_INCS)  Makefile
-	$(CC) -shared $(USER_LD_FLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
+	$(CC) -shared -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
 	$(USER_LD_FLAGS) $(LIB_OBJS) $(LIBS_X) $(LIB_EXECINFO)	
 
 install:	install.lib
 
 uninstall:	uninstall.lib
-
-install.data:

@@ -59,10 +59,6 @@ APPS_INCS=apps/common.h
 
 # end specifics
 ################################################################
-# Debian Addition
-DEB_EXTRA_LIBS		= -lX11   -L/usr/X11R6/lib    -lXext -lrsvg-2 -lgdk_pixbuf-2.0 -lfreetype -lgobject-2.0  -ltiff -ljpeg -lpng -lm  -L../libAfterBase -lAfterBase
-export ORIGINAL_BUILD = 1
-
 # generic makefile stuff :
 
 LIB_DIR_NAME    = libAfterImage
@@ -104,7 +100,7 @@ INSTALL_HEADER	= @INSTALL@ -m 644
 INSTALL_LIB	= @INSTALL@ -m 755
 INSTALL_SCRIPT	= @INSTALL@ -m 755
 
-INCS_EXTRA	= @XPM_CFLAGS@ @JPEG_CFLAGS@ @PNG_CFLAGS@ @GIF_CFLAGS@ @TIFF_CFLAGS@ @SVG_CFLAGS@
+INCS_EXTRA	= @XPM_CFLAGS@ @JPEG_CFLAGS@ @PNG_CFLAGS@ @GIF_CFLAGS@ @TIFF_CFLAGS@ @SVG_CFLAGS@ @TTF_INCLUDES@
 INCS_X		= @X_CFLAGS@
 INCS_PRIVATE    = 
 INCLUDES	= $(INCS_EXTRA) $(INCS_PRIVATE) $(INCS_X)
@@ -350,9 +346,11 @@ apps: 	@APPSDEPS@
 		@(if test -d apps; then cd apps; $(MAKE); fi )
 
 show_flags_cc:	$(LIB_OBJS) $(LIB_INCS) config.h
-		@touch show_flags_cc
+		@touch show_flags_cc ; \
+		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
 
 $(LIB_STATIC):	show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h  Makefile
+		@echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
 		$(RMF) $(LIB_STATIC)
 		$(AR) $(LIB_STATIC) $(LIB_OBJS)
 		$(RANLIB) $(LIB_STATIC)
@@ -378,7 +376,7 @@ test_mmx:	test_mmx.o
 
 .c.o:  Makefile
 		@echo " $*.c"
-		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c -o $@
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c -o $@
 
 .c.s:
 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
@@ -393,6 +391,7 @@ include .depend
 #endif
 
 $(LIB_SHARED_CYG):  show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h  Makefile
+	@echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
 	$(CC) -shared -o $(LIB_SHARED_CYG) \
     		-Wl,--out-implib=$(LIB_SHARED_CYG_AR) \
     		-Wl,--export-all-symbols -Wl,--enable-auto-import \
@@ -407,7 +406,7 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
 
 $(LIB_SHARED).$(LIBVER): show_flags_cc $(LIB_OBJS) $(LIB_INCS) config.h Makefile
 	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
-	 $(LIB_OBJS) $(DEB_EXTRA_LIBS)
+	 $(LIB_OBJS) $(LIBS_AFTERIMAGE)
 
 install.man:
 		@if [ -d doc/man ] ; then \
@@ -432,7 +431,7 @@ install.doc:
 			cd ../..; \
 		fi
 
-install:	install.lib install.man install.doc
+install:	install.lib install.man install.doc install.apps
 
 
 uninstall:	uninstall.lib

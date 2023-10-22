@@ -7,7 +7,7 @@ dnl#Copyright (c) 1998 Juergen Sawinski <Juergen.Sawinski@urz.uni-heidelberg.de>
 dnl#Copyright (c) 1997 1998 Guylhem AZNAR <guylhem@oeil.qc.ca>
 
 
-AC_INIT(libAfterBase,1.14,as-bugs@afterstep.org,libAfterBase.tar)
+AC_INIT(libAfterBase,1.14,[https://github.com/afterstep/afterstep/issues],libAfterBase.tar)
 
 version=$PACKAGE_VERSION
 version_major="1"
@@ -70,13 +70,12 @@ dnl# AfterSTep already checked everything for us
     AC_SUBST(LEX)
     AC_SUBST(LEXLIB)
     AC_SUBST(YACC)
-#debian# 	if test "x$GCC" = "xyes" -a "x$CYGWIN" = "xno" ; then
-#debian#       if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
-#debian# 		CFLAGS="$CFLAGS -fPIC"
-#debian# 	  fi
-#debian# 	  LDFLAGS="$LDFLAGS -rdynamic"
-#debian# 	fi
-		/bin/true
+	if test "x$GCC" = "xyes" -a "x$CYGWIN" = "xno" ; then
+      if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+		CFLAGS="$CFLAGS -fPIC"
+	  fi
+	  LDFLAGS="$LDFLAGS -rdynamic"
+	fi
 
 else
 

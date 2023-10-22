@@ -91,13 +91,13 @@ if test "x$GCC" = "xyes"; then
   fi
 fi
 
-#debian# dnl# Add -fPIC for IA64 compilation
-#debian# AC_CYGWIN
-#debian# if test "x$CYGWIN" = "x" -a "x$GCC" = "xyes" ; then
-#debian#   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
-#debian#     CFLAGS="$CFLAGS -fPIC"
-#debian#   fi
-#debian# fi
+dnl# Add -fPIC for IA64 compilation
+AC_CYGWIN
+if test "x$CYGWIN" = "x" -a "x$GCC" = "xyes" ; then
+  if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
+    CFLAGS="$CFLAGS -fPIC"
+  fi
+fi
 
 dnl# Add -g
 if test "x$enable_gdb" = "xyes"; then
@@ -116,9 +116,9 @@ if test "x$enable_warn" = "xyes"; then
   CFLAGS="$CFLAGS -Wuninitialized -Wwrite-strings -Wcast-qual -Wbad-function-cast -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Wconversion -Wcomment -Wcast-align -Winline -Wshadow -Wredundant-decls -Wid-clash-31"
 fi
 
-#debian# if test "x$GCC" = "xyes"; then
-#debian#    LDFLAGS="$LDFLAGS -rdynamic"
-#debian# fi
+if test "x$GCC" = "xyes"; then
+   LDFLAGS="$LDFLAGS -rdynamic"
+fi
 
 dnl# done with flags - lets export those for our children to use :
 export CFLAGS

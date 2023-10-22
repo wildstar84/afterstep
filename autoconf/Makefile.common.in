@@ -24,10 +24,7 @@ clean:		module.clean
 distclean:	clean
 		$(RMF) *.orig Makefile
 
-install.man:
-install.data:
-
-install.lib:	# @LIBPROG@ @LIBINSTALL@
+install.lib:	@LIBPROG@ @LIBINSTALL@
 
 install.man:
 install.data:
@@ -100,11 +97,13 @@ deps:
 .SUFFIXES:	.c .cxx .h .fl .man .o .z .s $(EXEEXT)
 
 show_flags_cc: $(OBJS)
-		@touch show_flags_cc
+		@touch show_flags_cc ; \
+		echo "Compiled with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"; \
+		echo "and Libraries :$(LIBS_ALL)"
 
 .c.o:
 		@echo " $*.c"
-		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
 
 .cxx.o:
 		$(CXX) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.cxx

@@ -45,8 +45,6 @@ LIB_SHARED_CYG_AR  = libAfterStep.dll.a
 LIBVER          = @libafterstep_version@
 LIBVERMAJOR     = @libafterstep_version_major@
 
-# Debian Additions
-DEB_EXTRA_LIBS		= $(LIBRARIES) -L../libAfterBase -lAfterBase -L../libAfterImage -lAfterImage
 LIBS_PRIVATE      = ../src/afterstep/$(LIB_AFTERIMAGE) ../src/afterstep/$(LIB_AFTERBASE)  $(LIBS_AFTERIMAGE)
 
 @MAKEFILECOMMONLIB@

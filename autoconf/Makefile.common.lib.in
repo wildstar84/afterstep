@@ -1,4 +1,4 @@
-# vim:ft=make
+#
 # Copyright (c) 1998, Guylhem AZNAR <guylhem@oeil.qc.ca>
 #
 
@@ -22,6 +22,20 @@ install.static:
 		if test -d $(LIBDIR) && test -w $(LIBDIR); then \
 		    echo "$(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR)"; \
 		    $(INSTALL_LIB) $(LIB_STATIC) $(LIBDIR); \
+		    if test `uname` = "Linux"; then \
+			if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+		    	    echo "" > /dev/null; \
+			elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+		    	    echo "" > /dev/null; \
+			else \
+		    	    echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+		    	    echo "$(LIB_STATIC), you may need to add it or set LD_LIBRARY_PATH."; \
+			fi; \
+			if test -w /etc; then \
+			    echo "$(LDCONFIG)"; \
+			    $(LDCONFIG); \
+			fi; \
+		    fi ;\
 		fi \
 		)
 
@@ -35,6 +49,18 @@ install.dyn:	uninstall.dyn
 		$(INSTALL_LIB) $(LIB_SHARED).$(LIBVER) $(LIBDIR); \
 		$(LN_S) -f $(LIB_SHARED).$(LIBVER) $(LIBDIR)/$(LIB_SHARED).$(LIBVERMAJOR); \
 		$(LN_S) -f $(LIB_SHARED).$(LIBVERMAJOR) $(LIBDIR)/$(LIB_SHARED); \
+		 if test `uname` = "Linux"; then \
+		   if test $(LIBDIR) = "/lib" || test $(LIBDIR) = "/usr/lib"; then \
+		     echo "" > /dev/null; \
+		   elif grep -q $(LIBDIR) /etc/ld.so.conf > /dev/null 2>&1; then \
+		     echo "" > /dev/null; \
+		   else \
+		     echo "Unable to find $(LIBDIR) in ld.so.conf. In order to use "; \
+		     echo "$(LIB_SHARED), you may need to add it or set LD_LIBRARY_PATH."; \
+		   fi; \
+		   echo "$(LDCONFIG)"; \
+		   $(LDCONFIG); \
+		 fi \
 		)
 
 install.cyg:	uninstall.cyg
@@ -188,7 +214,8 @@ deps:
 		echo "" >> .shared ;
 
 show_flags_cc: $(LIB_SOURCES) $(LIB_INCS) Makefile
-		@touch show_flags_cc
+		@touch show_flags_cc ; \
+		echo "Compiling with :$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES)"
 
 $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS) Makefile
 		$(RMF) $(LIB_STATIC)
@@ -197,7 +224,7 @@ $(LIB_STATIC):	$(LIB_OBJS) $(LIB_INCS) Makefile
 
 %.o : %.c Makefile |show_flags_cc 
 		@echo " $*.c"
-		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
+		@$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -c $*.c
 
 .c.s:
 		$(CC) $(CCFLAGS) $(EXTRA_DEFINES) $(INCLUDES) $(EXTRA_INCLUDES) -S $*.c
@@ -226,7 +253,7 @@ $(LIB_SHARED).$(LIBVERMAJOR): $(LIB_SHARED).$(LIBVER)
 
 $(LIB_SHARED).$(LIBVER): $(LIB_OBJS) $(LIB_INCS) Makefile
 	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(LIB_SHARED).$(LIBVERMAJOR) -o $(LIB_SHARED).$(LIBVER) \
-	 $(LIB_OBJS) $(DEB_EXTRA_LIBS)
+	 $(LIB_OBJS)
 
 install:	install.lib install.bin
 

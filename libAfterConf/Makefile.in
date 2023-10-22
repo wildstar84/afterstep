@@ -28,10 +28,6 @@ LIB_SHARED_CYG_AR  = libAfterConf.dll.a
 LIBVER          = @libafterconf_version@
 LIBVERMAJOR     = @libafterconf_version_major@
 
-# Debian Additions
-DEB_EXTRA_LIBS		=  -lX11  -g -rdynamic  -L/usr/X11R6/lib   -L../libAfterBase -lAfterBase -L../libAfterImage -lAfterImage -L../libAfterStep -lAfterStep
-
-
 CONFIG_SCRIPT=afterconf-config 
 
 
