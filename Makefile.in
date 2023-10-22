@@ -28,6 +28,7 @@ subdirs         = libAfterBase libAfterImage libAfterStep libAfterConf @LIBASGTK
                   src/WinCommand \
                   src/WinList2 \
                   src/WinTabs \
+                  src/Sound2 \
                   src/ascp  \
 									src/tools/ASRun \
                   afterstep \
