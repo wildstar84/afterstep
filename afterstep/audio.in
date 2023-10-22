@@ -12,7 +12,7 @@
 #*AudioPlayCmd                  builtin-stdout
 # see ./configure --with-soundplayer to set your player proggy
 # here only args should go. (completely ommit if no args)
-*AudioPlayCmd                   builtin-cat
+*AudioPlayCmd                   @AUDIO_PLAY_CMD@
 
 *AudioDelay                     1
 *Audio  startup                 meepmeep.au

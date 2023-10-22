@@ -322,7 +322,7 @@ CommandLineOpts as_standard_cmdl_options[STANDARD_CMDL_OPTS_NUM] = {
 				handler_show_info, NULL, SHOW_VERSION},
 /* 1*/ {"c", "config", "Display Config information and stop", NULL,
 				handler_show_info, NULL, SHOW_CONFIG},
-/* 2*/ {"h", "help", "Display uasge information and stop", NULL,
+/* 2*/ {"h", "help", "Display usage information and stop", NULL,
 				handler_show_info, NULL, SHOW_USAGE},
 /* 3*/ {NULL, "debug", "Debugging: Run in Synchronous mode", NULL,
 				handler_set_flag, &(as_app_args.flags),
@@ -639,7 +639,7 @@ InitMyApp (const char *app_class, int argc, char **argv,
 	as_app_args.verbosity_level = OUTPUT_DEFAULT_THRESHOLD;
 #endif
 
-/* Uncomment this to enable cmd line args tracing/debugging :    
+/* Uncomment this to enable cmd line args tracing/debugging :
  * set_output_threshold(20); */
 
 	ASDefaultScr = safecalloc (1, sizeof (ScreenInfo));
@@ -1381,7 +1381,7 @@ spawn_child (const char *cmd, int singleton_id, int screen,
 			int dst = 0;
 
 			for (env_s = 0; envvars[env_s] != NULL; ++env_s) {
-				/* don't want to path DESKTOP_AUTOSTART_ID to our children - 
+				/* don't want to path DESKTOP_AUTOSTART_ID to our children -
 				   its set by gnome-session for AfterStep proper specifically,
 				   otherwise children will attempt to re-use it for SessionManagement registration, failing miserably */
 				if (strlen (envvars[env_s]) < sizeof (SESSION_ID_ENVVAR)
@@ -1604,7 +1604,7 @@ Bool is_url (const char *url)
 {
 	/* JWT:ADD https:// - REQUIRED FOR MODERN URLs!: */
 	return (strncmp (url, "http://", 7) == 0 || strncmp (url, "https://", 8) == 0
-					|| strncmp (url, "ftp://", 6) == 0);
+			|| strncmp (url, "ftp://", 6) == 0);
 }
 
 char *make_log_name (const char *cachedFileName)

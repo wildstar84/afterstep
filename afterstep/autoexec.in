@@ -30,8 +30,8 @@ Function "WorkspaceModules"
 	Module  "I"     Wharf
 	Wait    "I"     Wharf
 	Module  "I"     Pager 0 @with_desktops_1@
-	Module  "I"     WinTabs --myname TermTabs --pattern "*term*" --exclude-pattern "mc*" --exclude-pattern "Ice*" --geometry +5+100 --title "term tabs"
-	Wait    "I"     WinTabs
+	Module  "I:WinTabs:TermTabs"  WinTabs --myname TermTabs --pattern "*term*" --exclude-pattern "mc*" --geometry +5+100 --title "term tabs"
+	Wait    "I:WinTabs:TermTabs"  TermTabs
 EndFunction
 
 Function "InitFunction"
