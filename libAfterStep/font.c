@@ -58,14 +58,16 @@ Bool load_font (const char *name_in, MyFont * font)
 			clean_name = mystrndup (name, i);
 		}
 	}
-	if (clean_name != NULL) {
+/* JWT:CHGD. TO NEXT 20231021 FOR EFFICIENCY:	if (clean_name != NULL) { */
+	if (clean_name != NULL && clean_name[0]) {
 		if ((font->as_font =
 				 get_asfont (ASDefaultScr->font_manager, clean_name, 0, font_size,
 										 ASF_Freetype)) != NULL)
 			show_progress ("Successfully loaded freetype font \"%s\"",
 										 clean_name);
 	}
-	if (font->as_font == NULL && name != NULL) {
+/* JWT:CHGD. TO NEXT 20231021 FOR EFFICIENCY:	if (font->as_font == NULL && name != NULL) { */
+	if (font->as_font == NULL && name != NULL && name[0]) {
 		if ((font->as_font =
 				 get_asfont (ASDefaultScr->font_manager, name, 0, font_size,
 										 ASF_GuessWho)) != NULL)

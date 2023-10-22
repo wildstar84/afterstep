@@ -1044,7 +1044,8 @@ add_astbar_btnblock (ASTBarData * tbar, unsigned char col,
 										 unsigned int count, int left_margin, int top_margin,
 										 int spacing, int order)
 {
-	if (tbar) {
+/* JWT:CHGD. TO NEXT 20231021 FOR EFFICIENCY:	if (tbar) { */
+	if (tbar && count > 0) {
 		int idx =
 				add_astbar_tile (tbar, AS_TileBtnBlock, col, row, flip, align);
 		ASTile *tile = &(tbar->tiles[idx]);
