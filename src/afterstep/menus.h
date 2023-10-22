@@ -91,7 +91,7 @@ ComplexFunction *find_complex_func( struct ASHashTable *list, char *name );
 void ExecuteFunction (struct FunctionData *, struct ASEvent *, int);
 void FocusOn (struct ASWindow *, int, Bool);
 
-MenuData* FindPopup( const char* name, int quiet );
+MenuData* FindPopup( const char* name, Bool quiet );
 
 void DeleteMenuItem( MenuDataItem* item );
 

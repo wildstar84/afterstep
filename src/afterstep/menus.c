@@ -226,7 +226,9 @@ static void set_asmenu_item_data (ASMenuItem * item, MenuDataItem * mdi)
 	/* we can only use images that are reference counted */
 	if (mdi->minipixmap[MINIPIXMAP_Icon].image)
 		icon_im = mdi->minipixmap[MINIPIXMAP_Icon].image;
-	else if (mdi->minipixmap[MINIPIXMAP_Icon].filename)  /* JWT:ADDED 20230507! */
+/* JWT:CHGD TO NEXT 20231021 FOR EFFICIENCY: 	else if (mdi->minipixmap[MINIPIXMAP_Icon].filename) */
+	else if (get_flags (Scr.Look.flags, MenuMiniPixmaps)
+			&& mdi->minipixmap[MINIPIXMAP_Icon].filename)  /* JWT:ADDED 20230507! */
 		icon_im =
 				GetASImageFromFile (mdi->minipixmap[MINIPIXMAP_Icon].filename);
 #if 0
@@ -303,7 +305,7 @@ static void set_asmenu_item_data (ASMenuItem * item, MenuDataItem * mdi)
 }
 
 static Bool
-set_asmenu_item_look (ASMenuItem * item, MyLook * look,
+set_asmenu_item_look (ASMenu * menu, ASMenuItem * item, MyLook * look,
 											unsigned int icon_space, unsigned int arrow_space)
 {
 	ASFlagType hilite = NO_HILITE, fhilite = NO_HILITE;
@@ -341,7 +343,16 @@ set_asmenu_item_look (ASMenuItem * item, MyLook * look,
 #endif
 /*        add_astbar_spacer( item->bar, 1, 0, 0, NO_ALIGN, 1, 1 ); */
 
-	if (get_flags (look->flags, MenuMiniPixmaps) && icon_space > 0) {
+/* JWT:CHGD. TO NEXT: 20231021: 	if (get_flags (look->flags, MenuMiniPixmaps) && icon_space > 0) { */
+/* (PIGGYBACK OFF WinListHideIcons TO STILL SHOW "WINLIST" WINDOW APP'S ICONS EVEN IF
+   MenuMiniPixmaps IS OTHERWISE TURNED OFF - THEY'RE ALREADY LOADED FOR WINLIST, SO
+   IT SHOULDN'T COST US ANYTHING(MEM/SPEED) - see aswindow.c:make_desk_winlist_menu(),
+   AND *I* LIKE ICONS HERE BUT DON'T WANT TO WASTE MEMORY ON SYSTEM MENU-MINIPIXMAPS):
+*/
+	if (get_flags (look->flags, MenuMiniPixmaps)
+			|| (strstr (menu->name, "Windows on ")
+				&& !get_flags (Scr.Feel.flags, WinListHideIcons))
+			&& icon_space > 0) {
 		/*set_astbar_tile_size( item->bar, MI_LEFT_SPACER_IDX, icon_space, 1 ); */
 		delete_astbar_tile (item->bar, MI_LEFT_ICON_IDX);
 		/* now readd it as minipixmap : */
@@ -698,7 +709,7 @@ void set_asmenu_look (ASMenu * menu, MyLook * look)
 	while (--i >= 0) {
 		unsigned int width, height;
 		register ASTBarData *bar;
-		set_asmenu_item_look (&(menu->items[i]), look, menu->icon_space,
+		set_asmenu_item_look (menu, &(menu->items[i]), look, menu->icon_space,
 													menu->arrow_space);
 		if ((bar = menu->items[i].bar) != NULL) {
 			width = calculate_astbar_width (bar);
@@ -762,7 +773,8 @@ void set_asmenu_look (ASMenu * menu, MyLook * look)
 
 static void set_menu_item_used (ASMenu * menu, MenuDataItem * mdi)
 {
-	MenuData *md = FindPopup (menu->name, False);
+/* JWT:CHGD. TO NEXT 20231021 TO SHUSH BOGUS ERROR MSG ON WINDOWLISTS:	MenuData *md = FindPopup (menu->name, False); */
+	MenuData *md = FindPopup (menu->name, (strstr (menu->name, "Windows on ") ? True : False));
 	if (md && md->magic == MAGIC_MENU_DATA) {
 		register MenuDataItem *i = md->first;
 		while (i != NULL) {

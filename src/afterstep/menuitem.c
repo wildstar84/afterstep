@@ -60,7 +60,7 @@
 /***************************************************************************/
 /*                      Menu functions                                     */
 /***************************************************************************/
-MenuData *FindPopup (const char *name, int quiet)
+MenuData *FindPopup (const char *name, Bool quiet)
 {
 	MenuData *md = NULL;
 
