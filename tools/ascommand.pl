@@ -174,7 +174,7 @@ my ($file, $interactive, $window_id);
 my $module_socket;
 
 sub version {
-  print "ascommand version $version\n";
+  print "ascommand.pl version $version\n";
 }
 
 sub usage {

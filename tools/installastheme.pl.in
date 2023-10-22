@@ -102,7 +102,7 @@ my %MOD_FLAGS = (
 
 ###################
 # Defines
-my $PROGRAM_NAME = "installastheme";
+my $PROGRAM_NAME = "installastheme.pl";
 my $VERSION_MAJOR = 0;
 my $VERSION_MINOR = 5;
 my $VERSION_PATCH = 3;
@@ -526,7 +526,7 @@ close BASE_FILE;
 close BASE_INPUT;
 
 if ($UPDATE_AS) {
-  exec('ascommand', 'Restart "" afterstep');
+  exec('ascommand.pl', 'Restart "" afterstep');
 }
 
 sub edit_config {
