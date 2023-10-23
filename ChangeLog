@@ -1,5 +1,27 @@
 CHANGELOG
 ----------------------
+[2023-10-22: Jim Turner]
+
+* Merge dbus changes, configuration and makefile improvements, and many code-
+formatting cleanups, minor fixes, spelling corrections made upstream by Remmy 
+(https://github.com/afterstep/afterstep/) since we originally forked off our 
+version years ago.
+
+* Enable mini-pixmap icons on popup Windowlist menus without having to enable 
+the MenuMiniPixmaps look-file option, unless the WinListHideIcons feel-file 
+option is also set.  I did this because I like app. icons on this menu without 
+having to enable MenuMiniPixmaps (for other menus) which uses a lot more 
+memory and resources.  There appears to be no significant resource "cost" in 
+this as these are already loaded for WinList (barring WinListHideIcons being 
+set!  Also reduced resource usage by NOT loading any of the (other menu mini-
+pixmaps) unless MenuMiniPixmaps flag is actually set (previously they were 
+always being queried, even if not shown).
+
+* Make the "Sound" module build an install along with the rest of AfterStep 
+and appear in the Modules menu list (previously had to be manually build and 
+installed from within the src/Sound2 subdirectory because it was omitted for 
+some reason and I hadn't figured out how to make it build with everything else.
+
 [2023-10-13: Jim Turner]
 
 * Redo latest titlebar-push feature to also make work when pressing on 
