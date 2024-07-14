@@ -1,5 +1,57 @@
 CHANGELOG
 ----------------------
+[2024-07-12: Jim Turner]
+
+* Fix "Cascade Placement" window placement option due to failure to ever 
+reset the "starting position" from which to offset a window to be cascaded.  
+An initial start position of 0 (x=y=0) was set when AS starts up, but 
+continually grew larger by 25 pixels (offset) which applied in both x and y 
+directions each time a new window was placed via the Cascade placement option.  
+When the start position inevidibly exceeded the dimensions of the screen or 
+windowbox, future windows would be positioned as far "SouthEast" as possible 
+from that point on.  The annoyance that prompted me to take action was if 
+opened 2 or more windows the same size, ie, two editor sessions, the 2nd window 
+would be placed exactly over the first completely obscuring it!
+
+The fix employed replacing the "cascade_pos" field in struct ASWindowBox in 
+libAfterStep/asfeel.h with 2 new fields "cascade_posx" and "cascade_posy" to 
+allow independent resetting of only the field necessary.  Then we reset each 
+one when the corresponding position of a window being placed would have 
+resulted in the window being placed off that edge of the screen (either right 
+for x or bottom for y) without adjustment.  We also reset both fields to the 
+position a new window is placed successfully via "Smart Placement" or 
+"Random Placement" so that subsequent cascaded windows will generally be 
+cascaded relative to that one.  I chose to reset the field to zero when a 
+cascaded window needs to be adjusted in that dimension instead of just back to 
+the window's adjusted starting point to avoid too much of a diagonal look 
+continuing until a reset would've had to be forced when the starting point 
+exceeded the screen or window-box's size in that dimension.  The effect of this 
+"resetting" is analogus to pressing the carriage-return lever on a n old 
+typewriter when typing gets to the end of a line!  These more frequent resets 
+produce a more desirably random placement appearance spreading windows 
+more evenly over the available screen real estate while still keeping a good 
+"cascading" effect, such as when opening several terminal windows in 
+succession.  This should greatly reduce another annoyance where windows can 
+sometimes be *seemingly* randomly placed with buttons on the bottom row are 
+cut off below the screen, which I hadn't realized were likely being caused by 
+this issue (due to never resetting the cascade starting point)!  I've also 
+fixed the cascade option to work properly and predictably when any of the 
+"ReverseOrder" options are set for the window-box, ie. "ReverseOrder" (both), 
+"ReverseOrderHorizontal", or "ReverseOrderVertical".  These cause windows to 
+cascade to the NorthWest, SouthWest, and NorthEast respectively.  (Normally 
+windows cascade SouthEast).  For reversed dimensions, we compare with the left 
+edge of the window-box and reset to the right edge (instead of zero), and 
+decrement the starting position.
+
+TODO:  The current cascade offset is hardcoded to 25 pixels, but should 
+probably be either configurable or calculated from the fixed titlebar 
+dimension (height, for horizontal titlebars, width if vertical ones, with a 
+default of 25 if titlebars are not used)!
+
+Cascade can not be set as the "FirstTry" option, as it always suceeds, so my 
+recommended settings are:  "FirstTry SmartPlacemt (or RandomPlacement)" 
+followed by "ThenTry Cascade" (in "Look" file) for best results.
+
 [2023-10-22: Jim Turner]
 
 * Merge dbus changes, configuration and makefile improvements, and many code-

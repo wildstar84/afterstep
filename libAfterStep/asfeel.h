@@ -166,7 +166,9 @@ typedef struct ASWindowBox
 
 	int x_spacing, y_spacing ;
 	/* this store status : */
-	unsigned int cascade_pos ;                 /* gets incremented every time window is cascaded */
+	/* JWT:CHGD. TO NEXT 20240711: unsigned int cascade_pos ; */  /* gets incremented every time window is cascaded */
+	/* JWT:INCREMENT AS BEFORE BUT RESET IF WINDOW RANDOMLY PLACED, OR ADJUSTED DURING CASCADE. */
+	unsigned int cascade_posx, cascade_posy ;  /* JWT:SAVE BOTH X AND Y COORDS NOW, FOR BETTER CASCADING! */
 
 }ASWindowBox;
 

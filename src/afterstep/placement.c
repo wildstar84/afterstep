@@ -761,6 +761,9 @@ static Bool do_smart_placement (ASWindow * asw, ASWindowBox * aswbox,
 		LOCAL_DEBUG_OUT ("success: status(%+d%+d), anchor(%+d,%+d)",
 										 asw->status->x, asw->status->y, asw->anchor.x,
 										 asw->anchor.y);
+		/* JWT:RESET STARTING POINT FOR CASCADE OPTION (FOR SUBSEQUENT WINDOWS): */
+		aswbox->cascade_posx = target_x - area->x;
+		aswbox->cascade_posy = target_y - area->y;
 	} else {
 		LOCAL_DEBUG_OUT ("failed%s", "");
 	}
@@ -847,12 +850,15 @@ static Bool do_random_placement (ASWindow * asw, ASWindowBox * aswbox,
 		LOCAL_DEBUG_OUT ("rect %dx%d%+d%+d, new_pos = %+d%+d",
 										 rects[selected].width, rects[selected].height,
 										 rects[selected].x, rects[selected].y, new_x, new_y);
-		apply_placement_result_asw (asw, XValue | YValue,
-																rects[selected].x + new_x,
-																rects[selected].y + new_y, 0, 0);
+		apply_placement_result_asw (asw, XValue | YValue, rects[selected].x + new_x,
+				rects[selected].y + new_y, 0, 0);
 		LOCAL_DEBUG_OUT ("success: status(%+d%+d), anchor(%+d,%+d)",
-										 asw->status->x, asw->status->y, asw->anchor.x,
-										 asw->anchor.y);
+				asw->status->x, asw->status->y, asw->anchor.x,
+				asw->anchor.y);
+
+		/* JWT:RESET STARTING POINT FOR CASCADE OPTION (FOR SUBSEQUENT WINDOWS): */
+		aswbox->cascade_posx = (rects[selected].x + new_x) - area->x;
+		aswbox->cascade_posy = (rects[selected].y + new_y) - area->y;
 	} else {
 		LOCAL_DEBUG_OUT ("failed%s", "");
 	}
@@ -1088,42 +1094,38 @@ static Bool do_tile_placement (ASWindow * asw, ASWindowBox * aswbox,
 }
 
 static Bool do_cascade_placement (ASWindow * asw, ASWindowBox * aswbox,
-																	ASGeometry * area)
+		ASGeometry * area)
 {
-	int newpos = aswbox->cascade_pos + 25;
-	int x = newpos, y = newpos;
+	/* JWT:ADDED SEPARATE X & Y CASCADE POSITIONS - PREVIOUSLY JUST SINGLE ONE (x=y)!: */
+	int x, y;
+	int xdir = 1;
+	int ydir = 1;
+	if (get_flags (aswbox->flags, ASA_ReverseOrderH)) 	xdir = -1;
+	if (get_flags (aswbox->flags, ASA_ReverseOrderV))  ydir = -1;
+	int newposx = aswbox->cascade_posx + (xdir * 25);  /* JWT:NOTE: newpos* ALWAYS RELATIVE COORDS!: */
+	int newposy = aswbox->cascade_posy + (ydir * 25);
+	if (newposx < 0)  newposx = area->width - 25;  /* HORIZ. WRAP ARROUND! */
+	if (newposy < 0)  newposy = area->height - 25;  /* VERT. WRAP ARROUND! */
 
-	if (get_flags (aswbox->flags, ASA_ReverseOrder) ||
-			(get_flags (aswbox->flags, ASA_ReverseOrderV) &&
-			 get_flags (aswbox->flags, ASA_ReverseOrderH))) {
-		x = ((int)(area->width) + area->x) - newpos;
-		y = ((int)(area->height) + area->y) - newpos;
-	} else if (get_flags (aswbox->flags, ASA_ReverseOrderV)) {
-		x = newpos + area->x;
-		y = ((int)(area->height) + area->y) - newpos;
-	} else if (get_flags (aswbox->flags, ASA_ReverseOrderH)) {
-		x = ((int)(area->width) + area->x) - newpos;
-		y = newpos + area->y;
-	} else {
-		x = newpos + area->x;
-		y = newpos + area->y;
-	}
+	x = newposx + area->x;  /* CONVERT TO ABSOLUTE COORDS: */
+	y = newposy + area->y;  /* JWT:NOTE:NOT SURE WHY area->* USED HERE, BUT asw->status->viewport_* BELOW?!: */
 
-	if (x + asw->status->width > area->x + area->width)
-		x = (area->x + area->width - asw->status->width);
-	if (y + asw->status->height > area->y + area->height)
-		y = (area->y + area->height - asw->status->height);
+	if (x < area->x || x + asw->status->width > area->x + area->width)
+		x = (xdir > 0) ? area->x : (area->x + area->width) - asw->status->width;
 
-	asw->status->x = x - asw->status->viewport_x;
-	asw->status->y = y - asw->status->viewport_y;
+	if (y < area->y || y + asw->status->height > area->y + area->height)
+		y = (ydir > 0) ? area->y : (area->y + area->height) - asw->status->height;
 
-	aswbox->cascade_pos = newpos;
+	asw->status->x = x - asw->status->viewport_x;  /* CONVERT WINDOW POSN. TO RELATIVE COORDNATES: */
+	asw->status->y = y - asw->status->viewport_y;  /* JWT:NOTE:asw->status->viewport_* USED HERE?! */
+
+	aswbox->cascade_posx = asw->status->x;  /* USE RELATIVE WINDOW POSN. FOR NEXT STARTING POINT!: */
+	aswbox->cascade_posy = asw->status->y;
 
 	apply_placement_result_asw (asw, XValue | YValue, x, y, 0, 0);
 
 	return True;
 }
-
 
 static Bool do_manual_placement (ASWindow * asw, ASWindowBox * aswbox,
 																 ASGeometry * area)
