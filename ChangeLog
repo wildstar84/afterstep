@@ -50,7 +50,7 @@ default of 25 if titlebars are not used)!
 
 Cascade can not be set as the "FirstTry" option, as it always suceeds, so my 
 recommended settings are:  "FirstTry SmartPlacemt (or RandomPlacement)" 
-followed by "ThenTry Cascade" (in "Look" file) for best results.
+followed by "ThenTry Cascade" (in "Feel" file) for best results.
 
 [2023-10-22: Jim Turner]
 

@@ -21,19 +21,18 @@ hard!  ("ClickToFocus" means that when you click on a window with the
 mouse, that window is moved on top of others and given the keyboard focus, 
 as opposed to "FocusFollowsMouse" where when you move the mouse over 
 another window, that window then gets focused).  I seem to recall that the  
-original developer of AfterStep was a Unix/"FocusFollowsMouse guy" and 
-therefore "ClickToFocus" did not get as much testing to catch these 
-annoyances?  Anyway, if you really appreciate the simplicity, but 
+original developers of AfterStep were Unix/"FocusFollowsMouse guys" and 
+therefore perhaps "ClickToFocus" did not get as much testing attention to 
+catch these annoyances?  Anyway, if you really appreciate the simplicity, but 
 elegant beauty of this old, lean, powerful and minutely-configurable 
-window-manager, and / or just need it's "Wharf" dockapp swallower / 
-launcher, but get annoyed by it's quirks when using "ClickToFocus" 
+window-manager, but get annoyed by it's quirks when using "ClickToFocus" 
 (like me), then download, build, and install it from here!  All other 
 sources I am aware of on GitHub are many years old and it's no longer 
 downloadable from the official website:  http://afterstep.org/, and 
 Sasha Vasko, et. el seem to no longer be developing it.
 
-Anway, if you just want a good, up-to-date AfterStep source-tree to 
-build but without my patches, simply download, do a:
+Anyway, if you just want a good, up-to-date AfterStep source-tree to 
+build but you are not interested in my patches, simply download, do a:
 
 $>find . -name "*.org" -print
 
@@ -48,20 +47,22 @@ $>git clone https://github.com/wildstar84/afterstep.git afterstep-2.2.12 ~/after
 
 $>export CFLAGS="-march=native -O2"
 
+$>export CXXFLAGS="-march=native -O2"
+
 $>cd ~/afterstep-src
 
 #The "--helpcommand" is optional for handling manpages for applications
 #when the [HELP] function is called:
-#CHANGE THE DEFAULT OF "xiterm -e man" to your preferred terminal app.
-#FOR SOME STUPID REASON THIS WAS NOT CONFIGURABLE, BUT MUST BE COMPILED
-#IN TO WORK!
+#Change the default of "xiterm -e man" to your preferred terminal app.
+#for some stupid reason this was not configurable, but had to be compiled
+#in to work!
 
 #NOTE:  No longer necessary as this can now be specified/overridden at
 #startup by the shell environment variable:  $ASHELPCOMMAND
 
 $>./configure --prefix=/usr/local --enable-alsa
 
-#MY PERSONAL CONFIGURE:  ./configure --prefix=/usr/local --enable-alsa --with-ttf=no --with-dbus1=no --with-gnome-session=no --with-tiff=no
+#My personal configure:  ./configure --prefix=/usr/local --enable-alsa --with-ttf=no --with-dbus1=no --with-gnome-session=no --with-tiff=no
 #(I don't need truetype fonts, tiff images, dbus, or a gnome session for my window-manager:
 #other apps I use that use dbus, etc. still use it and work fine)!
 
@@ -75,13 +76,8 @@ In file included from import.c:106:0:
             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  pixmap.c
 
-NOTE:  For some reason, the Sound module doesn't seem to get built for me, if 
-this is the case for you, and you want the sound-effects option, you'll need to 
-cd to ~/afterstep-src/Sound2 and run make, then sudo make install again from 
-there.
-
-$>CLOSE DOWN AfterStep/X (go to a console)
+$>Close down AfterStep/X (go to a console)
 
 $>sudo make install
 
-$>RESTART X, and enjoy AfterStep!
+$>Restart X, and enjoy AfterStep!

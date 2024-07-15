@@ -1097,18 +1097,12 @@ static Bool do_cascade_placement (ASWindow * asw, ASWindowBox * aswbox,
 		ASGeometry * area)
 {
 	/* JWT:ADDED SEPARATE X & Y CASCADE POSITIONS - PREVIOUSLY JUST SINGLE ONE (x=y)!: */
-	int x, y;
-	int xdir = 1;
-	int ydir = 1;
-	if (get_flags (aswbox->flags, ASA_ReverseOrderH)) 	xdir = -1;
-	if (get_flags (aswbox->flags, ASA_ReverseOrderV))  ydir = -1;
+	int xdir = (get_flags (aswbox->flags, ASA_ReverseOrderH)) ? -1 : 1;
+	int ydir = (get_flags (aswbox->flags, ASA_ReverseOrderV)) ? -1 : 1;
 	int newposx = aswbox->cascade_posx + (xdir * 25);  /* JWT:NOTE: newpos* ALWAYS RELATIVE COORDS!: */
 	int newposy = aswbox->cascade_posy + (ydir * 25);
-	if (newposx < 0)  newposx = area->width - 25;  /* HORIZ. WRAP ARROUND! */
-	if (newposy < 0)  newposy = area->height - 25;  /* VERT. WRAP ARROUND! */
-
-	x = newposx + area->x;  /* CONVERT TO ABSOLUTE COORDS: */
-	y = newposy + area->y;  /* JWT:NOTE:NOT SURE WHY area->* USED HERE, BUT asw->status->viewport_* BELOW?!: */
+	int x = newposx + area->x;  /* CONVERT TO ABSOLUTE COORDS: */
+	int y = newposy + area->y;  /* JWT:NOTE:NOT SURE WHY area->* USED HERE, BUT asw->status->viewport_* BELOW?!: */
 
 	if (x < area->x || x + asw->status->width > area->x + area->width)
 		x = (xdir > 0) ? area->x : (area->x + area->width) - asw->status->width;
@@ -1128,7 +1122,7 @@ static Bool do_cascade_placement (ASWindow * asw, ASWindowBox * aswbox,
 }
 
 static Bool do_manual_placement (ASWindow * asw, ASWindowBox * aswbox,
-																 ASGeometry * area)
+		ASGeometry * area)
 {
 	ASMoveResizeData *mvrdata;
 	int start_x = 0, start_y = 0;
