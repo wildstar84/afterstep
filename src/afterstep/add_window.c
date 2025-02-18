@@ -312,7 +312,6 @@ ASWindow *AddWindow (Window w, Bool from_map_request)
 		}
 	}
 
-
 	set_window_wm_state (tmp_win, get_flags (status.flags, AS_Iconic),
 											 from_map_request);
 
@@ -332,6 +331,14 @@ ASWindow *AddWindow (Window w, Bool from_map_request)
 
 	InstallWindowColormaps (tmp_win);
 	set_flags (tmp_win->internal_flags, ASWF_WindowComplete);
+
+	/* JWT:SAVE WINDOW'S ORIGINAL PLACEMENT COORDS FOR USE BY NEW "MoveBack" FUNCTION: */
+	tmp_win->init_rect.x = tmp_win->status->x;
+	tmp_win->init_rect.y = tmp_win->status->y;
+	tmp_win->init_rect.width = tmp_win->status->width;
+	tmp_win->init_rect.height = tmp_win->status->height;
+	tmp_win->init_Scr_x = Scr.Vx;
+	tmp_win->init_Scr_y = Scr.Vy;
 
 	return (tmp_win);
 }

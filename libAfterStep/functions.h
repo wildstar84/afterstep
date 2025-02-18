@@ -91,7 +91,7 @@ typedef enum FunctionCode{
 			  * enabling them for user */
 	F_Remap,
 
-  /* this functions require window as aparameter */
+  /* these functions require window as aparameter */
   F_WINDOW_FUNC_START,
   F_MOVE,
   F_RESIZE,
@@ -119,6 +119,7 @@ typedef enum FunctionCode{
   F_CHANGE_WINDOWS_DESK,
   F_BOOKMARK_WINDOW,
   F_PIN_MENU,
+  F_MVRESET,  /* JWT:ADDED FOR NEW "MoveBack" FUNCTION (HAD 2B AFTER F_PIN_MENU)! */
   F_TAKE_WINDOWSHOT,
   F_TAKE_FRAMESHOT,
   F_SWALLOW_WINDOW,

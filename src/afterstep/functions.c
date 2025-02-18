@@ -56,6 +56,9 @@ Bool desktop_category2complex_function (const char *name,
 void beep_func_handler (FunctionData * data, ASEvent * event, int module);
 void moveresize_func_handler (FunctionData * data, ASEvent * event,
 															int module);
+/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
+void movereset_func_handler (FunctionData * data, ASEvent * event, int module);
+
 void scroll_func_handler (FunctionData * data, ASEvent * event,
 													int module);
 void movecursor_func_handler (FunctionData * data, ASEvent * event,
@@ -159,6 +162,9 @@ void SetupFunctionHandlers ()
 
 	function_handlers[F_RESIZE] =
 			function_handlers[F_MOVE] = moveresize_func_handler;
+
+	/* JWT:NEXT LINE ADDED FOR NEW "MoveBack" FUNCTION: */
+	function_handlers[F_MVRESET] = movereset_func_handler;
 
 #ifndef NO_VIRTUAL
 	function_handlers[F_SCROLL] = scroll_func_handler;
@@ -940,6 +946,30 @@ void moveresize_func_handler (FunctionData * data, ASEvent * event,
 	}
 }
 
+/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
+/* THIS WINDOW FUNCTION WILL MOVE AND RESIZE A WINDOW BACK TO IT'S ORIGINAL VIEWPORT,
+   COORDINATES AND SIZE (WHERE ORIGINALLY PLACED).  INTENDED USE IS FOR USERS WHO PLACE
+   SPECIFIC WINDOWS IN SPECIFIC PLACES INTENDING FOR THEM TO NORMALLY STAY THERE, BUT
+   WHO OCCASIONALY NEED TO TEMPORARY DRAG OR RESIZE THEM OUT OF THE WAY, BUT THEN WISH
+   TO ZAP THEM BACK TO WHERE THEY WERE INTENDED TO BE.  NOTE:  THIS STILL WORKS FOR ALL
+   WINDOWS, NOT JUST ONES WITH A FIXED GEOMETRY DEFINED IN THE "database" FILE!
+*/
+void movereset_func_handler (FunctionData * data, ASEvent * event,
+		int module)
+{	/* gotta have a window */
+	ASWindow *asw = event->client;
+	if (asw == NULL)
+		return;
+
+	if (asw->init_rect.x == 0 && asw->init_rect.y == 0
+			&& asw->init_rect.width == 0 && asw->init_rect.height == 0)
+		return;
+
+	moveresize_aswindow_wm (asw,
+			asw->init_rect.x - (Scr.Vx - asw->init_Scr_x),
+			asw->init_rect.y - (Scr.Vy - asw->init_Scr_y),
+			asw->init_rect.width, asw->init_rect.height, True);
+}
 
 static inline int
 make_scroll_pos (int val, int unit, int curr, int max, int size)

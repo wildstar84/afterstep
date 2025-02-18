@@ -218,6 +218,7 @@ TermDef FuncTerms[F_FUNCTIONS_NUM + 1] = {
 	FUNC_TERM2 (USES_NUMVALS, "WindowsDesk", F_CHANGE_WINDOWS_DESK),	/* WindowDesk "name" new_desk */
 	FUNC_TERM ("BookmarkWindow", F_BOOKMARK_WINDOW),	/* BookmarkWindow "name" new_bookmark */
 	FUNC_TERM ("PinMenu", F_PIN_MENU),	/* PinMenu ["name"] */
+	FUNC_TERM ("MoveBack", F_MVRESET),	/* JWT:ADDED FOR NEW "MoveBack" FUNCTION (HAD 2B AFTER PinMenu)! */
 	FUNC_TERM ("TakeWindowShot", F_TAKE_WINDOWSHOT),
 	FUNC_TERM ("TakeFrameShot", F_TAKE_FRAMESHOT),
 	FUNC_TERM ("SwallowWindow", F_SWALLOW_WINDOW),	/* SwallowWindow "name" module_name */

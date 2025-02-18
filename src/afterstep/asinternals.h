@@ -108,6 +108,8 @@ typedef struct ASWindow
 	struct ASStatusHints *status;
 	XRectangle            anchor ;
 	XRectangle            saved_anchor; /* status prior to maximization */
+	XRectangle            init_rect;    /* JWT:SAVE WINDOW'S INITIAL PLACEMENT & SIZE (FOR NEW "MoveBack" FN) */
+	int init_Scr_x, init_Scr_y;         /* JWT:SAVE WINDOW'S INITIAL VIEWPORT (FOR SAME REASON) */
 
 	struct ASWindow      *transient_owner;
 	struct ASVector      *transients;
