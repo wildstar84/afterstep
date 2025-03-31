@@ -1,5 +1,30 @@
 CHANGELOG
 ----------------------
+[2025-02-19: Jim Turner]
+
+* Added "MoveBack" window function:  When invoked with a selected window, the 
+window is moved and resized back to it's original size & placement.  
+Though particularly useful for users who prefer to use the database file's 
+geometry option to consistantly place select application windows when launching 
+in specific screen locations / sizes & easily restore if they have to 
+temporarily move or resize one, it should work on all windows.  One minor issue 
+has been found with Perl/Tk windows (I, the author have numerous Perl/Tk apps) 
+where some Perl/Tk actions cause their main-window to be mapped prematurely 
+(before all desired elements have been packed an initialized with data.  This 
+sometimes results in some apps being launched with what appears to be the 
+initial size, but then MoveBack results in a smaller window.  The remedies seem 
+to be app-specific, but a general rule (for modifying existing Perl/Tk apps. 
+to be compliant is to wait until shortly before calling MainLoop (and after 
+all widgets are initialized with default data) before packing widgets.  
+Sometimes loading all initial data, then (if testing indicates that the window 
+has already been mapped, withdrawing the window and deiconifying it right 
+before calling MainLoop is also effective.  See the new example file:  
+afterstep/start/4_Windows/0_MoveBack (added to GIT) for how this is included 
+in the available Windows functions.  AfterStep now saves both the initial 
+geometry of each new window along with the current viewport when the window was 
+first mapped, allowing MoveBack to work properly regardless of the current 
+viewport when the function is invoked.
+
 [2024-07-12: Jim Turner]
 
 * Fix "Cascade Placement" window placement option due to failure to ever 
