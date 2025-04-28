@@ -1974,14 +1974,17 @@ release_winlist_button( ASWindowData *wd, int button )
             update_canvas_display( WinListState.main_canvas );
         }
 
-        action_list = Config->Action[button - Button1] ;
-        if( action_list )
+        if (button <= Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
         {
-            int i = -1;
-            while( action_list[++i] )
+            action_list = Config->Action[button - Button1] ;
+            if( action_list )
             {
-                LOCAL_DEBUG_OUT( "%d: \"%s\"", i, action_list[i] );
-                SendInfo ( action_list[i], wd->client);
+                int i = -1;
+                while( action_list[++i] )
+                {
+                    LOCAL_DEBUG_OUT( "%d: \"%s\"", i, action_list[i] );
+                    SendInfo ( action_list[i], wd->client);
+                }
             }
         }
     }
