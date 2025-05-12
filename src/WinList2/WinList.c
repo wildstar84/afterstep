@@ -560,6 +560,7 @@ DispatchEvent (ASEvent * event)
                         short loop_count = 0;
                         FunctionData fdata;
                         fdata.func = F_CHANGEWINDOW_DOWN;
+                        fdata.name = "warp_func_handler";
                         fdata.text = "*";
                         WinListState.prev_cursor = WinListState.keyboard_cursor;
                         /* JWT:WE HAVE TO SKIP OVER ICONIZED WINDOWS B/C WE DON'T DEICONIFY 'EM HERE!: */
@@ -584,7 +585,7 @@ DispatchEvent (ASEvent * event)
                                 WinListState.prev_cursor = WinListState.windows_num - 1;
 
                             if (WinListState.prev_cursor == WinListState.keyboard_cursor)
-                                break;
+                                break;  /* PREVENT INFINITE LOOP, IE. IF ALL WINDOWS ICONIFIED! */
                         }
                     }
                     else
@@ -616,6 +617,7 @@ DispatchEvent (ASEvent * event)
                         short loop_count = 0;
                         FunctionData fdata;
                         fdata.func = F_CHANGEWINDOW_DOWN;
+                        fdata.name = "warp_func_handler";
                         fdata.text = "*";
                         WinListState.prev_cursor = WinListState.keyboard_cursor;
                         /* JWT:WE HAVE TO SKIP OVER ICONIZED WINDOWS B/C WE DON'T DEICONIFY 'EM HERE!: */
@@ -1940,7 +1942,7 @@ LOCAL_DEBUG_OUT("tbar = %p, wd = %p", tbar, wd );
 void
 press_winlist_button( ASWindowData *wd )
 {
-    if( wd != NULL && wd->bar != NULL )
+    if( wd != NULL && wd->bar != NULL)
     {
         if( wd->bar != WinListState.pressed_bar )
         {
@@ -1959,7 +1961,8 @@ press_winlist_button( ASWindowData *wd )
 void
 release_winlist_button( ASWindowData *wd, int button )
 {
-    if( wd != NULL && wd->bar != NULL )
+    /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!): */
+    if( wd != NULL && wd->bar != NULL && button <= Button3)
     {
         char **action_list ;
 
@@ -1974,7 +1977,7 @@ release_winlist_button( ASWindowData *wd, int button )
             update_canvas_display( WinListState.main_canvas );
         }
 
-        if (button <= Button3)  /* JWT:ONLY PROCESS UP TO 3 BUTTONS (NOT SCROLLWHEELS!) */
+        if (button <= Button3)
         {
             action_list = Config->Action[button - Button1] ;
             if( action_list )
