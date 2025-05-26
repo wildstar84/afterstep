@@ -94,12 +94,6 @@ action_t Actions[] =
 	{"resize", resize_wrapper, default_defaults},
 	{"sendtodesk", send_to_desk_wrapper, default_defaults},
 	{"raise", no_args_wrapper, default_defaults},
-	/* JWT:MAKE SOME MORE WINDOW-OPS AVAILABLE TO WinCommands: */
-	{"shade", no_args_wrapper, default_defaults },
-	{"stick", no_args_wrapper, default_defaults },
-	{"fullscreen", no_args_wrapper, default_defaults },
-	{"ontop", no_args_wrapper, default_defaults },
-	{"focus", no_args_wrapper, default_defaults },
 	{ NULL, NULL, NULL}
 };
 

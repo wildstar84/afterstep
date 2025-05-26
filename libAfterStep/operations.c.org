@@ -210,29 +210,3 @@ void raise_handler (ASWindowData * wd, void *data)
 {
 	SendNumCommand (F_RAISE, NULL, NULL, NULL, wd->client);
 }
-
-/* JWT:MAKE SOME MORE WINDOW-OPS AVAILABLE TO WinCommands: */
-void shade_handler (ASWindowData * wd, void *data)
-{
-	SendNumCommand (F_SHADE, NULL, NULL, NULL, wd->client);
-}
-
-void stick_handler (ASWindowData * wd, void *data)
-{
-	SendNumCommand (F_STICK, NULL, NULL, NULL, wd->client);
-}
-
-void fullscreen_handler (ASWindowData * wd, void *data)
-{
-	SendNumCommand (F_FULLSCREEN, NULL, NULL, NULL, wd->client);
-}
-
-void ontop_handler (ASWindowData * wd, void *data)
-{
-	SendNumCommand (F_TOGGLELAYER, "setlayer_func_handler", NULL, NULL, wd->client);
-}
-
-void focus_handler (ASWindowData * wd, void *data)
-{
-	SendNumCommand (F_FOCUS, NULL, NULL, NULL, wd->client);
-}

@@ -675,7 +675,6 @@ void ExecuteComplexFunction (ASEvent * event, char *name)
 			 event->client, event->client ? ASWIN_NAME (event->client) : "none",
 			 name);
 
-
 	if (name && (name[0] == IMMEDIATE || name[0] == IMMEDIATE_UPPER))
 		if (name[1] == ':')
 			if ((func = get_complex_function (&(name[2]))) == NULL)
@@ -1114,19 +1113,23 @@ void setlayer_func_handler (FunctionData * data, ASEvent * event,
 			layer = AS_LayerBack;
 		else if (func == F_TOGGLELAYER) {
 			layer = ASWIN_LAYER (event->client);
-			if (data->func_val[0] == 0)
+			/* JWT:NEXT 2 LINES ADDED 20250521 TO ENABLE TRUE TOGGLING VIA WinCommand!: */
+			if (data->func_val[0] == 0 && data->func_val[1] == 0)
+				layer = (layer == 0) ? 1 : 0;
+			else if (data->func_val[0] == 0)
 				layer += data->func_val[1];
 			else
 				layer += data->func_val[0];
 		} else
 			layer = data->func_val[0];
+
 		change_aswindow_layer (event->client, layer);
 	}
 }
 
-void change_desk_func_handler (FunctionData * data, ASEvent * event,
-															 int module)
+void change_desk_func_handler (FunctionData * data, ASEvent * event, int module)
 {
+	/* JWT:NOTE: WinCommand PARAMETER IS "-new_desk #"!: */
 	if (event->client)
 		change_aswindow_desktop (event->client, data->func_val[0], False);
 }
@@ -2421,13 +2424,14 @@ void screenshot_func_handler (FunctionData * data, ASEvent * event,
 }
 
 void swallow_window_func_handler (FunctionData * data, ASEvent * event,
-																	int module)
+		int module)
 {
 	if (event->client) {
 		if (data->text)
 			module = FindModuleByName (data->text);
+
 		SendPacket (module, M_SWALLOW_WINDOW, 2, event->client->w,
-								event->client->frame);
+				event->client->frame);
 	}
 }
 

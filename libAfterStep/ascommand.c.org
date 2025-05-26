@@ -143,12 +143,6 @@ Bool process_message (send_data_type type, send_data_type * body)
 Bool apply_operations (void *data, void *aux_data)
 {
 	ASWindowData *wd = fetch_window_by_id (((client_item *) data)->cl);
-	if (wd == NULL) {  /* JWT:BE SAFE B/C abUSER ENTERS THIS! */
-		show_warning("e:WinCommand specified non-existing window (0x%lX)!",
-				((client_item *) data)->cl);
-		return False;
-	}
-
 	ASBiDirElem *curr;
 	void *h;
 
@@ -241,18 +235,6 @@ void ascom_init (void)
 								 center_handler);
 	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("raise")),
 								 raise_handler);
-
-	/* JWT:MAKE SOME MORE WINDOW-OPS AVAILABLE TO WinCommands: */
-	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("shade")),
-								 shade_handler);
-	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("stick")),
-								 stick_handler);
-	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("fullscreen")),
-								 fullscreen_handler);
-	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("ontop")),
-								 ontop_handler);
-	add_hash_item (ASCommandState.handlers, AS_HASHABLE (strdup ("focus")),
-								 focus_handler);
 
 	ConnectAfterStep (WINDOW_CONFIG_MASK | WINDOW_NAME_MASK |
 										M_END_WINDOWLIST | M_NEW_DESKVIEWPORT, 0);
@@ -500,59 +482,43 @@ Bool
 select_windows_by_pattern (const char *pattern, Bool just_one,
 													 Bool unselect)
 {
-	if (pattern == NULL)  return False;  /* JWT:BE SAFE B/C abUSER ENTERS THIS! */
-
 	ASBiDirElem *curr;
 	ASWindowData *wd;
 	regex_t my_reg;
 	int ret;
-	Window focused_window = None;
 
 	ASBiDirList *new_selection = create_asbidirlist (NULL);
+
+	if (regcomp (&my_reg, pattern, REG_EXTENDED | REG_ICASE) != 0) {
+		LOCAL_DEBUG_OUT ("Error compiling regex");
+		return False;
+	}
+
 	if (selection_in_progress)
 		curr = ASCommandState.selected_wins->head;
 	else
 		curr = ASCommandState.clients_order->head;
 
-	if (strcmp (pattern, "^") == 0) {
-		/* PATTERN == "^" - SPECIAL VALUE MEANING CURRENTLY-FOCUSED WINDOW (IF ANY): */
-		int revert_to_return;
-		XGetInputFocus (dpy, &focused_window, &revert_to_return);
-	} else if (strlen(pattern) > 2
-			&& (pattern[0] == '0' || pattern[0] == '1')
-			&& (pattern[1] == 'x' || pattern[1] == 'X')) {
-		/* PATTERN IS A HEX WINDOW-ID FOR A SPECIFIC WINDOW: */
-		pattern += 2; /* JWT:HOPEFULLY NO ONE SEEKS FOR A WINDOW TITLED "0x..."! ;) */
-		focused_window = (Window) strtol (pattern, NULL, 16);
-	}
-	if (focused_window != None && focused_window != 1) {  /* WE HAVE A SPECIFIC WINDOW: */
-		client_item *new_item;
-		new_item = safemalloc (sizeof (client_item));
-		new_item->cl = focused_window;
-		append_bidirelem (new_selection, new_item);
-	} else {  /* WE HAVE A "PATTERN", TRY TO MATCH A WINDOW BY TITLE: */
-		if (regcomp (&my_reg, pattern, REG_EXTENDED | REG_ICASE) != 0) {
-			LOCAL_DEBUG_OUT ("Error compiling regex");
-			return False;
-		}
+	for (; curr != NULL; curr = curr->next) {
+		wd = fetch_window_by_id (((client_item *) curr->data)->cl);
 
-		for (; curr != NULL; curr = curr->next) {
-			wd = fetch_window_by_id (((client_item *) curr->data)->cl);
 
-			ret = regexec (&my_reg, wd->window_name, 0, NULL, 0);
-			if (((ret == 0) && !unselect) || ((ret != 0) && unselect)) {
-				append_bidirelem (new_selection, curr->data);
-				if (new_selection->head && just_one)
-					break;
+		ret = regexec (&my_reg, wd->window_name, 0, NULL, 0);
+		if (((ret == 0) && !unselect) || ((ret != 0) && unselect)) {
 
-			}
+			append_bidirelem (new_selection, curr->data);
+
+			if (new_selection->head && just_one)
+				break;
 
 		}
-		regfree (&my_reg);
+
 	}
+
 
 	destroy_asbidirlist (&ASCommandState.selected_wins);
 	ASCommandState.selected_wins = new_selection;
+	regfree (&my_reg);
 	selection_in_progress = True;
 	return True;
 }
@@ -574,12 +540,18 @@ void select_windows_on_screen (Bool unselect)
 
 
 		if (unselect) {
+
 			/* add this window if it's not on current screen or desk */
 			if ((wd->desk != Scr.CurrentDesk) || ((wd->frame_rect.x < Scr.Vx)
-					|| (wd->frame_rect.y < Scr.Vy)
-					|| (wd->frame_rect.x > (Scr.MyDisplayWidth + Scr.Vx))
-					|| (wd->frame_rect.y > (Scr.MyDisplayHeight + Scr.Vy))))
+																						|| (wd->frame_rect.y < Scr.Vy)
+																						|| (wd->frame_rect.x >
+																								(Scr.MyDisplayWidth +
+																								 Scr.Vx))
+																						|| (wd->frame_rect.y >
+																								(Scr.MyDisplayHeight +
+																								 Scr.Vy))))
 				append_bidirelem (new_selection, curr->data);
+
 		} else {
 			/* skip this window if it's not on current-desk. */
 			if ((wd->desk != Scr.CurrentDesk))

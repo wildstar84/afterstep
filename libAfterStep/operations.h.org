@@ -23,6 +23,7 @@
 #include "../libAfterBase/aslist.h"
 #include "../libAfterBase/ashash.h"
 
+
 void move_handler(ASWindowData *wd, void *data);
 void resize_handler(ASWindowData *wd, void *data);
 void kill_handler(ASWindowData *wd, void *data);
@@ -33,12 +34,7 @@ void deiconify_handler(ASWindowData *wd, void *data);
 void send_to_desk_handler(ASWindowData *wd, void *data);
 void center_handler(ASWindowData *wd, void *data);
 void raise_handler(ASWindowData *wd, void *data);
-/* JWT:MAKE SOME MORE WINDOW-OPS AVAILABLE TO WinCommands: */
-void shade_handler (ASWindowData * wd, void *data);
-void stick_handler (ASWindowData * wd, void *data);
-void fullscreen_handler (ASWindowData * wd, void *data);
-void ontop_handler (ASWindowData * wd, void *data);
-void focus_handler (ASWindowData * wd, void *data);
+
 
 typedef struct
 {
