@@ -26,6 +26,7 @@
 #include "../../libAfterStep/ascommand.h"
 #include "../../libAfterStep/operations.h"
 #include "../../libAfterStep/screen.h"
+#include "../../libAfterStep/afterstep.h"
 #include "../../libAfterBase/aslist.h"
 
 #include <unistd.h>
@@ -66,8 +67,7 @@ typedef struct ASWinCommandState
 	int x_dest, y_dest; /* Move */
 	int new_width, new_height; /* resize */
 	int desk; /* send to desk */
-
-}ASWinCommandState;
+} ASWinCommandState;
 
 /******** Prototypes *********************/
 void no_args_wrapper(ASWinCommandState *state, const char *action);
@@ -309,7 +309,8 @@ my_readline()
 int
 main( int argc, char **argv )
 {
-	int i ;
+	int i;
+	int res = 0;
 	ASBiDirElem *curr;
 	char *command;
 	action_t *a;
@@ -322,8 +323,9 @@ main( int argc, char **argv )
 	
 	/* Initialize State */
 	memset( &WinCommandState, 0x00, sizeof(WinCommandState));
+	WinCommandState.x_dest = WinCommandState.y_dest = INVALID_POSITION;
+	WinCommandState.new_width = WinCommandState.new_height = INVALID_POSITION;
 	
-
 	/* Traverse arguments */
 	for( i = 1 ; i< argc ; ++i)
 	{
@@ -337,8 +339,9 @@ main( int argc, char **argv )
 			{
 				case ASWC_BadParam :
 				case ASWC_BadVal :	
-					fprintf( stderr, "bad parameter [%s]\n", argv[i] );
-					break; 		   
+					fprintf( stderr, "e:bad parameter [%s]\n", argv[i] );
+					/* JWT:ABORT ON BAD PARAM. (ie. BAD -pattern SCREWS EVERY WINDOW ON SCREEN!) */
+					return 1;
 				case ASWC_Ok_ValUsed :
 					++i;
 				case ASWC_Ok_ValUnused :
@@ -371,23 +374,27 @@ main( int argc, char **argv )
 			select_windows_on_screen(False);
 
 		if ( ! select_windows_by_pattern(WinCommandState.pattern,
-			 !get_flags(WinCommandState.flags, WINCOMMAND_ActOnAll), False) )
-		LOCAL_DEBUG_OUT("warning: invalid pattern. Reverting to default.");
-	
-		/* apply operations */
-		for( curr = operations->head;  curr != NULL; curr = curr->next)
-		{
-			command = (char *) curr->data;
-			LOCAL_DEBUG_OUT("command: %s", command);
+				! get_flags(WinCommandState.flags, WINCOMMAND_ActOnAll), False) ) {
+			/* JWT:ABORT ON BAD PATTERN. (WHICH SCREWS EVERY WINDOW ON SCREEN!) */
+			LOCAL_DEBUG_OUT("warning: invalid pattern. Reverting to default.");
+			res = 1;
+		} else {
+			/* apply operations */
+			for( curr = operations->head;  curr != NULL; curr = curr->next)
+			{
+				command = (char *) curr->data;
+				LOCAL_DEBUG_OUT("command: %s", command);
 		
-			if ( (a = get_action_by_name( (char *) curr->data)) )
-				a->exec_wrapper(&WinCommandState, (char *) curr->data);
+				if ( (a = get_action_by_name( (char *) curr->data)) )
+					a->exec_wrapper(&WinCommandState, (char *) curr->data);
+			}
+			ascom_wait();
 		}
-		ascom_wait();
 		ascom_deinit();
-	}else/* interactive mode */
+	} else /* interactive mode */
 	{
 		char *line_read = NULL ;
+		ascom_init();  /* JWT:WE CAN ONLY DO init/deinit 1 TIME (ELSE NO CLIENT WINDOW-LIST)! */
 		while( (line_read = my_readline()) != NULL )
 		{
 			char *ptr = line_read; 
@@ -407,8 +414,10 @@ main( int argc, char **argv )
 					{
 						case ASWC_BadParam :
 						case ASWC_BadVal :	
-							printf("bad parameter [%s]\n", argv[i] );
-							break; 		   
+							printf("bad parameter [%s]\n", argv[i]);
+							free(cmd);
+							free(line_read);
+							continue;
 						case ASWC_Ok_ValUsed :
 						case ASWC_Ok_ValUnused :
 #ifdef HAVE_READLINE							
@@ -421,7 +430,6 @@ main( int argc, char **argv )
 				{	
 					a->init_defaults(&WinCommandState);
 
-					ascom_init();
 					ascom_update_winlist();
 					if( get_flags( WinCommandState.flags, WINCOMMAND_Desk))
 						select_windows_on_desk(False);
@@ -429,30 +437,30 @@ main( int argc, char **argv )
 						select_windows_on_screen(False);
 
 					if ( ! select_windows_by_pattern(WinCommandState.pattern,
-			 		 	!get_flags(WinCommandState.flags, WINCOMMAND_ActOnAll), False) )
-					LOCAL_DEBUG_OUT("warning: invalid pattern. Reverting to default.");
-				
-					a->exec_wrapper(&WinCommandState, ptr);
+							! get_flags(WinCommandState.flags, WINCOMMAND_ActOnAll), False)) {
+						printf("e:Invalid pattern, skipping operation.");
+						LOCAL_DEBUG_OUT("warning: invalid pattern. Reverting to default.");
+					} else {
+						a->exec_wrapper(&WinCommandState, cmd);
 
-					ascom_wait();
-					ascom_deinit();
 #ifdef HAVE_READLINE							   
-					add_history (line_read);
+						add_history (line_read);
 #endif					
-					printf( "ok\n");
+						printf( "ok\n");
+					}
 	 			}else
-				{
-					/* try to parse it as AS function */	
-					printf( "bad command\n");
-				}	 
+					printf( "bad command (note: quit cmd. exits)\n");
+
 				free( cmd ) ;
 			}
 			free( line_read );
 		}
+		ascom_wait();
+		ascom_deinit();
 		printf( "\nbye bye\n" );		   
 	}	 
 	destroy_asbidirlist( &operations );	
 
-	return 0 ;
+	return res;
 }
 

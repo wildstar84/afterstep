@@ -847,9 +847,8 @@ void beep_func_handler (FunctionData * data, ASEvent * event, int module)
 	XBell (dpy, event->scr->screen);
 }
 
-void moveresize_func_handler (FunctionData * data, ASEvent * event,
-															int module)
-{																/* gotta have a window */
+void moveresize_func_handler (FunctionData * data, ASEvent * event, int module)
+{	/* gotta have a window */
 	ASWindow *asw = event->client;
 	if (asw == NULL)
 		return;
@@ -861,15 +860,13 @@ void moveresize_func_handler (FunctionData * data, ASEvent * event,
 		int width = asw->status->width;
 		int height = asw->status->height;
 
-		new_val1 =
-				APPLY_VALUE_UNIT (Scr.MyDisplayWidth, data->func_val[0],
-													data->unit_val[0]);
+		new_val1 = APPLY_VALUE_UNIT (Scr.MyDisplayWidth, data->func_val[0],
+				data->unit_val[0]);
 		LOCAL_DEBUG_OUT ("val1 = %d, unit1 = %d, new_val1 = %d",
 										 (int)data->func_val[0], (int)data->unit_val[0],
 										 new_val1);
-		new_val2 =
-				APPLY_VALUE_UNIT (Scr.MyDisplayHeight, data->func_val[1],
-													data->unit_val[1]);
+		new_val2 = APPLY_VALUE_UNIT (Scr.MyDisplayHeight, data->func_val[1],
+				data->unit_val[1]);
 		if (data->func == F_MOVE) {
 			if (data->func_val[0] != INVALID_POSITION) {
 				x = new_val1;
@@ -894,13 +891,13 @@ void moveresize_func_handler (FunctionData * data, ASEvent * event,
 		/*release_pressure(); */
 		if (data->func == F_MOVE) {
 			mvrdata = move_widget_interactively (Scr.RootCanvas,
-																					 asw->frame_canvas,
-																					 event,
-																					 apply_aswindow_move,
-																					 complete_aswindow_move);
+					asw->frame_canvas, event, apply_aswindow_move,
+					complete_aswindow_move);
 		} else {
 			int side = 0;
 			register unsigned long context = (event->context & C_FRAME);
+			if (context == 255)  /* JWT:HACK FOR WinCommand parameter-less moves?! */
+				context = 0;
 
 			if (ASWIN_GET_FLAGS (asw, AS_Shaded)) {
 				XBell (dpy, Scr.screen);
@@ -931,11 +928,8 @@ void moveresize_func_handler (FunctionData * data, ASEvent * event,
 			}
 
 			mvrdata = resize_widget_interactively (Scr.RootCanvas,
-																						 asw->frame_canvas,
-																						 event,
-																						 apply_aswindow_moveresize,
-																						 complete_aswindow_moveresize,
-																						 side);
+					asw->frame_canvas, event, apply_aswindow_moveresize,
+					complete_aswindow_moveresize, side);
 		}
 		if (mvrdata) {
 			mvrdata->move_only = (data->func == F_MOVE);
