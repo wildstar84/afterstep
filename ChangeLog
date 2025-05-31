@@ -1,5 +1,51 @@
 CHANGELOG
 ----------------------
+[2025-05-30: Jim Turner]
+
+* WinCommand:
+  - Added several new window commands:  shade, stick, fullscreen, ontop, and 
+    focus.  They require no arguments and the 1st 4 are toggles.
+  - Added ability to specify a specific X window-ID as the "-pattern" string.
+  - Added the special pattern string "^" which matches the currently-focused 
+    window (if any).  Useful in application program windows which need to 
+    perform window operations such as iconify, move, resize, etc. based on 
+    user-input in a given window.  Especially useful in "undecorated" windows 
+    (no titlebar buttons or handles).
+  - Fixed the (apparently long-)broken "interactive" feature.
+  - Fixed the non-interactive (one-off) command-line usage to abort if a bad 
+    pattern or argument is specified and return a value of 1, instead of 
+    defaulting to applying the requested window-command to ALL windows on the 
+    screen (usually very undesirable & hard to undo)!
+  - Update the ASDocGen source docs for WinCommand to reflect these new 
+    features (see "man WinCommand").
+  - The "move" and "resize" functions (if specified without arguments) now 
+    default to using "interactive" mode (moving or resizing as the mouse is 
+    moved until a button-1 is pressed) instead of doing nothing.  Particularly 
+    useful for undecorated windows that may be otherwise "unmovable" within the 
+    window itself if it is specified to not have a titlebar or handles.
+
+* WinList:
+  - Fix crashes when scrolling a scrollwheel over a WinList button or trying 
+    to window-warp in certain situations.  The latter seemed to arise after 
+    adding the MoveBack function, which changed memory layout?
+  - No longer change an application's WinList button's icon image every time 
+    the application changes it's window title if an icon-file (other than the 
+    default one) is matched in the database file for the app. when started.  
+    I found this somewhat annoying in apps. like web browsers and media-players 
+    that constantly change titles and occasionally the first word of the title 
+    would match some seemingly random icon in the system's myriad ".desktop" 
+    files such that I would temporarily be unable to recognize the app's 
+    WinList button!  Note, this also seemed to affect the WinList-menu as well. 
+
+    This proved to be a much bigger challenge than I expected, since WinList, 
+    being a module, does not have direct access to AfterStep's "aswindow" 
+    structures and their hints when requesting icons, which uses a different 
+    way to find icons based on a window's Xwindow's hints only, preventing 
+    using the same icon used by AfterStep when setting a(n as)window's icon 
+    when it is created.  WinList also seems to create it's buttons for new 
+    windows before (different thread?) they're completely set up in AfterStep 
+    itself.
+
 [2025-02-19: Jim Turner]
 
 * Added "MoveBack" window function:  When invoked with a selected window, the 

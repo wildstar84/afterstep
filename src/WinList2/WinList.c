@@ -1578,8 +1578,8 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
     ASRawHints    raw;
     ASHints       clean;
     ASSupportedHints *list = create_hints_list ();
-    ASImage *icon_im = NULL ;
-        
+    ASImage *icon_im = NULL;
+
     enable_hints_support (list, HINTS_ICCCM);
     enable_hints_support (list, HINTS_KDE);
     enable_hints_support (list, HINTS_ExtendedWM);
@@ -1590,8 +1590,9 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
         
     if( collect_hints (ASDefaultScr, wd->client, HINT_NAME|HINT_GENERAL, &raw) )
     {
-        if( merge_hints (&raw, Database, NULL, list, HINT_NAME|HINT_GENERAL, &clean, wd->client) )
+        if( merge_hints (&raw, Database, NULL, list, HINT_NAME|HINT_GENERAL|HINT_ANY, &clean, wd->client) )
         {
+            clean.client_icon_flags |= AS_ClientIconsOnly;  /* JWT:ADDED FOR KEEPING WinList ICONS FROM CHANGING ON TITLE-CHANGES: */
             int desired_size = (Config->UseName >= ASN_NameTypes && Config->MaxColWidth)
                     ? Config->MaxColWidth : 32;  /* JWT:USE BOX-WIDTH FOR ICON-SIZE IF ICONSONLY. */
             icon_im = get_client_icon_image( ASDefaultScr, &clean, desired_size);
@@ -1599,7 +1600,7 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
         }
         destroy_raw_hints ( &raw, True);
     }
-    destroy_hints_list( &list );        
+    destroy_hints_list( &list );
 
     if( icon_im ) 
     {

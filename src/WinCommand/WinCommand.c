@@ -323,6 +323,7 @@ main( int argc, char **argv )
 	
 	/* Initialize State */
 	memset( &WinCommandState, 0x00, sizeof(WinCommandState));
+	/* JWT:NEXT 2 ADDED SO ARGUMENTLESS move & resize COMMANDS DEFAULT TO "INTERACTIVE MODE": */
 	WinCommandState.x_dest = WinCommandState.y_dest = INVALID_POSITION;
 	WinCommandState.new_width = WinCommandState.new_height = INVALID_POSITION;
 	

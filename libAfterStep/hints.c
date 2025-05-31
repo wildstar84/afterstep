@@ -2741,8 +2741,7 @@ set_all_client_hints (Window w, ASHints * hints, ASStatusHints * status,
 }
 
 
-ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
-																int desired_size)
+ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_size)
 {
 	ASImage *im = NULL;
 
@@ -2785,7 +2784,6 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 																		 hints->icon_argb + 2, NULL);
 					LOCAL_DEBUG_OUT ("converted client's ARGB into an icon %dx%d %p",
 							width, height, im);
-
 				}
 				if (im == NULL && get_flags (hints->client_icon_flags, AS_ClientIconPixmap) && hints->icon.pixmap != None) {	/* convert client's icon into ASImage */
 					unsigned int width, height;
@@ -2801,7 +2799,10 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints,
 		}
 		LOCAL_DEBUG_OUT ("im =  %p", im);
 		if (im == NULL) {
-			if (CombinedCategories != NULL) {
+			if (CombinedCategories != NULL
+					/* JWT:NEXT 2 LINES ADDED FOR KEEPING WinList ICONS FROM CHANGING ON TITLE-CHANGES: */
+					&& (icon_file_isDefault || !icon_file
+					|| ! get_flags (hints->client_icon_flags, AS_ClientIconsOnly))) {
 				ASDesktopEntry *de = NULL;
 
 				if (hints->names[0]) {

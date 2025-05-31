@@ -2150,6 +2150,7 @@ MenuData *make_desk_winlist_menu (ASWindowList * list, int desk,
 	fdata.func = F_TITLE;
 	fdata.name = mystrdup (menu_name);
 	add_menu_fdata_item (md, &fdata, NULL);
+	ASFlagType save_client_icon_flags;
 
 	if (sort_order == ASO_Alpha) {
 		struct ASSortMenu_Aux **menuitems =
@@ -2172,11 +2173,15 @@ MenuData *make_desk_winlist_menu (ASWindowList * list, int desk,
 		qsort (menuitems, numitems, sizeof (struct ASSortMenu_Aux *),
 					 compare_menu_func_data_name);
 		for (i = 0; i < numitems; ++i) {
-			if (!get_flags (Scr.Feel.flags, WinListHideIcons))
-				minipixmaps[MINIPIXMAP_Icon].image =
-						get_client_icon_image (ASDefaultScr,
-																	 ((ASWindow *) (menuitems[i]->ref_data))->hints, 32);
-			else
+			if (!get_flags (Scr.Feel.flags, WinListHideIcons)) {
+				/* JWT:NEXT 2 & LAST ADDED FOR KEEPING WINLIST-MENU ICONS FROM CHANGING ON TITLE-CHANGES: */
+				save_client_icon_flags = (((ASWindow *) (menuitems[i]->ref_data))->hints)->client_icon_flags;
+				(((ASWindow *) (menuitems[i]->ref_data))->hints)->client_icon_flags |= AS_ClientIconsOnly;
+				minipixmaps[MINIPIXMAP_Icon].image = get_client_icon_image (
+						ASDefaultScr,
+						((ASWindow *) (menuitems[i]->ref_data))->hints, 32);
+				(((ASWindow *) (menuitems[i]->ref_data))->hints)->client_icon_flags = save_client_icon_flags;
+			} else
 				minipixmaps[MINIPIXMAP_Icon].image = NULL;
 
 			if ((mdi = add_menu_fdata_item (md, &(menuitems[i]->fdata), &(minipixmaps[0]))) != NULL)
@@ -2192,14 +2197,18 @@ MenuData *make_desk_winlist_menu (ASWindowList * list, int desk,
 					&& !ASWIN_HFLAGS (clients[i], AS_SkipWinList)) {
 				ASWindow2func_data (F_RAISE_IT, clients[i], &fdata, &scut,
 														icon_name);
-				if (!get_flags (Scr.Feel.flags, WinListHideIcons))
-					minipixmaps[MINIPIXMAP_Icon].image =
-							get_client_icon_image (ASDefaultScr, clients[i]->hints, 32);
-				else
+				if (!get_flags (Scr.Feel.flags, WinListHideIcons)) {
+					/* JWT:NEXT 2 & LAST ADDED FOR KEEPING WINLIST-MENU ICONS FROM CHANGING ON TITLE-CHANGES: */
+					save_client_icon_flags = clients[i]->hints->client_icon_flags;
+					clients[i]->hints->client_icon_flags |= AS_ClientIconsOnly;
+					minipixmaps[MINIPIXMAP_Icon].image = get_client_icon_image (
+							ASDefaultScr,
+							clients[i]->hints, 32);
+					clients[i]->hints->client_icon_flags = save_client_icon_flags;
+				} else
 					minipixmaps[MINIPIXMAP_Icon].image = NULL;
 
-				if ((mdi =
-						 add_menu_fdata_item (md, &fdata, &(minipixmaps[0]))) != NULL)
+				if ((mdi = add_menu_fdata_item (md, &fdata, &(minipixmaps[0]))) != NULL)
 					set_flags (mdi->flags, MD_ScaleMinipixmapDown);
 			}
 		}

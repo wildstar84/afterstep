@@ -162,7 +162,9 @@ typedef struct ASHints
 #define AS_ClientIcon           (1<<0)
 #define AS_ClientIconPixmap     (1<<1)
 #define AS_ClientIconPosition   (1<<2)
-#define AS_ClientIconARGB		(1<<3)
+#define AS_ClientIconARGB		     (1<<3)
+/* JWT:ADDED FOR KEEPING WinList ICONS FROM CHANGING ON TITLE-CHANGES: */
+#define AS_ClientIconsOnly      (1<<4)
 
   ASFlagType client_icon_flags ;
   union { Window window; Pixmap pixmap; } icon ;
