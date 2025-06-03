@@ -1579,19 +1579,29 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
     ASHints       clean;
     ASSupportedHints *list = create_hints_list ();
     ASImage *icon_im = NULL;
+    Bool use_smaller_icon = False;
+    int adjusted_icon_sz = Config->MaxColWidth;
+    if (adjusted_icon_sz <= 1)
+        adjusted_icon_sz = 32;
 
     enable_hints_support (list, HINTS_ICCCM);
     enable_hints_support (list, HINTS_KDE);
     enable_hints_support (list, HINTS_ExtendedWM);
     enable_hints_support (list, HINTS_ASDatabase);
-        
+
     memset( &raw, 0x00, sizeof(ASRawHints));
     memset( &clean, 0x00, sizeof(ASHints));
-        
+
     if( collect_hints (ASDefaultScr, wd->client, HINT_NAME|HINT_GENERAL, &raw) )
     {
         if( merge_hints (&raw, Database, NULL, list, HINT_NAME|HINT_GENERAL|HINT_ANY, &clean, wd->client) )
         {
+            /* JWT:SHRINK THE ICONS FOR TRANSIENT (SUB) WINDOWS - MAKE MAIN ONES EASIER TO SEE!: */
+            if (raw.transient_for && raw.transient_for->parent)
+            {
+                clean.transient_for = raw.transient_for->parent;
+                use_smaller_icon = True;
+            }
             clean.client_icon_flags |= AS_ClientIconsOnly;  /* JWT:ADDED FOR KEEPING WinList ICONS FROM CHANGING ON TITLE-CHANGES: */
             int desired_size = (Config->UseName >= ASN_NameTypes && Config->MaxColWidth)
                     ? Config->MaxColWidth : 32;  /* JWT:USE BOX-WIDTH FOR ICON-SIZE IF ICONSONLY. */
@@ -1629,17 +1639,28 @@ configure_tbar_icon( ASTBarData *tbar, ASWindowData *wd )
         }
         else if (Config->UseName >= ASN_NameTypes && Config->MaxColWidth)  /* JWT:ICONS ONLY! */
         {
+            /* JWT:SHRINK THE ICONS FOR TRANSIENT (SUB) WINDOWS - MAKE MAIN ONES EASIER TO SEE!: */
+            if (use_smaller_icon)
+            {
+                adjusted_icon_sz = (width > height) ? width : height;
+                if (adjusted_icon_sz > 48)
+                    adjusted_icon_sz = 48;
+                else if (adjusted_icon_sz > 32)
+                    adjusted_icon_sz = 32;
+                else
+                    adjusted_icon_sz = 24;
+            }
             /* JWT:SCALE DOWN LARGE ICONS TO FIT, BUT DON'T SCALE SMALL ONES UP TO FILL: */
             /* (FOR BOTH SCALE UP & DOWN, SPECIFY *WinListIconSize WxH)! */
             float aspect = (width > 0 && height > 0) ? ((float)width / (float)height) : 1.0;
-            if (height > Config->MaxColWidth)
+            if (height > adjusted_icon_sz)
             {
-                height = Config->MaxColWidth;
+                height = adjusted_icon_sz;
                 width = (int)(aspect * height);
             }
-            if (width > Config->MaxColWidth)
+            if (width > adjusted_icon_sz)
             {
-                width = Config->MaxColWidth;
+                width = adjusted_icon_sz;
                 height = (int)((1 / aspect) * width);
             }
         }

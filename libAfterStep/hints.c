@@ -294,9 +294,8 @@ unsigned char get_hint_name_encoding (ASHints * hints, int name_idx)
 
 /* Hints merging functions : */
 ASHints *merge_hints (ASRawHints * raw, ASDatabase * db,
-											ASStatusHints * status, ASSupportedHints * list,
-											ASFlagType what, ASHints * reusable_memory,
-											Window client)
+		ASStatusHints * status, ASSupportedHints * list,
+		ASFlagType what, ASHints * reusable_memory, Window client)
 {
 	ASHints *clean = NULL;
 	ASDatabaseRecord db_rec, *pdb_rec;
@@ -2829,9 +2828,9 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_s
 					de = fetch_desktop_entry (CombinedCategories, hints->res_name);
 					LOCAL_DEBUG_OUT ("found desktop entry %p, for res_name = \"%s\"",
 							de, hints->res_name);
+
 					if (de == NULL)
-						de = fetch_desktop_entry (CombinedCategories,
-																			hints->res_class);
+						de = fetch_desktop_entry (CombinedCategories, hints->res_class);
 					LOCAL_DEBUG_OUT ("found desktop entry %p, for res_class = \"%s\"", de,
 							hints->res_class);
 				}
@@ -2844,7 +2843,6 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_s
 						icon_file = de->Icon;
 					}
 				}
-
 			}
 			if (icon_file) {
 				im = (icon_file_im) ? icon_file_im
@@ -2854,8 +2852,48 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_s
 				LOCAL_DEBUG_OUT ("loaded icon from \"%s\" into %dx%d %p",
 												 icon_file, im ? im->width : 0,
 												 im ? im->height : 0, im);
-			} else {
-				LOCAL_DEBUG_OUT ("no icon to use %s", "");
+			} else
+				LOCAL_DEBUG_OUT ("no icon to use, try parent window, if transient.");
+
+			/* JWT:ADDED NEXT BLOCK - IF ONLY HAVE DEFAULT ICON & WINDOW IS TRANSIENT,
+			 * TRY FETCHING THE PARENT WINDOW'S ICON INSTEAD!:
+			 * NOTE: CALLS THIS FUNCTION RECURSIVELY, BUT STOPS IF PARENT IS ALSO TRANSIENT!
+			*/
+			if ((icon_file_isDefault || icon_file == NULL) && hints->transient_for
+					&& hints->transient_for != None)
+			{
+				ASRawHints    raw_1;
+				ASHints       clean_1;
+				ASSupportedHints *list = create_hints_list ();
+				ASImage *parent_im = NULL;
+
+				enable_hints_support (list, HINTS_ICCCM);
+				enable_hints_support (list, HINTS_KDE);
+				enable_hints_support (list, HINTS_ExtendedWM);
+				enable_hints_support (list, HINTS_ASDatabase);
+
+				memset( &raw_1, 0x00, sizeof(ASRawHints));
+				memset( &clean_1, 0x00, sizeof(ASHints));
+
+				if (collect_hints (ASDefaultScr, hints->transient_for,
+						HINT_NAME|HINT_GENERAL, &raw_1))
+				{
+					if (merge_hints (&raw_1, Database, NULL, list,
+							HINT_NAME|HINT_GENERAL|HINT_ANY, &clean_1,
+							hints->transient_for))
+					{
+						if (raw_1.transient_for && raw_1.transient_for->parent)
+							return NULL;  /* STOP IF GRANDPARENT IS ALSO TRANSIENT! ;) */
+
+						clean_1.client_icon_flags |= AS_ClientIconsOnly;
+						parent_im = get_client_icon_image( ASDefaultScr, &clean_1, desired_size);
+						destroy_hints( &clean_1, True );
+					}
+					destroy_raw_hints (&raw_1, True);
+				}
+				destroy_hints_list(&list);
+				if (parent_im != NULL)
+					return parent_im;
 			}
 		}
 	}
