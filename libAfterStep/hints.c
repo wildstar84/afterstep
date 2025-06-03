@@ -1241,15 +1241,19 @@ merge_extwm_hints (ASHints * clean, ASRawHints * raw,
 					select_client_icon_argb (eh->icon, eh->icon_length);
 			set_flags (clean->flags, AS_Icon);
 			set_flags (clean->client_icon_flags,
-								 AS_ClientIcon | AS_ClientIconARGB);
+					AS_ClientIcon | AS_ClientIconARGB);
 		}
 		if (get_flags (eh->state_flags, EXTWM_StateSkipTaskbar))
 			set_flags (clean->flags, AS_SkipWinList);
 
+		/* JWT:ADDED 06/25 TO SUPPORT GTK'S gtk_window_set_skip_pager_hint() FUNCTION: */
+		if (get_flags (eh->state_flags, EXTWM_StateSkipPager))
+			clear_flags (clean->flags, AS_HitPager);
+
 		if (get_flags (eh->flags, EXTWM_TypeSet)) {
 			clean->extwm_window_type = eh->type_flags;
 			decode_simple_flags (&(clean->flags), extwm_type_xref,
-													 eh->type_flags);
+					eh->type_flags);
 		}
 	}
 	if (get_flags (what, HINT_PROTOCOL)) {
@@ -1262,7 +1266,7 @@ merge_extwm_hints (ASHints * clean, ASRawHints * raw,
 			set_flags (clean->protocols, AS_NeedsVisibleName);
 		if (get_flags (eh->flags, EXTWM_TypeSet))
 			decode_simple_flags (&(clean->function_mask), extwm_type_func_mask,
-													 eh->type_flags);
+					eh->type_flags);
 	}
 }
 
@@ -2850,8 +2854,8 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_s
 
 				/*get_asimage (scr->image_manager, icon_file, 0xFFFFFFFF, 100); */
 				LOCAL_DEBUG_OUT ("loaded icon from \"%s\" into %dx%d %p",
-												 icon_file, im ? im->width : 0,
-												 im ? im->height : 0, im);
+						icon_file, im ? im->width : 0,
+						im ? im->height : 0, im);
 			} else
 				LOCAL_DEBUG_OUT ("no icon to use, try parent window, if transient.");
 
@@ -2885,6 +2889,7 @@ ASImage *get_client_icon_image (ScreenInfo * scr, ASHints * hints, int desired_s
 						if (raw_1.transient_for && raw_1.transient_for->parent)
 							return NULL;  /* STOP IF GRANDPARENT IS ALSO TRANSIENT! ;) */
 
+						/* JWT:ADDED 05/25 FOR KEEPING WinList ICONS FROM CHANGING ON TITLE-CHANGES: */
 						clean_1.client_icon_flags |= AS_ClientIconsOnly;
 						parent_im = get_client_icon_image( ASDefaultScr, &clean_1, desired_size);
 						destroy_hints( &clean_1, True );

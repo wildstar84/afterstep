@@ -1,5 +1,17 @@
 CHANGELOG
 ----------------------
+[2025-06-03: Jim Turner]
+
+* Fix longstanding failure of AfterStep to honor the ExtraWM "Skip Pager" hint 
+that instructs the window-manager to exclude a window's representation in 
+the Pager app. module.  This is specified programatically in GTK by the 
+function:  gtk_window_set_skip_pager_hint ((GtkWindow *) w, true).
+
+* When AfterStep opens a transient window that does not have it's own icon 
+defined, Afterstep will now try to use it's parent window's icon instead of 
+the default icon (if any )defined in the database, and only use the latter if 
+the parent window does not have an icon either.
+
 [2025-05-30: Jim Turner]
 
 * WinCommand:
