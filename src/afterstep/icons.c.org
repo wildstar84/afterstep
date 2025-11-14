@@ -114,44 +114,6 @@ void fix_iconbox_area (ASGeometry * geom, int min_width, int min_height)
 	}
 }
 
-/* JWT:ABBREVIATED VSN. OF handle_canvas_config() THAT DOESN'T SCREW UP SOME
-   ICONS WHEN MOVED, BY ONLY SETTING THE NEEDED VALUES! (ADDED 20251113):
-*/
-static ASFlagType handle_icon_canvas_moves (ASCanvas * pc)
-{
-	ASFlagType changed = 0;
-
-	if (pc && pc->w != None) {
-		int root_x = pc->root_x, root_y = pc->root_y, dumm;
-		unsigned int width = pc->width, height = pc->height, udumm;
-		Window wdumm;
-		unsigned int bw;
-
-		XTranslateCoordinates (dpy, pc->w, ASDefaultRoot, 0, 0, &root_x,
-				&root_y, &wdumm);
-		XGetGeometry (dpy, pc->w, &wdumm, &dumm, &dumm, &udumm, &udumm, &bw,
-				&udumm);
-		root_x -= bw;
-		root_y -= bw;
-		if (root_x != pc->root_x)
-			set_flags (changed, CANVAS_X_CHANGED);
-		if (root_y != pc->root_y)
-			set_flags (changed, CANVAS_Y_CHANGED);
-		pc->root_x = root_x;
-		pc->root_y = root_y;
-		pc->bw = bw;
-
-		if (!get_drawable_size (pc->w, &width, &height))
-			return 0;		/* drawable is bad */
-
-		if (width != pc->width)
-			set_flags (changed, CANVAS_WIDTH_CHANGED);
-		if (height != pc->height)
-			set_flags (changed, CANVAS_HEIGHT_CHANGED);
-	}
-	return changed;
-}
-
 Bool rearrange_icon_iter_func (void *data, void *aux_data)
 {
 	ASWindow *asw = (ASWindow *) data;
@@ -237,6 +199,7 @@ Bool rearrange_icon_iter_func (void *data, void *aux_data)
 		geom = &(rd->ib->areas[rd->curr_area]);
 		fix_iconbox_area (geom, whole_width, whole_height);
 	}
+
 
 	/* Set primary/secondary-pointers */
 	if (vertical) {
@@ -342,27 +305,19 @@ Bool rearrange_icon_iter_func (void *data, void *aux_data)
 	LOCAL_DEBUG_OUT
 			("placing an icon at %+d%+d, base %+d%+d whole %dx%d button %dx%d",
 			 x, y, box_x, box_y, whole_width, whole_height, width, height);
-
-	ASFlagType changes, changes_t = 0;
 	if (asw->icon_title_canvas && asw->icon_title_canvas != asw->icon_canvas) {
-		changes = moveresize_canvas (asw->icon_canvas,
-				box_x + x + (title_width - width) / 2, box_y + y, width, height);
-		changes_t = moveresize_canvas (asw->icon_title_canvas, box_x + x,
-				box_y + y + height, title_width, title_height);
+		moveresize_canvas (asw->icon_canvas,
+											 box_x + x + (title_width - width) / 2, box_y + y,
+											 width, height);
+		moveresize_canvas (asw->icon_title_canvas, box_x + x,
+											 box_y + y + height, title_width, title_height);
 	} else
-		changes = moveresize_canvas (asw->icon_canvas, box_x + x, box_y + y, whole_width,
-				whole_height);
-
-	/* JWT:ADDED 20251113 TO PROPERLY REDRAW ICONS WHEN MOVED BY SYSTEM TO PROPERLY
-	   REDRAW ANY TRANSPARENT PART FROM CORRECT AREA OF SCREEN BACKGROUND!:
-	*/
-	if ((changes || changes_t) && handle_icon_canvas_moves (asw->icon_canvas))
-		update_window_transparency (asw, False);
+		moveresize_canvas (asw->icon_canvas, box_x + x, box_y + y, whole_width,
+											 whole_height);
 
 	*last_p_size = *whole_p;
 	if (*whole_s > *last_s_size)
 		*last_s_size = *whole_s;
-
 	return True;
 }
 
@@ -458,9 +413,9 @@ void on_icon_changed (ASWindow * asw)
 									 asw->icon_title_canvas ? asw->icon_title_canvas : asw->
 									 icon_canvas);
 	}
-	if (asw->icon_button)
+	if (asw->icon_button) {
 		render_astbar (asw->icon_button, asw->icon_canvas);
-
+	}
 	update_canvas_display (asw->icon_canvas);
 	update_canvas_display (asw->icon_title_canvas);
 }

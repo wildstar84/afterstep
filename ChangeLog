@@ -1,5 +1,15 @@
 CHANGELOG
 ----------------------
+[2025-11-13: Jim Turner]
+
+* Fix transparent icon issue where when a window was iconified, a previous 
+window deiconified, then the first one re-iconified (to a different position 
+in the icon list / on screen), the screen background from the icon's 
+original screen position would still be used instead of it's new position.  
+This was only noticable if the screen background varied (ie. a photograph), 
+resulting in an "artifacty squarish kind of look.  Icons now re-determine 
+their position & reload their background whenever screen position changes.
+
 [2025-06-03: Jim Turner]
 
 * Fix longstanding failure of AfterStep to honor the ExtraWM "Skip Pager" hint 
