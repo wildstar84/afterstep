@@ -109,16 +109,21 @@ struct ASCategoryTree *OtherCategories = NULL;
 struct ASCategoryTree *CombinedCategories = NULL;
 
 
-
 /* names of AS functions - used all over the place  :*/
 
 #define FUNC_TERM(keyword,func)         {TF_NO_MYNAME_PREPENDING|TF_NAMED,keyword,sizeof(keyword)-1,TT_FUNCTION,func,NULL}
 #define FUNC_TERM2(flags,keyword,func)  {TF_NO_MYNAME_PREPENDING|TF_NAMED|(flags),keyword,sizeof(keyword)-1,TT_FUNCTION,func,NULL}
 
+/* JWT:WARNING:THIS CODE IS VERY TRICKY TO MODIFY - THESE ITEMS ARE IN GROUPS ONE MUST BE
+   VERY CAREFUL MAKING ANY CHANGES, ESPECIALLY ADDING NEW FUNCTIONS.  ANY CHANGES HERE
+   MUST ALSO BE MATCHED IN functions.h, src/afterstep/functions.c, & possibly hints.c THE
+   ORDERS ARE CRITICAL & MUST MATCH!
+   MISTAKES WILL LIKELY CAUSE WEIRD RUN-TIME ISSUES, NOT COMPILE ERRORS!
+*/
 TermDef FuncTerms[F_FUNCTIONS_NUM + 1] = {
 	FUNC_TERM2 (NEED_NAME, "Nop", F_NOP),	/* Nop      "name"|"" */
 	FUNC_TERM2 (NEED_NAME, "Title", F_TITLE),	/* Title    "name"    */
-	FUNC_TERM ("Beep", F_BEEP),		/* Beep               */
+	FUNC_TERM ("Beep", F_BEEP),		/* Beep              */
 	FUNC_TERM ("Quit", F_QUIT),		/* Quit     ["name"] */
 	FUNC_TERM2 (NEED_NAME | NEED_CMD, "Restart", F_RESTART),	/* Restart "name" WindowManagerName */
 	FUNC_TERM ("SystemShutdown", F_SYSTEM_SHUTDOWN),	/* Shutdown "name" | only available under gnome-session */
@@ -218,10 +223,11 @@ TermDef FuncTerms[F_FUNCTIONS_NUM + 1] = {
 	FUNC_TERM2 (USES_NUMVALS, "WindowsDesk", F_CHANGE_WINDOWS_DESK),	/* WindowDesk "name" new_desk */
 	FUNC_TERM ("BookmarkWindow", F_BOOKMARK_WINDOW),	/* BookmarkWindow "name" new_bookmark */
 	FUNC_TERM ("PinMenu", F_PIN_MENU),	/* PinMenu ["name"] */
-	FUNC_TERM ("MoveBack", F_MVRESET),	/* JWT:ADDED FOR NEW "MoveBack" FUNCTION (HAD 2B AFTER PinMenu)! */
 	FUNC_TERM ("TakeWindowShot", F_TAKE_WINDOWSHOT),
 	FUNC_TERM ("TakeFrameShot", F_TAKE_FRAMESHOT),
 	FUNC_TERM ("SwallowWindow", F_SWALLOW_WINDOW),	/* SwallowWindow "name" module_name */
+	FUNC_TERM ("MoveBack", F_MVRESET),	/* JWT:ADDED FOR NEW "MoveBack" FUNCTION (HAD 2B AFTER PinMenu)! */
+	FUNC_TERM ("SaveBack", F_SVRESET),	/* JWT:ADDED FOR NEW "SaveBack" FUNCTION (HAD 2B AFTER PinMenu)! */
 	/* end of window functions */
 	/* these are commands  to be used only by modules */
 	FUNC_TERM ("&nonsense&", F_MODULE_FUNC_START),	/* not really a command */
@@ -290,6 +296,7 @@ TermDef *func2fterm (FunctionCode func, int quiet)
 			return &(FuncTerms[i]);
 
 	/* something terribly wrong has happened : */
+	show_warning("s:ARRGH! func2term(): No named function found for code=%d?!", func);
 	return NULL;
 }
 

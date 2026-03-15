@@ -1,5 +1,13 @@
 CHANGELOG
 ----------------------
+[2026-03-16: Jim Turner]
+
+* Add "SaveBack" window-function to enable user to set the current window-
+position and size as the original coordinates so that subsequent use of the 
+"MoveBack" function will use the new coordinates instead of the original ones.
+
+* Slight code cleanups, including ascommand.c
+
 [2025-11-13: Jim Turner]
 
 * Fix transparent icon issue where when a window was iconified, a previous 
@@ -197,7 +205,7 @@ described above (and not caused by it).
 [2023-09-12: Jim Turner]
 
 * Fix Ident (Identify) to now work properly (ability to select a window using 
-the mouse ("crosshair" cursor) without a a window argument, ie. when called 
+the mouse ("crosshair" cursor) without a window argument, ie. when called 
 from the general Windows menu (vs. from the titlebutton Window menu associated 
 with a specific window).  This makes it posible to get identification info. 
 from windows without a titlebar.
@@ -458,7 +466,7 @@ information known when the mouse previously entered the button and from where!
    arrow keys traverse the open windows and keys:  1, 2, and 3 (the 
    same sequences previously added to Wharf) invoke the matching mouse-buttons 
    to invoke the specified WinList functions.  You can give WinList a vertical 
-   titlebar and can then shade/unshade it when needing more screen realestate.  
+   titlebar and can then shade/unshade it when needing more screen real estate.  
    In that case, the Escape key shades and Return key unshades (when focused 
    but no buttons are highlighted).  When a button is highlighted the other 
    keys mentioned invoke WinList mouse-button functions, along with Return and 

@@ -16,6 +16,11 @@ struct ASHashTable;
 struct TermDef;
 struct ASImage;
 
+/* JWT:WARNING:THIS ENUM IS VERY TRICKY TO MODIFY - THESE ITEMS ARE IN GROUPS ONE MUST BE
+   VERY CAREFUL MAKING ANY CHANGES, ESPECIALLY ADDING NEW FUNCTIONS.  ANY CHANGES HERE
+   MUST ALSO BE MATCHED IN asapp.c, src/afterstep/functions.c, & possibly hints.c THE ORDERS
+   ARE CRITICAL & MUST MATCH!  MISTAKES WILL CAUSE WEIRD RUN-TIME ISSUES, NOT COMPILE ERRORS!
+*/
 typedef enum FunctionCode{
   F_NOP = 0,
   F_TITLE,
@@ -119,10 +124,11 @@ typedef enum FunctionCode{
   F_CHANGE_WINDOWS_DESK,
   F_BOOKMARK_WINDOW,
   F_PIN_MENU,
-  F_MVRESET,  /* JWT:ADDED FOR NEW "MoveBack" FUNCTION (HAD 2B AFTER F_PIN_MENU)! */
   F_TAKE_WINDOWSHOT,
   F_TAKE_FRAMESHOT,
   F_SWALLOW_WINDOW,
+  F_MVRESET,
+  F_SVRESET,
   /* end of window functions */
   /* these are commands  to be used only by modules */
 /* end of window functions */

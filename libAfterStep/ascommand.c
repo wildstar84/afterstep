@@ -118,7 +118,6 @@ Bool process_message (send_data_type type, send_data_type * body)
 			new_item = safemalloc (sizeof (client_item));
 			new_item->cl = wd->client;
 			append_bidirelem (ASCommandState.clients_order, new_item);
-
 		} else if (res == WP_DataDeleted) {
 			/* Delete element */
 			for (curr = ASCommandState.clients_order->head; curr != NULL;
@@ -280,6 +279,7 @@ void ascom_update_winlist (void)
 	Bool complete = False;
 
 	clear_selection ();
+
 	SendInfo ("Send_WindowList", 0);
 
 	while (!complete) {
@@ -535,7 +535,6 @@ select_windows_by_pattern (const char *pattern, Bool just_one,
 			LOCAL_DEBUG_OUT ("Error compiling regex");
 			return False;
 		}
-
 		for (; curr != NULL; curr = curr->next) {
 			wd = fetch_window_by_id (((client_item *) curr->data)->cl);
 
@@ -569,7 +568,6 @@ void select_windows_on_screen (Bool unselect)
 		curr = ASCommandState.clients_order->head;
 
 	for (; curr != NULL; curr = curr->next) {
-
 		wd = fetch_window_by_id (((client_item *) curr->data)->cl);
 
 
@@ -614,15 +612,12 @@ void select_windows_on_desk (Bool unselect)
 	else
 		curr = ASCommandState.clients_order->head;
 
-
 	for (; curr != NULL; curr = curr->next) {
-
 		wd = fetch_window_by_id (((client_item *) curr->data)->cl);
 
 		if ((unselect && (wd->desk != Scr.CurrentDesk))
 				|| (!unselect && (wd->desk == Scr.CurrentDesk)))
 			append_bidirelem (new_selection, curr->data);
-
 	}
 
 	destroy_asbidirlist (&ASCommandState.selected_wins);

@@ -56,9 +56,6 @@ Bool desktop_category2complex_function (const char *name,
 void beep_func_handler (FunctionData * data, ASEvent * event, int module);
 void moveresize_func_handler (FunctionData * data, ASEvent * event,
 															int module);
-/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
-void movereset_func_handler (FunctionData * data, ASEvent * event, int module);
-
 void scroll_func_handler (FunctionData * data, ASEvent * event,
 													int module);
 void movecursor_func_handler (FunctionData * data, ASEvent * event,
@@ -152,6 +149,12 @@ void system_shutdown_func_handler (FunctionData * data, ASEvent * event,
 																	int module);
 void modulelist_func_handler (FunctionData * data, ASEvent * event,
 															int module);
+/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
+void moveback_function_handler (FunctionData * data, ASEvent * event, int module);
+
+/* JWT:NEXT FN ADDED FOR NEW "SaveBack" FUNCTION: */
+void saveback_func_handler (FunctionData * data, ASEvent * event, int module);
+
 
 
 /* handlers initialization function : */
@@ -162,9 +165,6 @@ void SetupFunctionHandlers ()
 
 	function_handlers[F_RESIZE] =
 			function_handlers[F_MOVE] = moveresize_func_handler;
-
-	/* JWT:NEXT LINE ADDED FOR NEW "MoveBack" FUNCTION: */
-	function_handlers[F_MVRESET] = movereset_func_handler;
 
 #ifndef NO_VIRTUAL
 	function_handlers[F_SCROLL] = scroll_func_handler;
@@ -282,6 +282,10 @@ void SetupFunctionHandlers ()
 			function_handlers[F_TAKE_SCREENSHOT] = screenshot_func_handler;
 	function_handlers[F_SWALLOW_WINDOW] = swallow_window_func_handler;
 	function_handlers[F_SYSTEM_SHUTDOWN] = system_shutdown_func_handler;
+	/* JWT:NEXT LINE ADDED FOR NEW "MoveBack" FUNCTION: */
+	function_handlers[F_MVRESET] = moveback_function_handler;
+	/* JWT:NEXT LINE ADDED FOR NEW "SaveBack" FUNCTION: */
+	function_handlers[F_SVRESET] = saveback_func_handler;
 	function_handlers[F_SUSPEND] = system_shutdown_func_handler;
 	function_handlers[F_HIBERNATE] = system_shutdown_func_handler;
 	function_handlers[F_LOGOUT] = quit_func_handler;
@@ -937,31 +941,6 @@ void moveresize_func_handler (FunctionData * data, ASEvent * event, int module)
 			ASWIN_SET_FLAGS (asw, AS_MoveresizeInProgress);
 		}
 	}
-}
-
-/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
-/* THIS WINDOW FUNCTION WILL MOVE AND RESIZE A WINDOW BACK TO IT'S ORIGINAL VIEWPORT,
-   COORDINATES AND SIZE (WHERE ORIGINALLY PLACED).  INTENDED USE IS FOR USERS WHO PLACE
-   SPECIFIC WINDOWS IN SPECIFIC PLACES INTENDING FOR THEM TO NORMALLY STAY THERE, BUT
-   WHO OCCASIONALY NEED TO TEMPORARY DRAG OR RESIZE THEM OUT OF THE WAY, BUT THEN WISH
-   TO ZAP THEM BACK TO WHERE THEY WERE INTENDED TO BE.  NOTE:  THIS STILL WORKS FOR ALL
-   WINDOWS, NOT JUST ONES WITH A FIXED GEOMETRY DEFINED IN THE "database" FILE!
-*/
-void movereset_func_handler (FunctionData * data, ASEvent * event,
-		int module)
-{	/* gotta have a window */
-	ASWindow *asw = event->client;
-	if (asw == NULL)
-		return;
-
-	if (asw->init_rect.x == 0 && asw->init_rect.y == 0
-			&& asw->init_rect.width == 0 && asw->init_rect.height == 0)
-		return;
-
-	moveresize_aswindow_wm (asw,
-			asw->init_rect.x - (Scr.Vx - asw->init_Scr_x),
-			asw->init_rect.y - (Scr.Vy - asw->init_Scr_y),
-			asw->init_rect.width, asw->init_rect.height, True);
 }
 
 static inline int
@@ -2515,4 +2494,47 @@ void QuickRestart (char *what)
 	if (update_background)
 		SendPacket (-1, M_NEW_BACKGROUND, 1, 1);
 	SendPacket (-1, M_NEW_CONFIG, 1, what_flags);
+}
+
+/* JWT:NEXT FN ADDED FOR NEW "MoveBack" FUNCTION: */
+/* THIS WINDOW FUNCTION WILL MOVE AND RESIZE A WINDOW BACK TO IT'S ORIGINAL VIEWPORT,
+   COORDINATES AND SIZE (WHERE ORIGINALLY PLACED).  INTENDED USE IS FOR USERS WHO PLACE
+   SPECIFIC WINDOWS IN SPECIFIC PLACES INTENDING FOR THEM TO NORMALLY STAY THERE, BUT
+   WHO OCCASIONALY NEED TO TEMPORARY DRAG OR RESIZE THEM OUT OF THE WAY, BUT THEN WISH
+   TO ZAP THEM BACK TO WHERE THEY WERE INTENDED TO BE.  NOTE:  THIS STILL WORKS FOR ALL
+   WINDOWS, NOT JUST ONES WITH A FIXED GEOMETRY DEFINED IN THE "database" FILE!
+*/
+void moveback_function_handler (FunctionData * data, ASEvent * event, int module)
+{	/* gotta have a window */
+	ASWindow *asw = event->client;
+	if (asw == NULL)
+		return;
+
+	if (asw->init_rect.x == 0 && asw->init_rect.y == 0
+			&& asw->init_rect.width == 0 && asw->init_rect.height == 0)
+		return;
+
+	moveresize_aswindow_wm (asw,
+			asw->init_rect.x - (Scr.Vx - asw->init_Scr_x),
+			asw->init_rect.y - (Scr.Vy - asw->init_Scr_y),
+			asw->init_rect.width, asw->init_rect.height, True);
+}
+
+/* JWT:NEXT FN ADDED FOR NEW "SaveBack" FUNCTION: */
+/* THIS WINDOW FUNCTION WILL REPLACE THE WINDOW'S ORIGINAL POSITION/SIZE WITH IT'S
+   CORRESPONDING CURRENT VALUES, SO THAT FUTURE CALLS TO THE MoveBack FUNCTION WILL
+   NOW USE THESE COORDINATES!:
+*/
+void saveback_func_handler (FunctionData * data, ASEvent * event, int module)
+{	/* gotta have a window */
+	ASWindow *asw = event->client;
+	if (asw == NULL)
+		return;
+
+	asw->init_rect.x = asw->status->x;
+	asw->init_rect.y = asw->status->y;
+	asw->init_rect.width = asw->status->width;
+	asw->init_rect.height = asw->status->height;
+	asw->init_Scr_x = Scr.Vx;
+	asw->init_Scr_y = Scr.Vy;
 }
