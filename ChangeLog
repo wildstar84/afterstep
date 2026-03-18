@@ -1,5 +1,18 @@
 CHANGELOG
 ----------------------
+[2026-03-17: Jim Turner]
+
+* Fix long-standing annoyance where certain large transient windows often get 
+placed where either the right or bottom part gets placed off the screen such 
+that a right-most button or a row of buttons at the bottom aren't readable 
+unless one manually moves the window.  Firefox's "File Upload" window, I'm 
+looking at you!  Pbm. is that some apps. apply some hints to their transient 
+windows that cause placement issues since in certain circumstances, AS tries 
+an expedited "pre-placement" of a window without going through the full 
+placement process and thus failing to take into full account user-defined 
+window-boxes, etc.  Fixed by forcing transient windows to go through the 
+full placement algorythums.
+
 [2026-03-16: Jim Turner]
 
 * Add "SaveBack" window-function to enable user to set the current window-
@@ -27,7 +40,7 @@ function:  gtk_window_set_skip_pager_hint ((GtkWindow *) w, true).
 
 * When AfterStep opens a transient window that does not have it's own icon 
 defined, Afterstep will now try to use it's parent window's icon instead of 
-the default icon (if any )defined in the database, and only use the latter if 
+the default icon (if any) defined in the database, and only use the latter if 
 the parent window does not have an icon either.
 
 [2025-05-30: Jim Turner]

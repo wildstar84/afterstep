@@ -301,6 +301,16 @@ ASWindow *AddWindow (Window w, Bool from_map_request)
 
 /* We cannot map frame window at that point as it will play havoc with initial placement */
 /*    XMapRaised (dpy, tmp_win->frame); */
+
+	/*
+	   JWT:NEXT 3 ADDED 202603 TO FORCE REPLACEMENT TO FIT W/N ANY WINDOW-BOXES!
+	   AS SOME APS (ie. FIREFOX) PPOSITION TRANSIENTS SO PART OF WINDOW IS CUT OFF
+	   BY NOT TAKING USER'S SPECIFIED WINDOWBOX INTO ACCOUNT IN init_aswindow_status()!:
+	*/
+	if (! get_flags (tmp_win->status->flags, AS_Sticky)
+ 			&& get_flags (tmp_win->hints->flags, AS_Transient))
+ 		pending_placement = True;
+
 	if (pending_placement) {
 		if (!place_aswindow (tmp_win)) {
 			LOCAL_DEBUG_OUT
