@@ -239,8 +239,7 @@ module_send($module_socket, 0, "SET_NAME $name");
 
 # send a single user-requested command
 if (defined($ARGV[0])) {
-#JWT:CHGD. TO NEXT 202603 (CMDS CAN HAVE ARGS)!:  module_send($module_socket, $window_id, $ARGV[0]);
-  module_send($module_socket, $window_id, join(' ', @ARGV));
+  module_send($module_socket, $window_id, $ARGV[0]);
 }
 
 # send a list of commands
