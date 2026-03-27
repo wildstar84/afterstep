@@ -1004,26 +1004,25 @@ void on_window_hints_changed (ASWindow * asw)
 
 	memset (&scratch_status, 0x00, sizeof (scratch_status));
 
-	hints =
-			merge_hints (&raw_hints, Database, &scratch_status,
-									 Scr.Look.supported_hints, HINT_ANY, NULL, asw->w);
+	hints = merge_hints (&raw_hints, Database, &scratch_status,
+			Scr.Look.supported_hints, HINT_ANY, NULL, asw->w);
 
 	destroy_raw_hints (&raw_hints, True);
 	if (hints) {
 		show_debug (__FILE__, __FUNCTION__, __LINE__,
-								"Window management hints collected and merged for window %X",
-								asw->w);
+				"Window management hints collected and merged for window %X",
+				asw->w);
 		if (is_output_level_under_threshold (OUTPUT_LEVEL_HINTS))
 			print_clean_hints (NULL, NULL, hints);
 	} else {
 		show_warning ("Failed to merge window management hints for window %X",
-									asw->w);
+				asw->w);
 		return;
 	}
 
 	old_hints = asw->hints;
 	tie_changed = ((old_hints->transient_for != hints->transient_for) ||
-								 (old_hints->group_lead != hints->group_lead));
+			(old_hints->group_lead != hints->group_lead));
 
 	if (tie_changed)
 		untie_aswindow (asw);
@@ -1766,10 +1765,11 @@ Bool init_aswindow_status (ASWindow * t, ASStatusHints * status)
 	if (!get_flags (t->status->flags, AS_Sticky)) {
 		Bool absolute_origin = (!ASWIN_HFLAGS (t, AS_UseCurrentViewport));
 
-		if (absolute_origin && get_flags (t->hints->flags, AS_Transient) && get_flags (t->status->flags, AS_StartPositionUser)) {	/* most likely stupid KDE or GNOME app that is abusing USPosition
-																																																															   for no good reason - place it on current viewport */
+		if (absolute_origin && get_flags (t->hints->flags, AS_Transient)
+				&& get_flags (t->status->flags, AS_StartPositionUser)) {
+			/* most likely stupid KDE or GNOME app that is abusing USPosition for no good reason - place it on current viewport */
 			absolute_origin = (t->status->x >= Scr.MyDisplayWidth ||
-												 t->status->y >= Scr.MyDisplayHeight);
+				 t->status->y >= Scr.MyDisplayHeight);
 		}
 		if (absolute_origin) {
 			t->status->x -= t->status->viewport_x;
@@ -1796,13 +1796,12 @@ Bool init_aswindow_status (ASWindow * t, ASStatusHints * status)
 		if (get_flags (t->hints->flags, AS_MinSize)) {
 			int width = t->status->width;
 			int height = t->status->height;
-			if ((!get_flags (t->status->flags, AS_StartSizeUser)
-					 && width < t->hints->min_width) || width == 1)
+			if (width == 1 || (!get_flags (t->status->flags, AS_StartSizeUser)
+					 && width < t->hints->min_width))
 				width = min (t->hints->min_width, Scr.VxMax + Scr.MyDisplayWidth);
-			if ((!get_flags (t->status->flags, AS_StartSizeUser)
-					 && height < t->hints->min_height) || height == 1)
-				height =
-						min (t->hints->min_height, Scr.VyMax + Scr.MyDisplayHeight);
+			if (height == 1 || (!get_flags (t->status->flags, AS_StartSizeUser)
+					 && height < t->hints->min_height))
+				height = min (t->hints->min_height, Scr.VyMax + Scr.MyDisplayHeight);
 			if (width != t->status->width || height != t->status->height) {
 				int dx = 0, dy = 0;
 				if (t->hints->gravity == EastGravity ||
@@ -1844,7 +1843,7 @@ Bool init_aswindow_status (ASWindow * t, ASStatusHints * status)
 			}
 			/* we have to make sure that window is visible !!!! */
 			LOCAL_DEBUG_OUT ("x_range(%d,%d), y_range(%d,%d), margin = %d",
-											 min_x, max_x, min_y, max_y, margin);
+					min_x, max_x, min_y, max_y, margin);
 			if ((int)t->status->x + (int)t->status->width < min_x + margin)
 				t->status->x = min_x + margin - (int)t->status->width;
 			else if ((int)t->status->x > max_x - margin)
@@ -1858,43 +1857,64 @@ Bool init_aswindow_status (ASWindow * t, ASStatusHints * status)
 											 t->status->x, t->status->y, Scr.Vx, Scr.Vy);
 
 			set_flags (t->status->flags, AS_Position);
-
 		} else if (get_flags (Scr.Feel.flags, NoPPosition)) {
-
 			if (!get_flags (t->hints->flags, AS_Transient) &&
 					!get_flags (t->status->flags, AS_StartPositionUser))
 				clear_flags (t->status->flags, AS_Position);
 		}
 		if (get_flags (status->flags, AS_MaximizedX | AS_MaximizedY))
-			pending_placement = True;
-		else if (!get_flags (t->status->flags, AS_Position)) {
-			if (!get_flags (t->status->flags, AS_StartsIconic)) {
-				int x = -1, y = -1;
-				pending_placement = True;
-				ASQueryPointerRootXY (&x, &y);
-				if (get_flags (t->hints->flags, AS_Transient | AS_ShortLived)) {
+			pending_placement = True;  /* FORCE MAXIMIZED WINDOWS THRU FULL-PLACEMENT: */
+		else if (!get_flags (t->status->flags, AS_Position)
+				&& !get_flags (t->status->flags, AS_StartsIconic)) {
+			/* HANDLES PLACEMENT OF NON-ICONIFIED WINDOWS W/O PRESET POSITION (AS_Position): */
+			int tbar_thickness = 0;
+			estimate_titlebar_size (t->hints, NULL, &tbar_thickness);
+			tbar_thickness += 2;  /* ESTIMATE FOR BORDERS TOO. */
+			Bool tbar_is_vertical = ASWIN_HFLAGS (t, AS_VerticalTitle);
+			/* JWT:SHOULD AT LEAST ACCOUNT FOR TITLEBAR THICKNESS!: */
+			int width = (int)t->status->width + (tbar_is_vertical ? tbar_thickness : 0);
+			int height = (int)t->status->height + (!tbar_is_vertical ? tbar_thickness : 0);
+			int x = -1, y = -1;
+
+			if (get_flags (t->hints->flags, AS_Transient | AS_ShortLived)) {
+				/* JWT:ADDED NEXT 3 202603 TO HANDLE LARGE TRANSIENTS DIFFERENTLY!:      */
+				/*     LARGE WINDOWS MORE LIKELY TO BE COVERED BY WHARF, ETC. IF PLACED  */
+				/*     AT MOUSE-POSN, & I PREFER THEY GO THRU FULL-PLACEMENT ALGORYTHUMS */
+				/*     SO AS TO BE FIT (IF POSSIBLE) INTO WINDOWBOXES.  DEFINING "LARGE" */
+				/*     ONES AS BOTH WIDTH & HEIGHT BEING > 1/2 OF SCREEN SIZE SEEMS TO   */
+				/*     WORK & LOOK PRETTY GOOD, IMHO! ;)                                 */
+				if (height*2 > Scr.MyDisplayHeight && width*2 > Scr.MyDisplayWidth)
+					pending_placement = True;  /* FORCE "BIG" TRANSIENTS THRU FULL-PLACEMENT */
+				else { /* JWT:PLACE THE REST WHERE MOUSE IS (GRAVITY TOWARD CENTER OF SCREEN): */
+					ASQueryPointerRootXY (&x, &y);
+/* JWT:REPLACE NEXT 2 W/FOLLOWING 4 202603 - TRY HARDER TO PLACE TRANSIENT WINDOW FULLY VIEWABLE!:
 					x -= (int)t->status->width / 2;
 					y -= (int)t->status->height / 2;
+   BY PLACING IT GRAVITATED TOWARD CENTER OF SCREEN RELATIVE TO MOUSE POSN. (THIS HELPS
+   KEEP POPUP WINDOWS VISIBLE WHEN MOUSE IS NEAR A CORNER OR EDGE OF SCREEN)!:
+*/
+					x -= (int)((width * x) / Scr.MyDisplayWidth);
+					y -= (int)((height * y) / Scr.MyDisplayHeight);
 					set_flags (t->status->flags, AS_Position);
-					pending_placement = False;
 				}
+			} else  /* FORCE ALL OTHER NON-TRANSIENTS W/O AS_Position THRU FULL-PLACEMENT: */
+				pending_placement = True;
 
-				if (x + (int)t->status->width > (int)Scr.MyDisplayWidth)
-					x = (int)Scr.MyDisplayWidth - (int)t->status->width;
-				if (x < 0)
-					x = 0;
+			if (x + width > (int)Scr.MyDisplayWidth)
+				x = (int)Scr.MyDisplayWidth - width;
+			if (x < 0)
+				x = 0;
 
-				if (y + (int)t->status->height > (int)Scr.MyDisplayHeight)
-					y = Scr.MyDisplayHeight - (int)t->status->height;
-				if (y < 0)
-					y = 0;
+			if (y + height > (int)Scr.MyDisplayHeight)
+				y = Scr.MyDisplayHeight - height;
+			if (y < 0)
+				y = 0;
 
-				t->status->x = x;
-				t->status->y = y;
+			t->status->x = x;
+			t->status->y = y;
 
-				LOCAL_DEBUG_OUT ("status->pos = %+d%+d, Scr.Vpos = %+d%+d",
-												 t->status->x, t->status->y, Scr.Vx, Scr.Vy);
-			}
+			LOCAL_DEBUG_OUT ("status->pos = %+d%+d, Scr.Vpos = %+d%+d",
+					t->status->x, t->status->y, Scr.Vx, Scr.Vy);
 		}
 	}
 
@@ -1905,8 +1925,8 @@ Bool init_aswindow_status (ASWindow * t, ASStatusHints * status)
 	set_flags (t->status->flags, AS_Position);
 
 	status2anchor (&(t->anchor), t->hints, t->status,
-								 Scr.VxMax + Scr.MyDisplayWidth,
-								 Scr.VyMax + Scr.MyDisplayHeight);
+			Scr.VxMax + Scr.MyDisplayWidth,
+			Scr.VyMax + Scr.MyDisplayHeight);
 	LOCAL_DEBUG_OUT
 			("status->geom=%dx%d%+d%+d,status->viewport=%+d%+d,anchor=%dx%d%+d%+d",
 			 t->status->width, t->status->height, t->status->x, t->status->y,
@@ -2435,7 +2455,7 @@ void toggle_aswindow_status (ASWindow * asw, ASFlagType flags)
 	if (get_flags (flags, AS_Sticky))
 		update_window_transparency (asw, False);
 	LOCAL_DEBUG_OUT ("Window is %sticky",
-									 ASWIN_GET_FLAGS (asw, AS_Sticky) ? "S" : "NotS");
+			ASWIN_GET_FLAGS (asw, AS_Sticky) ? "S" : "NotS");
 }
 
 Bool activate_aswindow (ASWindow * asw, Bool force, Bool deiconify)

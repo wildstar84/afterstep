@@ -1,5 +1,47 @@
 CHANGELOG
 ----------------------
+[2026-03-25: Jim Turner]
+
+* After an extensive further review, I found the last change to be overly 
+broad by forcing all transient windows to go through the full-placement 
+regime.  Actually, AfterStep (before this change) would place all transient 
+windows lacking specified x,y geometry to be placed where the mouse-pointer 
+would be at or near the center of the window.  I agree this is desirable 
+behaviour for smaller windows, ie. popup dialogs, etc. but it seems to not be 
+ideal for large transient windows.  Therefore, I've decided to revert the last 
+commit and instead check whether the transient window exceeds half the screen's 
+size in both the width and height, and if so, use the full-placement system, 
+otherwise, use AfterStep's previous method of placing the window where the 
+mouse-pointer is.  I've also modified that algorythum to place the window 
+where the window is positioned relative to the mouse-pointer proportionally to 
+where the pointer is on the screen.  This results in the window being drawn 
+a bit more toward the center of the screen based on how close to an edge or 
+corner of the screen, making the window less likely to be partially obscured 
+by Wharf, WinList, or other icons that typically reside in the corners or 
+edges of the screen (since the whole problem with not using the full placement 
+regime is that user-defined windowboxes (which typically exclude these regions 
+are not taken into account in this expedited placement method.  So far I'm 
+really liking the way this looks and works.  No changes have been made to the 
+way non-transient windows or transient ones with defined positioning are 
+placed.  I also take into account an "estimated" thickness of the configured 
+titlebar to add to the window's height (width if vertical) in calculating 
+placement preventing parts of windows being potentially cut off the screen edge 
+by the amount of the thickness of the titlebar.  Unfortunately, we can't take 
+full accounting of all the potential decorating widgets as this information 
+is not available until after the window is fully placed.
+
+In summary, the only real change from classic AfterStep is that large 
+transient/short-lived windows without specific x,y geometry are now placed 
+like similar non-transient windows via the full placement regime taking into 
+account windowboxes, random/smart/cascade/manual placement, etc. instead of 
+being placed relative to the mouse-pointer position, as was the case for all 
+such transient windows before.
+
+* ascommand(.pl) - Pass all command-line arguments to ascommand instead of just 
+the first one, as many commands can have additional arguments.  Also symlink 
+the classic ascommand to ascommand.pl as the former C-version is no longer 
+maintained by AfterStep, but replaced with ascommand.pl.
+
 [2026-03-17: Jim Turner]
 
 * Fix long-standing annoyance where certain large transient windows often get 
@@ -10,8 +52,8 @@ looking at you!  Pbm. is that some apps. apply some hints to their transient
 windows that cause placement issues since in certain circumstances, AS tries 
 an expedited "pre-placement" of a window without going through the full 
 placement process and thus failing to take into full account user-defined 
-window-boxes, etc.  Fixed by forcing transient windows to go through the 
-full placement algorythums.
+window-boxes, etc.  Fixed by forcing large transient windows to go through the 
+full placement algorythums
 
 [2026-03-16: Jim Turner]
 
