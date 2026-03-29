@@ -1756,7 +1756,8 @@ void destroy_wharf_folder (ASWharfFolder ** paswf)
 				send_wm_protocol_request (aswb->swallowed->current->w, _XA_WM_DELETE_WINDOW, CurrentTime);
 				ASSync (False);
 				sleep_a_millisec (200);
-				XKillClient (dpy, aswb->swallowed->current->w);
+				if (aswb->swallowed->current->w)
+					XKillClient (dpy, aswb->swallowed->current->w);
 				ASSync (False);
 				sleep_a_millisec (100);
 				if (aswb->swallowed->pid > 0)
@@ -2626,20 +2627,42 @@ display_wharf_folder (ASWharfFolder * aswf, int left, int top, int right, int bo
 		if (get_flags (aswf->flags, ASW_Vertical)) {
 			if (south) {  /* EXPANDS TO NORTH! */
 				aswf->parent->btnSouth = NULL;
-				aswf->parent->btnNorth = &(aswf->buttons[0]);
-			} else {
+				if (get_flags (Config->geometry.flags, YNegative)) {
+					aswf->parent->btnNorth = &(aswf->buttons[0]);
+					aswf->buttons[0].btnSouth = aswf->parent;
+				} else {
+					aswf->parent->btnNorth = &(aswf->buttons[aswf->buttons_num - 1]);
+					aswf->buttons[aswf->buttons_num - 1].btnSouth = aswf->parent;
+				}
+			} else {  /* EXPANDS TO SOUTH! */
 				aswf->parent->btnNorth = NULL;
-				aswf->parent->btnSouth = &(aswf->buttons[aswf->buttons_num - 1]);
+				if (get_flags (Config->geometry.flags, YNegative)) {
+					aswf->parent->btnSouth = &(aswf->buttons[aswf->buttons_num - 1]);
+					aswf->buttons[aswf->buttons_num - 1].btnNorth = aswf->parent;
+				} else {
+					aswf->parent->btnSouth = &(aswf->buttons[0]);
+					aswf->buttons[0].btnNorth = aswf->parent;
+				}
 			}
 		} else {
 			if (east) {  /* EXPANDS TO WEST! */
 				aswf->parent->btnEast = NULL;
-				aswf->parent->btnWest = &(aswf->buttons[0]);
-				aswf->buttons[0].btnEast = aswf->parent;
-			} else {
+				if (get_flags (Config->geometry.flags, XNegative)) {
+					aswf->parent->btnWest = &(aswf->buttons[0]);
+					aswf->buttons[0].btnEast = aswf->parent;
+				} else {
+					aswf->parent->btnEast = &(aswf->buttons[0]);
+					aswf->buttons[0].btnEast = aswf->parent;
+				}
+			} else {  /* EXPANDS TO EAST! */
 				aswf->parent->btnWest = NULL;
-				aswf->parent->btnEast = &(aswf->buttons[aswf->buttons_num - 1]);
-				aswf->buttons[0].btnWest = aswf->parent;
+				if (get_flags (Config->geometry.flags, XNegative)) {
+					aswf->parent->btnEast = &(aswf->buttons[aswf->buttons_num - 1]);
+					aswf->buttons[aswf->buttons_num - 1].btnWest = aswf->parent;
+				} else {
+					aswf->parent->btnEast = &(aswf->buttons[0]);
+					aswf->buttons[0].btnWest = aswf->parent;
+				}
 			}
 		}
 	}
@@ -2702,7 +2725,11 @@ void withdraw_wharf_folder (ASWharfFolder * aswf)
 			change_button_focus (WharfState.focused_button, False);
 			change_button_focus (aswf->parent, True);
 		}
-		if (get_flags (aswf->parent->flags, ASW_Vertical)) {
+		/* THIS SEEMS COUNTER-INTUITIVE, BUT WE'RE CLOSING A
+		   "T"-INTERSECTION IN THE PARENT SINCE THE CHILD FOLDER
+		   IS NOW WITHDRAWN!: 
+		*/
+		if (get_flags (aswf->flags, ASW_Vertical)) {
 			aswf->parent->btnNorth = NULL;
 			aswf->parent->btnSouth = NULL;
 		} else {
