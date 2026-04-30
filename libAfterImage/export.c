@@ -1146,7 +1146,7 @@ ASImage2tiff( ASImage *im, const char *path, ASImageExportParams *params)
 	TIFF *out;
 	static const ASTiffExportParams defaultsTiff = { ASIT_Tiff, 0, -1, TIFF_COMPRESSION_NONE, 100, 0 };
         ASImageExportParams defaults;
-	uint16 photometric = PHOTOMETRIC_RGB;
+	uint16_t photometric = PHOTOMETRIC_RGB;
 	tsize_t linebytes, scanline;
 	ASImageDecoder *imdec ;
 	CARD32 *r, *g, *b, *a ;
@@ -1192,13 +1192,13 @@ ASImage2tiff( ASImage *im, const char *path, ASImageExportParams *params)
 		return False;
 	}
 
-	TIFFSetField(out, TIFFTAG_IMAGEWIDTH, (uint32) im->width);
-	TIFFSetField(out, TIFFTAG_IMAGELENGTH, (uint32) im->height);
+	TIFFSetField(out, TIFFTAG_IMAGEWIDTH, (uint32_t) im->width);
+	TIFFSetField(out, TIFFTAG_IMAGELENGTH, (uint32_t) im->height);
 	TIFFSetField(out, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 	TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, nsamples);
 	if (has_alpha)
 	{
-	    uint16 v[1];
+	    uint16_t v[1];
 	    v[0] = EXTRASAMPLE_UNASSALPHA;
 	    TIFFSetField(out, TIFFTAG_EXTRASAMPLES, 1, v);
 	}

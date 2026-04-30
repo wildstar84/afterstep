@@ -133,7 +133,7 @@ void tv_add_ms(struct timeval *tv, time_t ms) {
 Bool timer_delay_till_next_alarm (time_t * sec, time_t * usec)
 {
 	Timer        *timer;
-	long         tsec, tusec = 0;
+	time_t        tsec = 0, tusec = 0;
 
 	if (timer_first == NULL)
 		return False;

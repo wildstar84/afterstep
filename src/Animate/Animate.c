@@ -488,8 +488,13 @@ GetOptions (const char *filename)
     /* mixing set and default flags : */
     Config->set_flags |= config->set_flags;
 
-  	if( config->color != NULL ) 
-		set_string( &(Config->color), config->color );
+    if( config->color != NULL )
+    {
+        set_string( &(Config->color), config->color );
+        /* prevent destruction of the string by DestroyAnimateConfig() below, */
+        /* as the string is now stored in Config->color */
+        config->color = NULL;
+    }
     if( get_flags(config->set_flags, ANIMATE_SET_DELAY) )
         Config->delay = config->delay;
     if( get_flags(config->set_flags, ANIMATE_SET_ITERATIONS) )

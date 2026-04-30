@@ -1237,7 +1237,7 @@ moveresize_main_canvas( int width, int height )
 void
 postponed_rearrange_winlist( void *vdata )
 {
-    Bool dont_resize_main_canvas  = vdata != NULL;
+    Bool dont_resize_main_canvas  = (vdata != NULL);
     rearrange_winlist_window( dont_resize_main_canvas );    
 }
 

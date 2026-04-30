@@ -54,6 +54,7 @@
 
 #include "../../libAfterConf/afterconf.h"
 
+#include <time.h>
 
 typedef struct AfterStepConfig {
 	ASModuleConfig asmodule_config;
@@ -1981,18 +1982,28 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
 																 MenuMiniPixmaps) ?
 											"Reloading menu pixmaps :" :
 											"Unloading menu pixmaps :");
+		time_t startTime = time(NULL);
+		int all_count = 0;
+		if( start_hash_iteration( Scr.Feel.Popups, &i ) ) {
+			do { ++all_count;  } while ( next_hash_item( &i ) );
+		}
+		const int procentage_count = all_count / 25 + 1; // to show about 25 dots of progressbar
+		                                                 // +1 to make sure it's grater than 0
+
 		if (start_hash_iteration (Scr.Feel.Popups, &i))
 			do {
 				MenuData *md = curr_hash_data (&i);
-				if (!get_flags (Scr.Look.flags, MenuMiniPixmaps))
+				if (!get_flags (Scr.Look.flags, MenuMiniPixmaps)) {
+					++count;
 					free_menu_pmaps (md);
-				else {
+				} else {
 					char *name = md->name;
-					Bool newline = (count % 10 == 0);
 					if (isdigit (name[0]))
 						if (md->first != NULL && md->first->fdata->func == F_TITLE)
 							name = md->first->item;
-					display_progress (newline, newline ? "    %s" : "%s", name);
+					if (count % procentage_count == 0)
+						display_progress( False, ".");
+
 					++count;
 
 					reload_menu_pmaps (md, get_flags (what, PARSE_BASE_CONFIG));
@@ -2000,6 +2011,9 @@ void LoadASConfig (int thisdesktop, ASFlagType what)
 
 			} while (next_hash_item (&i));
 
+	    time_t endTime = time(NULL);
+	    display_progress( False, "Done.");
+	    fprintf(stderr, "(Re)loaded %d menu items in %d seconds\n", count, (int)difftime(endTime,startTime));
 		display_progress (True, "Advertising titlebar properties ...");
 		advertise_tbar_props ();
 		display_progress (False, "Done.");
@@ -2570,6 +2584,12 @@ int MeltStartMenu (char *buf)
 #endif													/* FIXED_DIR */
 
 	dirtree_parse_include (tree);
+	/* JWT:ADDED 202604 TO PREVENT SEGFAULT IF "start" DIRECTORY IS NOT EXISTANT OR READABLE!: */
+	if (tree == NULL) {
+		show_error("s:\"start\" menu-directory non-existant or unreadable, so no menu for you!");
+		return 0;
+	}
+
 	dirtree_remove_order (tree);
 	dirtree_merge (tree);
 	dirtree_sort (tree);
