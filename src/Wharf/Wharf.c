@@ -749,6 +749,31 @@ void DispatchEvent (ASEvent * event)
 		on_wharf_moveresize (event);
 		break;
 	case KeyPress:  /* JWT:HANDLE KEYBOARD NAVIGATION: */
+		/* JWT:NOTE: WHARF EATS THE FOLLOWING KEYS:  XK_Control_L, XK_Control_R,
+		   XK_Return, XK_Escape, XK_Down, XK_Up, XK_Right, AND XK_Left FOR WHARF-
+		   NAVIGATION.  OTHER KEYS ARE PASSED ON TO SWALLOWED APPS.  IN ORDER TO
+		   SEND THE ARROW-KEYS TO PAGER, ETC. PREFACE THEM WITH XK_Control_L OR
+		   XK_Control_R, WHICH WILL SEND THE ARROW-KEYS, ET. AL. (W/O THE CTRL- PREFIX)
+		   TO SWALLOWED APPS:
+		*/
+		if (WharfState.ctrlkey_down) {
+			/* SEND Ctrl-keys TO THE SWALLOWED APP (MOSTLY FOR PAGER, BUT W/O Ctrl- PREFIX): */
+			WharfState.key_release_pending = True;
+			ASWharfButton *aswb = WharfState.focused_button;
+			if (aswb && WharfState.isFocused && aswb->swallowed) {
+				/* focus_window (NULL, w); */
+				XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
+				event->w = aswb->swallowed->current->w;
+				event->x.xkey.window = aswb->swallowed->current->w;
+				/* JWT:SEND ALL KEYPRESS EVENTS TO SWALLOWED APPS (IF KB-FOCUSED): */
+				if (!XSendEvent (dpy, aswb->swallowed->current->w, False,
+						KeyPressMask, &(event->x)))
+					show_warning("ERROR - COULD NOT SEND KEYDOWN EVENT!");
+				/* JWT:NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
+				XSetInputFocus (dpy, WharfState.focus_return, RevertToParent, Scr.last_Timestamp);
+				break;
+			}
+		}
 		n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
 		if (!WharfState.focused_button) {
 			int firstbtn = get_flags (WharfState.root_folder->flags, ASW_ReverseOrder)
@@ -759,6 +784,10 @@ void DispatchEvent (ASEvent * event)
 		if (WharfState.focused_button) {
 			ASWharfButton * curfocusbtn = WharfState.focused_button;
 			switch (ks) {
+		    case XK_Control_L:
+		    case XK_Control_R:
+				WharfState.ctrlkey_down = True;
+				break;
 		    case XK_Left:
 		      if (WharfState.focused_button->btnWest != NULL) {
 				change_button_focus (curfocusbtn, False);
@@ -898,9 +927,8 @@ void DispatchEvent (ASEvent * event)
 				XEvent nev;
 				XPeekEvent(dpy, &nev);
 				if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
-						nev.xkey.keycode == *(&(event->x).xkey.keycode)) {
+						nev.xkey.keycode == *(&(event->x).xkey.keycode))
 					break;
-				}
 			}
 			WharfState.key_release_pending = False;
 

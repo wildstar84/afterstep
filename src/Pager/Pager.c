@@ -130,6 +130,7 @@ typedef struct ASPagerState {
 #define C_ShadeButton 		C_TButton0
 
 	MyButton shade_button;
+	Bool key_release_pending; /* JWT:PREVENT KEY-REPEAT! */
 } ASPagerState;
 
 ASPagerState PagerState;
@@ -184,6 +185,7 @@ void on_pager_pressure_changed (ASEvent * event);
 void release_pressure (ASEvent * event);
 void on_desk_moveresize (ASPagerDesk * d);
 void on_scroll_viewport (ASEvent * event);
+void shift_viewport (int xdelta, int ydelta);
 void place_separation_bars (ASPagerDesk * d);
 void DeadPipe (int);
 void request_background_image (ASPagerDesk * d);
@@ -205,6 +207,7 @@ int main (int argc, char **argv)
 
 	memset (&PagerState, 0x00, sizeof (PagerState));
 	PagerState.page_rows = PagerState.page_columns = 1;
+	PagerState.key_release_pending = False;
 
 	for (i = 1; i < argc; ++i) {
 		LOCAL_DEBUG_OUT ("argv[%d] = \"%s\", original argv[%d] = \"%s\"", i,
@@ -761,7 +764,7 @@ Window make_pager_window ()
 	}
 	attr.event_mask =
 			StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
-			PointerMotionMask;
+			KeyPressMask | KeyReleaseMask | PointerMotionMask;
 	w = create_visual_window (Scr.asv, Scr.Root, x, y, width, height, 0,
 														InputOutput, CWEventMask, &attr);
 	set_client_names (w, MyName, MyName, AS_MODULE_CLASS, CLASS_PAGER);
@@ -801,7 +804,7 @@ Window make_pager_window ()
 	sleep (1);										/* we have to give AS a chance to spot us */
 	/* we will need to wait for PropertyNotify event indicating transition
 	   into Withdrawn state, so selecting event mask: */
-	XSelectInput (dpy, w, PropertyChangeMask | StructureNotifyMask);
+	XSelectInput (dpy, w, PropertyChangeMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask);
 	return w;
 }
 
@@ -2529,6 +2532,8 @@ void process_message (send_data_type type, send_data_type * body)
 void DispatchEvent (ASEvent * event)
 {
 	static Bool root_pointer_moved = True;
+    KeySym ks;
+    char buf[10], n;
 	SHOW_EVENT_TRACE (event);
 
 	LOCAL_DEBUG_OUT ("mvrdata(%p)->main_canvas(%p)->widget(%p)",
@@ -2577,13 +2582,74 @@ void DispatchEvent (ASEvent * event)
 			on_client_moveresize ((ASWindowData *) event->client);
 		else {
 			on_pager_window_moveresize (event->client, event->w,
-																	event->x.xconfigure.x,
-																	event->x.xconfigure.y,
-																	event->x.xconfigure.width,
-																	event->x.xconfigure.height);
+					event->x.xconfigure.x,
+					event->x.xconfigure.y,
+					event->x.xconfigure.width,
+					event->x.xconfigure.height);
 		}
 		break;
 	case KeyPress:
+		{
+			n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+			int delta = 0;
+			switch (ks) {
+				case XK_Left:
+					if (PagerState.key_release_pending)
+						break;
+					delta = Scr.Vx - Scr.MyDisplayWidth;
+					if (delta >= 0) {
+						switch_deskviewport(Scr.CurrentDesk, delta, Scr.Vy);
+						shift_viewport(delta, Scr.Vy);
+					}
+					PagerState.key_release_pending = True;
+					break;
+				case XK_Right:
+					if (PagerState.key_release_pending)
+						break;
+					delta = Scr.Vx + Scr.MyDisplayWidth;
+					if (delta < PagerState.vscreen_width) {
+						switch_deskviewport(Scr.CurrentDesk, delta, Scr.Vy);
+						shift_viewport(delta, Scr.Vy);
+					}
+					PagerState.key_release_pending = True;
+					break;
+				case XK_Up:
+					if (PagerState.key_release_pending)
+						break;
+					delta = Scr.Vy - Scr.MyDisplayHeight;
+					if (delta >= 0) {
+						switch_deskviewport(Scr.CurrentDesk, Scr.Vx, delta);
+						shift_viewport(Scr.Vx, delta);
+					}
+					PagerState.key_release_pending = True;
+					break;
+				case XK_Down:
+					if (PagerState.key_release_pending)
+						break;
+					delta = Scr.Vy + Scr.MyDisplayHeight;
+					if (delta < PagerState.vscreen_height) {
+						switch_deskviewport(Scr.CurrentDesk, Scr.Vx, delta);
+						shift_viewport(Scr.Vx, delta);
+					}
+					PagerState.key_release_pending = True;
+					break;
+				case XK_Tab:
+				case XK_ISO_Left_Tab:
+					if (PagerState.key_release_pending)
+						break;
+					delta = (ks == XK_ISO_Left_Tab) ? Scr.CurrentDesk - 1 : 1;
+					if (delta >= PagerState.start_desk && delta < PagerState.desks_num)
+						switch_deskviewport(delta, Scr.Vx, Scr.Vy);
+					else if (delta < 0)
+						switch_deskviewport(PagerState.desks_num-1, Scr.Vx, Scr.Vy);
+					else
+						switch_deskviewport(PagerState.start_desk, Scr.Vx, Scr.Vy);
+
+					shift_viewport(Scr.Vx, Scr.Vy);
+					PagerState.key_release_pending = True;
+					break;
+			}
+		}
 		if (event->client != NULL) {
 			ASWindowData *wd = (ASWindowData *) (event->client);
 			event->x.xkey.window = wd->client;
@@ -2591,6 +2657,16 @@ void DispatchEvent (ASEvent * event)
 		}
 		return;
 	case KeyRelease:
+		/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
+        n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+		if (XEventsQueued(dpy, QueuedAfterReading)) {
+			XEvent nev;
+			XPeekEvent(dpy, &nev);
+			if (nev.type == KeyPress && nev.xkey.time == *(&(event->x).xkey.time) &&
+					nev.xkey.keycode == *(&(event->x).xkey.keycode))
+				break;
+		}
+		PagerState.key_release_pending = False;
 		if (event->client != NULL) {
 			ASWindowData *wd = (ASWindowData *) (event->client);
 			event->x.xkey.window = wd->client;
@@ -2602,8 +2678,8 @@ void DispatchEvent (ASEvent * event)
 		return;
 	case ButtonRelease:
 		LOCAL_DEBUG_OUT ("state(0x%X)->state&ButtonAnyMask(0x%X)",
-										 event->x.xbutton.state,
-										 event->x.xbutton.state & ButtonAnyMask);
+				event->x.xbutton.state,
+				event->x.xbutton.state & ButtonAnyMask);
 		if ((event->x.xbutton.state & ButtonAnyMask) ==
 				(Button1Mask << (event->x.xbutton.button - Button1)))
 			release_pressure (event);
@@ -2849,7 +2925,8 @@ void on_pager_pressure_changed (ASEvent * event)
 					on_desk_pressure_changed (&(PagerState.desks[i]), event);
 					break;
 				}
-		}
+		} else
+			shift_viewport(Scr.Vx, Scr.Vy);
 	} else
 		start_moveresize_client ((ASWindowData *) (event->client),
 				(event->x.xbutton.state & ControlMask) == 0, event);
@@ -2880,6 +2957,15 @@ void on_scroll_viewport (ASEvent * event)
 			}
 		}
 	}
+}
+
+void shift_viewport (int xdelta, int ydelta)
+{
+	char command[64];
+	sprintf (command, "GotoDeskViewport %d%+d%+d\n", (int)Scr.CurrentDesk,
+			xdelta, ydelta);
+	SendInfo (command, 0);
+	++PagerState.wait_as_response;
 }
 
 void release_pressure (ASEvent * event)
@@ -2977,7 +3063,8 @@ Bool GrabEm (ScreenInfo * scr, Cursor cursor)
 	grabbed_screen = scr;
 
 	mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-			PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+			PointerMotionMask | EnterWindowMask | LeaveWindowMask |
+			KeyPressMask | KeyReleaseMask | FocusChangeMask;
 	while ((res =
 					XGrabPointer (dpy, PagerState.main_canvas->w, True, mask,
 												GrabModeAsync, GrabModeAsync, scr->Root, cursor,
