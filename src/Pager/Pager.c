@@ -256,6 +256,7 @@ int main (int argc, char **argv)
 												M_NEW_BACKGROUND |
 												M_WINDOW_NAME |
 												M_ICON_NAME |
+												M_RES_CLASS |
 												M_END_WINDOWLIST | M_STACKING_ORDER, 0) < 0)
 		exit (1);										/* no AfterStep */
 
@@ -1959,10 +1960,10 @@ void
 change_desk_stacking (int desk, unsigned int clients_num, Window * clients)
 {
 	ASPagerDesk *d = get_pager_desk (desk);
-	int i, real_clients_count = 0;
 	if (d == NULL)
 		return;
 
+	int i, real_clients_count = 0;
 	if (d->clients_num < clients_num) {
 		d->clients =
 				realloc (d->clients, clients_num * sizeof (ASWindowData *));
@@ -1976,6 +1977,7 @@ change_desk_stacking (int desk, unsigned int clients_num, Window * clients)
 			while (--k >= 0)
 				if (d->clients[k] == wd)
 					break;								/* already belongs to that desk */
+
 			if (k < 0) {
 				d->clients[i] = wd;
 				++real_clients_count;
@@ -2117,9 +2119,8 @@ ASPagerDesk *translate_client_pos_main (int x, int y, unsigned int width,
 					d->desk_canvas->width <= x
 					|| d->desk_canvas->root_y + d->desk_canvas->bw > y + height
 					|| d->desk_canvas->root_y + d->desk_canvas->bw +
-					d->desk_canvas->height <= y) {
+					d->desk_canvas->height <= y)
 				d = NULL;
-			}
 		}
 
 		while (--i >= 0 && d == NULL) {
@@ -2133,9 +2134,8 @@ ASPagerDesk *translate_client_pos_main (int x, int y, unsigned int width,
 					d->desk_canvas->width <= x
 					|| d->desk_canvas->root_y + d->desk_canvas->bw > y + height
 					|| d->desk_canvas->root_y + d->desk_canvas->bw +
-					d->desk_canvas->height <= y) {
+					d->desk_canvas->height <= y)
 				d = NULL;
-			}
 		}
 	}
 
@@ -2151,12 +2151,10 @@ ASPagerDesk *translate_client_pos_main (int x, int y, unsigned int width,
 			x = (x * PagerState.vscreen_width) / d->background->width;
 		if (d->background->height > 0)
 			y = (y * PagerState.vscreen_height) / d->background->height;
-		*ret_x = x;
-		*ret_y = y;
-	} else {
-		*ret_x = x;
-		*ret_y = y;
 	}
+	*ret_x = x;
+	*ret_y = y;
+
 	return d;
 }
 
@@ -2590,6 +2588,10 @@ void DispatchEvent (ASEvent * event)
 		break;
 	case KeyPress:
 		{
+			/* JWT:ADDED 202604: ALLOW <Ctrl+ARROWKEYS> TO JUMP BETWEEN VIEWPORTS
+			   AND <Tab> & <Shift-Tab> TO JUMP BETWEEN DESKTOPS WHEN WHARF+PAGER
+			   HAVE KB-FOCUS:
+			*/
 			n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
 			int delta = 0;
 			switch (ks) {
@@ -2658,7 +2660,37 @@ void DispatchEvent (ASEvent * event)
 		return;
 	case KeyRelease:
 		/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
-        n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+		n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
+		if (ks == XK_Return) {
+			/* JWT:ADDED 202604 TO ALLOW <Return> IN PAGER TO FOCUS ON TOP WINDOW IN CURRENT VIEWPORT (SHOWN):
+			   NOTE:PAGER MUST DO THIS ON KEY *RELEASE* TO PROPERLY TRANSFER
+			   FOCUS TO THE SELECTED APP. WINDOW.
+			*/
+			ASPagerDesk * d = get_pager_desk (Scr.CurrentDesk);
+			if (d->clients_num > 0) {
+				int ScrXmax = Scr.Vx + Scr.MyDisplayWidth;
+				int ScrYmax = Scr.Vy + Scr.MyDisplayHeight;
+				register ASWindowData **clients = d->clients;
+				int i = -1;
+				while (++i < d->clients_num) {
+					if (clients[i] && clients[i]->canvas && clients[i]->canvas->w) {
+						if (clients[i]->desk == d->desk) {
+							if (clients[i]->frame_rect.x >= Scr.Vx
+									&& clients[i]->frame_rect.x < ScrXmax
+									&& clients[i]->frame_rect.y >= Scr.Vy
+									&& clients[i]->frame_rect.y < ScrYmax
+									&& clients[i]->res_class
+									&& strcmp (clients[i]->res_class, "ASModule")) {
+								char command[64];
+								sprintf (command, "Focus");
+								SendInfo (command, clients[i]->client);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 		if (XEventsQueued(dpy, QueuedAfterReading)) {
 			XEvent nev;
 			XPeekEvent(dpy, &nev);
@@ -2959,6 +2991,9 @@ void on_scroll_viewport (ASEvent * event)
 	}
 }
 
+/* JWT:ADDED 202604 TO PROGRAMATICALLY SWITCH THE SCREEN TO A DIFFERENT
+   VIEWPORT ON THE SAME DESK - NEEDED BY Ctrl+ARROWKEYS NOW:
+*/
 void shift_viewport (int xdelta, int ydelta)
 {
 	char command[64];
@@ -3064,7 +3099,7 @@ Bool GrabEm (ScreenInfo * scr, Cursor cursor)
 
 	mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
 			PointerMotionMask | EnterWindowMask | LeaveWindowMask |
-			KeyPressMask | KeyReleaseMask | FocusChangeMask;
+			KeyPressMask | KeyReleaseMask;
 	while ((res =
 					XGrabPointer (dpy, PagerState.main_canvas->w, True, mask,
 												GrabModeAsync, GrabModeAsync, scr->Root, cursor,

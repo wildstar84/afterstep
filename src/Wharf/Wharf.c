@@ -815,8 +815,8 @@ void DispatchEvent (ASEvent * event)
 			case XK_Return:
 				if (WharfState.key_release_pending)  /* JWT:PREVENT KEY-REPEAT! */
 					break;
-				WharfState.key_release_pending = True;
 
+				WharfState.key_release_pending = True;
 				if (WharfState.focused_button) {
 					on_wharf_pressed (event, Button1, WharfState.focused_button);
 					ASWharfButton *aswb = WharfState.focused_button;
@@ -855,6 +855,7 @@ void DispatchEvent (ASEvent * event)
 				{
 					if (WharfState.key_release_pending && !WharfState.ctrlkey_down)  /* JWT:PREVENT KEY-REPEAT! */
 						break;
+
 					if (ks == XK_Control_L || ks == XK_Control_R) {
 						WharfState.ctrlkey_down = True;
 						break;
@@ -938,6 +939,25 @@ void DispatchEvent (ASEvent * event)
 				break;
 			} else if (ks == XK_Shift_L || ks == XK_Shift_R)
 				break;
+			else if (ks == XK_Return) {
+				/* JWT:ADDED 202604 MOSTLY FOR PAGER, AS IT MUST WAIT UNTIL <Return>
+				   KEY IS RELEASED BEFORE SETTING FOCUS TO ANOTHER APP.:
+				*/
+				if (WharfState.focused_button) {
+					on_wharf_pressed (event, Button1, WharfState.focused_button);
+					ASWharfButton *aswb = WharfState.focused_button;
+					if (aswb->swallowed && WharfState.isFocused) {
+						int revert_to_return;
+						/* focus_window (NULL, w); */
+						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
+						event->w = aswb->swallowed->current->w;
+						event->x.xkey.window = aswb->swallowed->current->w;
+						XSendEvent (dpy, aswb->swallowed->current->w, False,
+								KeyPressMask, &(event->x));
+					}
+				}
+				break;
+			}
 
 			ASWharfButton *aswb = NULL;
 			if (WharfState.focused_button)

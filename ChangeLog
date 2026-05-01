@@ -2,6 +2,23 @@ CHANGELOG
 ----------------------
 [2026-03-25: Jim Turner]
 
+* Add some keyboard-navigation to the Pager module to allow traversal of 
+the desktops and the viewports within them.  Pressing & holding the Control 
+key while pressing the arrow-keys (<Ctl+[<>^v]>) (when Wharf has keyboard 
+focus and the swallowed Pager is highlighted / selected) will move to the 
+ajacent viewport, along with switching the screen to that viewport.  Pressing 
+the <Tab> key will switch to the same relative viewport in the next virtual 
+desktop (if more than one are defined).  If holding down a <Shift> key will 
+switch (back) to the previous one.  Pressing the <Return> (Enter) key will 
+switch keyboard focus to the window currently on the top of the stack in that 
+viewport that will accept focus.
+
+* Merged in several minor updates from upstream source, particularly to 
+address recent 64-bit time-value changes in Debian (to address looming the 
+"2030 issue").
+
+[2026-05-01: Jim Turner]
+
 * After an extensive further review, I found the last change to be overly 
 broad by forcing all transient windows to go through the full-placement 
 regime.  Actually, AfterStep (before this change) would place all transient 
