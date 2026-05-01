@@ -974,10 +974,7 @@ do_maximized_placement (ASWindow * asw, ASWindowBox * aswbox,
 					dest_rect = i;
 					dest_size = inter_width * inter_height;
 				}
-
-
 			}
-
 
 			if (rects[selected].x < s[dest_rect].x)
 				rects[selected].x = s[dest_rect].x;
@@ -1099,8 +1096,13 @@ static Bool do_cascade_placement (ASWindow * asw, ASWindowBox * aswbox,
 	/* JWT:ADDED SEPARATE X & Y CASCADE POSITIONS - PREVIOUSLY JUST SINGLE ONE (x=y)!: */
 	int xdir = (get_flags (aswbox->flags, ASA_ReverseOrderH)) ? -1 : 1;
 	int ydir = (get_flags (aswbox->flags, ASA_ReverseOrderV)) ? -1 : 1;
-	int newposx = aswbox->cascade_posx + (xdir * 25);  /* JWT:NOTE: newpos* ALWAYS RELATIVE COORDS!: */
-	int newposy = aswbox->cascade_posy + (ydir * 25);
+	int tbar_thickness = 0;
+	estimate_titlebar_size (asw->hints, NULL, &tbar_thickness);
+	tbar_thickness += 2;  /* ESTIMATE FOR BORDERS TOO. */
+	if (tbar_thickness < 20)
+		tbar_thickness = 20;  /* JWT:ENSURE WE ADJUST BY A NOTICABLE AMOUNT (IE. IF NO TITLEBAR)! */
+	int newposx = aswbox->cascade_posx + (xdir * tbar_thickness);  /* JWT:NOTE: newpos* ALWAYS RELATIVE COORDS!: */
+	int newposy = aswbox->cascade_posy + (ydir * tbar_thickness);
 	int x = newposx + area->x;  /* CONVERT TO ABSOLUTE COORDS: */
 	int y = newposy + area->y;  /* JWT:NOTE:NOT SURE WHY area->* USED HERE, BUT asw->status->viewport_* BELOW?!: */
 
