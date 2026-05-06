@@ -947,13 +947,17 @@ void DispatchEvent (ASEvent * event)
 					on_wharf_pressed (event, Button1, WharfState.focused_button);
 					ASWharfButton *aswb = WharfState.focused_button;
 					if (aswb->swallowed && WharfState.isFocused) {
-						int revert_to_return;
 						/* focus_window (NULL, w); */
-						XSetInputFocus (dpy, aswb->swallowed->current->w, RevertToParent, Scr.last_Timestamp);
+						XSetInputFocus (dpy, aswb->swallowed->current->w,
+								RevertToParent, Scr.last_Timestamp);
 						event->w = aswb->swallowed->current->w;
 						event->x.xkey.window = aswb->swallowed->current->w;
 						XSendEvent (dpy, aswb->swallowed->current->w, False,
 								KeyPressMask, &(event->x));
+						/* JWT:IF WE GOT HERE, APP(IE. PAGER) DID NOT GIVE UP FOCUS,
+						   SO NOW WE HAVE TO PUT KB-FOCUS BACK ON "WHARF"! */
+						XSetInputFocus (dpy, WharfState.focus_return, RevertToParent,
+								Scr.last_Timestamp);
 					}
 				}
 				break;

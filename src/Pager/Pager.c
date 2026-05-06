@@ -1970,21 +1970,23 @@ change_desk_stacking (int desk, unsigned int clients_num, Window * clients)
 		memset (d->clients, 0x00, clients_num * sizeof (ASWindowData *));
 		d->clients_num = clients_num;
 	}
+
 	for (i = 0; i < clients_num; ++i) {
 		ASWindowData *wd = fetch_window_by_id (clients[i]);
 		if (wd != NULL) {						/* window is in stacking order, but wew were not notifyed about it yet */
 			int k = real_clients_count;
 			while (--k >= 0)
 				if (d->clients[k] == wd)
-					break;								/* already belongs to that desk */
+					break;   /* already belongs to that desk */
 
-			if (k < 0) {
+			if (k < 0) {  /* client window NOT already in "real" list: */
 				d->clients[i] = wd;
 				++real_clients_count;
 				LOCAL_DEBUG_OUT ("id(%lX)->wd(%p)", clients[i], d->clients[i]);
 			}
 		}
 	}
+
 	d->clients_num = real_clients_count;
 	set_flags (d->flags, ASP_ShapeDirty);
 	restack_desk_windows (d);
@@ -2199,14 +2201,14 @@ void exec_moveresize_req (void *data)
 void
 schedule_moveresize_req (FunctionCode func, send_signed_data_type val1,
 												 send_signed_data_type val2, Window client,
-												 Bool immidiate)
+												 Bool immediate)
 {
 	if (PagerMoveResizeReq.pending) {
 		if (PagerMoveResizeReq.client != client
 				|| PagerMoveResizeReq.func != func) {
 			timer_remove_by_data (&PagerMoveResizeReq);
 			exec_moveresize_req (&PagerMoveResizeReq);
-		} else if (immidiate) {
+		} else if (immediate) {
 			timer_remove_by_data (&PagerMoveResizeReq);
 			PagerMoveResizeReq.pending = False;
 		}
@@ -2215,7 +2217,7 @@ schedule_moveresize_req (FunctionCode func, send_signed_data_type val1,
 	PagerMoveResizeReq.func_val[0] = val1;
 	PagerMoveResizeReq.func_val[1] = val2;
 	PagerMoveResizeReq.client = client;
-	if (immidiate)
+	if (immediate)
 		exec_moveresize_req (&PagerMoveResizeReq);
 	else if (!PagerMoveResizeReq.pending) {
 		PagerMoveResizeReq.pending = True;
@@ -2603,7 +2605,6 @@ void DispatchEvent (ASEvent * event)
 						switch_deskviewport(Scr.CurrentDesk, delta, Scr.Vy);
 						shift_viewport(delta, Scr.Vy);
 					}
-					PagerState.key_release_pending = True;
 					break;
 				case XK_Right:
 					if (PagerState.key_release_pending)
@@ -2613,7 +2614,6 @@ void DispatchEvent (ASEvent * event)
 						switch_deskviewport(Scr.CurrentDesk, delta, Scr.Vy);
 						shift_viewport(delta, Scr.Vy);
 					}
-					PagerState.key_release_pending = True;
 					break;
 				case XK_Up:
 					if (PagerState.key_release_pending)
@@ -2623,7 +2623,6 @@ void DispatchEvent (ASEvent * event)
 						switch_deskviewport(Scr.CurrentDesk, Scr.Vx, delta);
 						shift_viewport(Scr.Vx, delta);
 					}
-					PagerState.key_release_pending = True;
 					break;
 				case XK_Down:
 					if (PagerState.key_release_pending)
@@ -2633,7 +2632,6 @@ void DispatchEvent (ASEvent * event)
 						switch_deskviewport(Scr.CurrentDesk, Scr.Vx, delta);
 						shift_viewport(Scr.Vx, delta);
 					}
-					PagerState.key_release_pending = True;
 					break;
 				case XK_Tab:
 				case XK_ISO_Left_Tab:
@@ -2648,7 +2646,6 @@ void DispatchEvent (ASEvent * event)
 						switch_deskviewport(PagerState.start_desk, Scr.Vx, Scr.Vy);
 
 					shift_viewport(Scr.Vx, Scr.Vy);
-					PagerState.key_release_pending = True;
 					break;
 			}
 		}
@@ -2657,9 +2654,11 @@ void DispatchEvent (ASEvent * event)
 			event->x.xkey.window = wd->client;
 			XSendEvent (dpy, wd->client, False, KeyPressMask, &(event->x));
 		}
+		PagerState.key_release_pending = True;
 		return;
 	case KeyRelease:
 		/* JWT:PREVENT KEY-REPEAT! (from:  https://stackoverflow.com/questions/2100654/ignore-auto-repeat-in-x11-applications): */
+		PagerState.key_release_pending = False;
 		n = XLookupString (&(event->x).xkey, buf, 10, &ks, NULL);
 		if (ks == XK_Return) {
 			/* JWT:ADDED 202604 TO ALLOW <Return> IN PAGER TO FOCUS ON TOP WINDOW IN CURRENT VIEWPORT (SHOWN):
@@ -2690,6 +2689,7 @@ void DispatchEvent (ASEvent * event)
 					}
 				}
 			}
+			break;
 		}
 		if (XEventsQueued(dpy, QueuedAfterReading)) {
 			XEvent nev;
@@ -2698,7 +2698,6 @@ void DispatchEvent (ASEvent * event)
 					nev.xkey.keycode == *(&(event->x).xkey.keycode))
 				break;
 		}
-		PagerState.key_release_pending = False;
 		if (event->client != NULL) {
 			ASWindowData *wd = (ASWindowData *) (event->client);
 			event->x.xkey.window = wd->client;
