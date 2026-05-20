@@ -89,6 +89,7 @@ typedef struct ASPagerDesk {
 
 	ASWindowData **clients;
 	unsigned int clients_num;
+	unsigned int clients_num_real;
 
 	ASImage *back;
 } ASPagerDesk;
@@ -100,6 +101,8 @@ typedef struct ASPagerState {
 	ASCanvas *icon_canvas;
 
 	ASPagerDesk *desks;
+	ASWindowData **scratch_clients;  /* JWT:TEMP. ARRAY OF CLIENT WINDOWS - USED BY change_desk_stacking() */
+
 	INT32 start_desk, desks_num;
 
 	int page_rows, page_columns;
@@ -340,6 +343,9 @@ void DeadPipe (int nonsense)
 		if (d->back)
 			safe_asimage_destroy (d->back);
 	}
+	if (PagerState.scratch_clients)
+		free (PagerState.scratch_clients);
+
 	destroy_ascanvas (&PagerState.main_canvas);
 	destroy_ascanvas (&PagerState.icon_canvas);
 
@@ -430,8 +436,8 @@ void CheckConfigSanity ()
 		Config->geometry = MyArgs.geometry;
 
 	LOCAL_DEBUG_OUT ("geometry = %dx%d%+d%+d", Config->geometry.width,
-									 Config->geometry.height, Config->geometry.x,
-									 Config->geometry.y);
+			Config->geometry.height, Config->geometry.x,
+			Config->geometry.y);
 
 	if (get_flags (Config->geometry.flags, XNegative))
 		Config->gravity =
@@ -497,7 +503,6 @@ void CheckConfigSanity ()
 					0 : (int)Scr.MyDisplayHeight - (int)Config->geometry.height;
 	}
 
-
 	if (get_flags (Config->set_flags, PAGER_SET_ICON_GEOMETRY)) {
 		if (!get_flags (Config->icon_geometry.flags, WidthValue)
 				|| Config->icon_geometry.width <= 0)
@@ -514,7 +519,6 @@ void CheckConfigSanity ()
 	parse_argb_color (Config->selection_color,
 										&(Config->selection_color_argb));
 	parse_argb_color (Config->grid_color, &(Config->grid_color_argb));
-
 
 	if (!get_flags (Config->set_flags, PAGER_SET_ACTIVE_BEVEL))
 		Config->active_desk_bevel = DEFAULT_TBAR_HILITE;
@@ -565,10 +569,10 @@ void CheckConfigSanity ()
 		sprintf (buf, desk_style_names[i], MyName);
 		Config->MSDeskTitle[i] = mystyle_find_or_default (buf);
 		LOCAL_DEBUG_OUT ("desk_style %d: \"%s\" ->%p(\"%s\")->colors(%lX,%lX)",
-										 i, buf, Config->MSDeskTitle[i],
-										 Config->MSDeskTitle[i]->name,
-										 Config->MSDeskTitle[i]->colors.fore,
-										 Config->MSDeskTitle[i]->colors.back);
+				i, buf, Config->MSDeskTitle[i],
+				Config->MSDeskTitle[i]->name,
+				Config->MSDeskTitle[i]->colors.fore,
+				Config->MSDeskTitle[i]->colors.back);
 	}
 
 	if (Config->MSDeskBack == NULL)
@@ -600,16 +604,15 @@ void CheckConfigSanity ()
 	set_balloon_look (Scr.Look.balloon_look);
 
 	LOCAL_DEBUG_OUT ("geometry = %dx%d%+d%+d", Config->geometry.width,
-									 Config->geometry.height, Config->geometry.x,
-									 Config->geometry.y);
-
+			Config->geometry.height, Config->geometry.x,
+			Config->geometry.y);
 }
 
 void GetOptions (const char *filename)
 {
 	PagerConfig *config =
 			ParsePagerOptions (filename, MyName, PagerState.start_desk,
-												 PagerState.start_desk + PagerState.desks_num);
+			PagerState.start_desk + PagerState.desks_num);
 	int i;
 	START_TIME (option_time);
 
@@ -620,8 +623,7 @@ void GetOptions (const char *filename)
 	/* now lets check the config sanity : */
 	/* mixing set and default flags : */
 	Config->flags =
-			(config->flags & config->set_flags) | (Config->
-																						 flags & (~config->set_flags));
+			(config->flags & config->set_flags) | (Config->flags & (~config->set_flags));
 	Config->set_flags |= config->set_flags;
 
 	if (get_flags (config->set_flags, PAGER_SET_ROWS))
@@ -725,9 +727,9 @@ void GetBaseOptions (const char *filename)
 
 	SHOW_TIME ("BaseConfigParsingTime", started);
 	LOCAL_DEBUG_OUT ("desk_size(%dx%d),vscreen_size(%dx%d),vscale(%d)",
-									 PagerState.desk_width, PagerState.desk_height,
-									 PagerState.vscreen_width, PagerState.vscreen_height,
-									 Scr.VScale);
+			PagerState.desk_width, PagerState.desk_height,
+			PagerState.vscreen_width, PagerState.vscreen_height,
+			Scr.VScale);
 }
 
 /********************************************************************/
@@ -852,7 +854,6 @@ static void place_desk_background (ASPagerDesk * d)
 		else
 			height -= d->title_height;
 
-
 		if (!get_flags (Config->flags, LABEL_BELOW_DESK)
 				|| get_flags (d->flags, ASP_DeskShaded)) {
 			if (get_flags (Config->flags, VERTICAL_LABEL))
@@ -973,7 +974,7 @@ void update_pager_shape ()
 
 #ifdef STRICT_GEOMETRY
 		get_current_canvas_geometry (d->desk_canvas, &x, &y, &d_width,
-																 &d_height, &bw);
+				&d_height, &bw);
 #else
 		x = d->desk_canvas->root_x - PagerState.main_canvas->root_x;
 		y = d->desk_canvas->root_y - PagerState.main_canvas->root_y;
@@ -985,7 +986,7 @@ void update_pager_shape ()
 		LOCAL_DEBUG_OUT ("desk geometry = %dx%d%+d%+d, bw = %d", d_width,
 										 d_height, x, y, bw);
 		combine_canvas_shape_at_geom (PagerState.main_canvas, d->desk_canvas,
-																	x, y, d_width, d_height, bw);
+				x, y, d_width, d_height, bw);
 
 		if (Config->MSDeskBack[i]->texture_type == TEXTURE_SHAPED_PIXMAP ||
 				Config->MSDeskBack[i]->texture_type ==
@@ -993,36 +994,36 @@ void update_pager_shape ()
 			if (get_flags (Config->flags, SHOW_SELECTION)
 					&& d->desk == Scr.CurrentDesk)
 				add_shape_rectangles (PagerState.main_canvas->shape,
-															&(PagerState.selection_bar_rects[0]), 4, x,
-															y, PagerState.main_canvas->width,
-															PagerState.main_canvas->height);
+						&(PagerState.selection_bar_rects[0]), 4, x,
+						y, PagerState.main_canvas->width,
+						PagerState.main_canvas->height);
 
 			if (get_flags (Config->flags, PAGE_SEPARATOR))
 				add_shape_rectangles (PagerState.main_canvas->shape,
-															&(d->separator_bar_rects[0]),
-															d->separator_bars_num, x, y,
-															PagerState.main_canvas->width,
-															PagerState.main_canvas->height);
+						&(d->separator_bar_rects[0]),
+						d->separator_bars_num, x, y,
+						PagerState.main_canvas->width,
+						PagerState.main_canvas->height);
 
 			if (d->clients_num > 0) {
 				register ASWindowData **clients = d->clients;
-				int k = d->clients_num;
-				LOCAL_DEBUG_OUT ("desk %d clients_num %d", i, d->clients_num);
+				int k = d->clients_num_real;
+				LOCAL_DEBUG_OUT ("desk %d clients_num %d", i, d->clients_num_real);
 				while (--k >= 0) {
 					LOCAL_DEBUG_OUT ("client %d data %p", i, clients[k]);
 					if (clients[k] && clients[k]->canvas) {
 						int client_x, client_y;
 						unsigned int client_width, client_height, client_bw;
 						get_current_canvas_geometry (clients[k]->canvas, &client_x,
-																				 &client_y, &client_width,
-																				 &client_height, &client_bw);
+								&client_y, &client_width,
+								&client_height, &client_bw);
 
 						LOCAL_DEBUG_OUT ("combining client \"%s\"",
 														 clients[k]->icon_name);
 						combine_canvas_shape_at_geom (PagerState.main_canvas,
-																					clients[k]->canvas, client_x + x,
-																					client_y + y, client_width,
-																					client_height, client_bw);
+								clients[k]->canvas, client_x + x,
+								client_y + y, client_width,
+								client_height, client_bw);
 					}
 				}
 			}
@@ -1050,8 +1051,8 @@ void update_pager_shape ()
 #endif
 
 	add_shape_rectangles (PagerState.main_canvas->shape, &(border[0]), 4, 0,
-												0, PagerState.main_canvas->width,
-												PagerState.main_canvas->height);
+			0, PagerState.main_canvas->width,
+			PagerState.main_canvas->height);
 
 	update_canvas_display_mask (PagerState.main_canvas, True);
 
@@ -1116,7 +1117,7 @@ void restack_desk_windows (ASPagerDesk * d)
 	if (d == NULL)
 		return;
 
-	win_count = d->clients_num;
+	win_count = d->clients_num_real;
 	if (get_flags (Config->flags, SHOW_SELECTION)
 			&& d->desk == Scr.CurrentDesk)
 		win_count += 4;
@@ -1149,10 +1150,10 @@ void restack_desk_windows (ASPagerDesk * d)
 		}
 	}
 
-	if (d->clients_num > 0) {
+	if (d->clients_num_real > 0) {
 		register ASWindowData **clients = d->clients;
 		i = -1;
-		while (++i < d->clients_num) {
+		while (++i < d->clients_num_real) {
 			if (clients[i] && clients[i]->desk == d->desk &&
 					clients[i]->canvas && clients[i]->canvas->w) {
 				LOCAL_DEBUG_OUT
@@ -1235,11 +1236,11 @@ void place_selection ()
 			sel_x += (Scr.Vx * page_width) / Scr.MyDisplayWidth;
 			sel_y += (Scr.Vy * page_height) / Scr.MyDisplayHeight;
 			LOCAL_DEBUG_OUT ("sel_pos(%+d%+d)->page_size(%dx%d)->desk(%ld)",
-											 sel_x, sel_y, page_width, page_height,
-											 sel_desk->desk);
+					sel_x, sel_y, page_width, page_height,
+					sel_desk->desk);
 			while (--i >= 0)
 				XReparentWindow (dpy, PagerState.selection_bars[i],
-												 sel_desk->desk_canvas->w, -10, -10);
+						sel_desk->desk_canvas->w, -10, -10);
 
 			PagerState.selection_bar_rects[0].x = sel_x - 1;
 			PagerState.selection_bar_rects[0].y = sel_y - 1;
@@ -1265,10 +1266,10 @@ void place_selection ()
 				i = 4;
 				while (--i >= 0)
 					XMoveResizeWindow (dpy, PagerState.selection_bars[i],
-														 PagerState.selection_bar_rects[i].x,
-														 PagerState.selection_bar_rects[i].y,
-														 PagerState.selection_bar_rects[i].width,
-														 PagerState.selection_bar_rects[i].height);
+							PagerState.selection_bar_rects[i].x,
+							PagerState.selection_bar_rects[i].y,
+							PagerState.selection_bar_rects[i].width,
+							PagerState.selection_bar_rects[i].height);
 			}
 			XMapSubwindows (dpy, sel_desk->desk_canvas->w);
 			ASSync (False);
@@ -1302,10 +1303,10 @@ void redecorate_pager_desks ()
 					ButtonMotionMask;
 
 			w = create_visual_window (Scr.asv, PagerState.main_canvas->w, 0, 0,
-																PagerState.desk_width,
-																PagerState.desk_height,
-																Config->border_width, InputOutput,
-																CWEventMask | CWBorderPixel, &attr);
+					PagerState.desk_width,
+					PagerState.desk_height,
+					Config->border_width, InputOutput,
+					CWEventMask | CWBorderPixel, &attr);
 			d->desk_canvas = create_ascanvas (w);
 			LOCAL_DEBUG_OUT
 					("+CREAT canvas(%p)->desk(%ld)->geom(%dx%d%+d%+d)->parent(%lx)",
@@ -1347,27 +1348,27 @@ void redecorate_pager_desks ()
 			set_astbar_hilite (d->title, BAR_STATE_FOCUSED, abevel);
 
 			set_astbar_style_ptr (d->title, -1,
-														Config->MSDeskTitle[DESK_ACTIVE]);
+					Config->MSDeskTitle[DESK_ACTIVE]);
 			set_astbar_style_ptr (d->title, BAR_STATE_UNFOCUSED,
-														Config->MSDeskTitle[DESK_INACTIVE]);
+					Config->MSDeskTitle[DESK_INACTIVE]);
 
 			if (Config->labels && Config->labels[i])
 				add_astbar_label (d->title, 0, flip ? 1 : 0, flip, align,
-													h_spacing, v_spacing, Config->labels[i],
-													AS_Text_ASCII);
+						h_spacing, v_spacing, Config->labels[i],
+						AS_Text_ASCII);
 			else {
 				sprintf (buf, "Desk %d", (int)PagerState.start_desk + i);
 				add_astbar_label (d->title, 0, flip ? 1 : 0, flip, align,
-													h_spacing, v_spacing, buf, AS_Text_ASCII);
+						h_spacing, v_spacing, buf, AS_Text_ASCII);
 			}
 			if (PagerState.shade_button.context != C_NO_CONTEXT) {
 				MyButton *list[1];
 				list[0] = &(PagerState.shade_button);
 				add_astbar_btnblock (d->title, flip ? 0 : 1, 0, flip, NO_ALIGN,
-														 &list[0], 0xFFFFFFFF, 1,
-														 PagerState.tbar_props->buttons_h_border,
-														 PagerState.tbar_props->buttons_v_border,
-														 PagerState.tbar_props->buttons_spacing, 0);
+						&list[0], 0xFFFFFFFF, 1,
+						PagerState.tbar_props->buttons_h_border,
+						PagerState.tbar_props->buttons_v_border,
+						PagerState.tbar_props->buttons_spacing, 0);
 			}
 			if (get_flags (Config->flags, VERTICAL_LABEL)) {
 				int size = calculate_astbar_width (d->title);
@@ -1399,7 +1400,7 @@ void redecorate_pager_desks ()
 
 		set_astbar_style_ptr (d->background, -1, Config->MSDeskBack[i]);
 		set_astbar_style_ptr (d->background, BAR_STATE_UNFOCUSED,
-													Config->MSDeskBack[i]);
+				Config->MSDeskBack[i]);
 		if (Config->styles[i] == NULL)
 			set_flags (d->flags, ASP_UseRootBackground);
 
@@ -1426,11 +1427,11 @@ void redecorate_pager_desks ()
 			d->separator_bar_rects =
 					safecalloc (d->separator_bars_num, sizeof (XRectangle));
 			ARGB2PIXEL (Scr.asv, Config->grid_color_argb,
-									&(attr.background_pixel));
+					&(attr.background_pixel));
 			for (p = 0; p < d->separator_bars_num; ++p) {
 				d->separator_bars[p] =
 						create_visual_window (Scr.asv, d->desk_canvas->w, 0, 0, 1, 1,
-																	0, InputOutput, CWBackPixel, &attr);
+						0, InputOutput, CWBackPixel, &attr);
 				d->separator_bar_rects[p].width =
 						d->separator_bar_rects[p].height = 1;
 			}
@@ -1492,11 +1493,10 @@ void redecorate_pager_desks ()
 			if (PagerState.selection_bars[i] == None) {
 				PagerState.selection_bars[i] =
 						create_visual_window (Scr.asv, PagerState.main_canvas->w, 0, 0,
-																	1, 1, 0, InputOutput, CWBackPixel,
-																	&attr);
+						1, 1, 0, InputOutput, CWBackPixel, &attr);
 			} else {
 				XSetWindowBackground (dpy, PagerState.selection_bars[i],
-															attr.background_pixel);
+						attr.background_pixel);
 				XClearWindow (dpy, PagerState.selection_bars[i]);
 			}
 	} else
@@ -1571,7 +1571,7 @@ void rearrange_pager_desks (Bool dont_resize_main)
 		height = calculate_desk_height (d);
 
 		place_desk (d, x, y, width - Config->border_width,
-								height - Config->border_width);
+				height - Config->border_width);
 
 		if (height > row_height)
 			row_height = height;
@@ -1666,7 +1666,6 @@ unsigned int calculate_pager_desk_height ()
 	}
 }
 
-
 /*************************************************************************
  * shading/unshading
  *************************************************************************/
@@ -1706,12 +1705,12 @@ void set_client_name (ASWindowData * wd, Bool redraw)
 {
 	if (wd->bar) {
 		LOCAL_DEBUG_OUT ("name_enc = %ld, name = \"%s\"",
-										 wd->window_name_encoding,
-										 wd->window_name ? wd->window_name : "(null)");
+				wd->window_name_encoding,
+				wd->window_name ? wd->window_name : "(null)");
 		change_astbar_first_label (wd->bar, wd->window_name,
-															 wd->window_name_encoding);
+				wd->window_name_encoding);
 		set_astbar_balloon (wd->bar, 0, wd->window_name,
-												wd->window_name_encoding);
+				wd->window_name_encoding);
 	}
 	if (redraw && wd->canvas)
 		render_astbar (wd->bar, wd->canvas);
@@ -1719,7 +1718,7 @@ void set_client_name (ASWindowData * wd, Bool redraw)
 
 void
 place_client (ASPagerDesk * d, ASWindowData * wd, Bool force_redraw,
-							Bool dont_update_shape)
+		Bool dont_update_shape)
 {
 	int x = 0, y = 0, width = 1, height = 1;
 	int curr_x, curr_y;
@@ -1791,7 +1790,7 @@ place_client (ASPagerDesk * d, ASWindowData * wd, Bool force_redraw,
 				moveresize_canvas (canvas, x - bw, y - bw, width, height);
 
 			LOCAL_DEBUG_OUT ("+PLACE->canvas(%p)->geom(%dx%d%+d%+d)", wd->canvas,
-											 width, height, x, y);
+					width, height, x, y);
 		}
 	}
 }
@@ -1866,6 +1865,7 @@ void forget_desk_client (int desk, ASWindowData * wd)
 				d->clients[k - 1] = NULL;
 				--(d->clients_num);
 			}
+
 		if (i >= 0)
 			set_flags (d->flags, ASP_ShapeDirty);
 	}
@@ -1880,8 +1880,7 @@ void add_desk_client (ASPagerDesk * d, ASWindowData * wd)
 			if (d->clients[i] == wd)
 				return;									/* already belongs to that desk */
 		d->clients =
-				realloc (d->clients,
-								 (d->clients_num + 1) * sizeof (ASWindowData *));
+				realloc (d->clients, (d->clients_num + 1) * sizeof (ASWindowData *));
 		d->clients[d->clients_num] = wd;
 		++(d->clients_num);
 		set_flags (d->flags, ASP_ShapeDirty);
@@ -1900,7 +1899,7 @@ void add_client (ASWindowData * wd)
 	attr.event_mask = CLIENT_EVENT_MASK;
 	/* create window, canvas and tbar : */
 	w = create_visual_window (Scr.asv, d->desk_canvas->w, -1, -1, 1, 1, 0,
-														InputOutput, CWEventMask, &attr);
+			InputOutput, CWEventMask, &attr);
 	if (w == None)
 		return;
 
@@ -1911,9 +1910,9 @@ void add_client (ASWindowData * wd)
 	register_client (wd);
 
 	set_astbar_hilite (wd->bar, BAR_STATE_UNFOCUSED,
-										 NORMAL_HILITE | NO_HILITE_OUTLINE);
+			NORMAL_HILITE | NO_HILITE_OUTLINE);
 	set_astbar_hilite (wd->bar, BAR_STATE_FOCUSED,
-										 NORMAL_HILITE | NO_HILITE_OUTLINE);
+			NORMAL_HILITE | NO_HILITE_OUTLINE);
 	add_astbar_label (wd->bar, 0, 0, 0, NO_ALIGN, 0, 0, NULL, AS_Text_ASCII);
 	move_astbar (wd->bar, wd->canvas, 0, 0);
 	if (wd->focused)
@@ -1924,7 +1923,7 @@ void add_client (ASWindowData * wd)
 	place_client (d, wd, True, False);
 	map_canvas_window (wd->canvas, True);
 	LOCAL_DEBUG_OUT ("+CREAT->canvas(%p)->bar(%p)->client_win(%lX)",
-									 wd->canvas, wd->bar, wd->client);
+			wd->canvas, wd->bar, wd->client);
 }
 
 void refresh_client (INT32 old_desk, ASWindowData * wd)
@@ -1940,13 +1939,13 @@ void refresh_client (INT32 old_desk, ASWindowData * wd)
 			add_desk_client (d, wd);
 			LOCAL_DEBUG_OUT ("reparenting client to desk %ld", d->desk);
 			quietly_reparent_canvas (wd->canvas, d->desk_canvas->w,
-															 CLIENT_EVENT_MASK, False, None);
+					CLIENT_EVENT_MASK, False, None);
 		}
 	}
 	set_client_name (wd, False);
 	LOCAL_DEBUG_OUT ("client \"%s\" focused = %d",
-									 wd->window_name ? wd->window_name : "(null)",
-									 wd->focused);
+			wd->window_name ? wd->window_name : "(null)",
+			wd->focused);
 	set_astbar_focused (wd->bar, NULL, wd->focused);
 	set_client_look (wd, True);
 	LOCAL_DEBUG_OUT ("placing client%s", "");
@@ -1963,7 +1962,16 @@ change_desk_stacking (int desk, unsigned int clients_num, Window * clients)
 	if (d == NULL)
 		return;
 
-	int i, real_clients_count = 0;
+	int real_clients_count = 0;
+	/* JWT:NEXT 8 ADDED 202605 TO AVOID POSSIBLY STOMPING CLIENTS WE WANT TO KEEP: */
+	int scratch_clients_num = 0;
+	PagerState.scratch_clients = realloc (PagerState.scratch_clients,
+			d->clients_num * sizeof (ASWindowData *));
+
+	for (int i = 0; i < d->clients_num; i++)
+		if (d->clients[i] != NULL && d->clients[i]->window_name)
+			PagerState.scratch_clients[scratch_clients_num++] = d->clients[i];
+
 	if (d->clients_num < clients_num) {
 		d->clients =
 				realloc (d->clients, clients_num * sizeof (ASWindowData *));
@@ -1971,23 +1979,40 @@ change_desk_stacking (int desk, unsigned int clients_num, Window * clients)
 		d->clients_num = clients_num;
 	}
 
-	for (i = 0; i < clients_num; ++i) {
+	for (int i = 0; i < clients_num; i++) {
 		ASWindowData *wd = fetch_window_by_id (clients[i]);
-		if (wd != NULL) {						/* window is in stacking order, but wew were not notifyed about it yet */
+		if (wd != NULL) {			/* window is in stacking order, but we weren't notified about it yet */
 			int k = real_clients_count;
 			while (--k >= 0)
 				if (d->clients[k] == wd)
 					break;   /* already belongs to that desk */
 
-			if (k < 0) {  /* client window NOT already in "real" list: */
-				d->clients[i] = wd;
+			if (k < 0) {   /* client window NOT already in "real" list: */
+				d->clients[real_clients_count] = wd;
 				++real_clients_count;
 				LOCAL_DEBUG_OUT ("id(%lX)->wd(%p)", clients[i], d->clients[i]);
 			}
 		}
 	}
 
-	d->clients_num = real_clients_count;
+	/* JWT:ADDED 202605 TO INCLUDE SOME RESIDUAL WINDOWS SOMEHOW OMITTED FROM
+	   THE STACKING ORDER USED BY Pager? (STILL THE ONE WE WANT TO FOCUS MAY
+	   BE MISSING) AND <Return>-key FOCUS IN PAGER MAY STILL NOT ALWAYS WORK!:
+	   (NOTE:FIXME!)
+	*/
+	for (int i = 0; i < scratch_clients_num; i++) {
+		int k = real_clients_count;
+		while (--k >= 0)
+			if (d->clients[k] == PagerState.scratch_clients[i])
+				break;
+
+		if (k < 0) {  /* client window NOT already in "real" list: */
+			d->clients[real_clients_count] = PagerState.scratch_clients[i];
+			++real_clients_count;
+		}
+	}
+
+	d->clients_num_real = real_clients_count;
 	set_flags (d->flags, ASP_ShapeDirty);
 	restack_desk_windows (d);
 }
@@ -2000,7 +2025,7 @@ void set_desktop_pixmap (int desk, Pixmap pmap)
 	if (!get_drawable_size (pmap, &width, &height))
 		pmap = None;
 	LOCAL_DEBUG_OUT ("desk(%d)->d(%p)->pmap(%lX)->size(%dx%d)", desk, d,
-									 pmap, width, height);
+			pmap, width, height);
 	if (pmap == None)
 		return;
 	if (d == NULL) {
@@ -2011,7 +2036,7 @@ void set_desktop_pixmap (int desk, Pixmap pmap)
 	if (get_flags (d->flags, ASP_UseRootBackground)) {
 		ASImage *im =
 				pixmap2asimage (Scr.asv, pmap, 0, 0, width, height, 0xFFFFFFFF,
-												False, 100);
+				False, 100);
 
 		XFreePixmap (dpy, pmap);
 		if (d->back)
@@ -2036,12 +2061,13 @@ void move_sticky_clients ()
 			register ASWindowData **clients = d->clients;
 			while (--i >= 0)
 				if (clients[i] && get_flags (clients[i]->state_flags, AS_Sticky)) {
-					if (clients[i]->desk != Scr.CurrentDesk && current_desk) {	/* in order to make an illusion of smooth desktop
-																																			 * switching - we'll reparent window ahead of time */
+					if (clients[i]->desk != Scr.CurrentDesk && current_desk) {
+						/* in order to make an illusion of smooth desktop
+						 * switching - we'll reparent window ahead of time */
 						LOCAL_DEBUG_OUT ("reparenting client to desk %ld", d->desk);
 						quietly_reparent_canvas (clients[i]->canvas,
-																		 current_desk->desk_canvas->w,
-																		 CLIENT_EVENT_MASK, False, None);
+								current_desk->desk_canvas->w,
+								CLIENT_EVENT_MASK, False, None);
 					}
 					place_client (d, clients[i], True, True);
 				}
@@ -2049,7 +2075,6 @@ void move_sticky_clients ()
 		}
 	}
 }
-
 
 void switch_deskviewport (int new_desk, int new_vx, int new_vy)
 {
@@ -2066,9 +2091,9 @@ void switch_deskviewport (int new_desk, int new_vx, int new_vy)
 		if (PagerState.focused_desk != new_d) {
 			if (PagerState.focused_desk) {
 				set_astbar_focused (PagerState.focused_desk->title,
-														PagerState.focused_desk->desk_canvas, False);
+						PagerState.focused_desk->desk_canvas, False);
 				set_astbar_focused (PagerState.focused_desk->background,
-														PagerState.focused_desk->desk_canvas, False);
+						PagerState.focused_desk->desk_canvas, False);
 				if (is_canvas_dirty (PagerState.focused_desk->desk_canvas))
 					update_canvas_display (PagerState.focused_desk->desk_canvas);
 				PagerState.focused_desk = NULL;
@@ -2091,7 +2116,6 @@ void switch_deskviewport (int new_desk, int new_vx, int new_vy)
 			int i = 4;
 			while (--i >= 0)
 				XUnmapWindow (dpy, PagerState.selection_bars[i]);
-
 		}
 	}
 }
@@ -2105,8 +2129,8 @@ void move_client_to_desk (ASWindowData * wd, int desk)
 }
 
 ASPagerDesk *translate_client_pos_main (int x, int y, unsigned int width,
-																				unsigned int height, int desk,
-																				int *ret_x, int *ret_y)
+		unsigned int height, int desk,
+		int *ret_x, int *ret_y)
 {
 	ASPagerDesk *d = NULL;
 	if (x + width >= PagerState.main_canvas->root_x
@@ -2193,15 +2217,14 @@ void exec_moveresize_req (void *data)
 	if (req && req->pending) {
 		send_signed_data_type unit_val[2] = { 1, 1 };
 		SendNumCommand (req->func, NULL, &(req->func_val[0]), &(unit_val[0]),
-										req->client);
+				req->client);
 		req->pending = False;
 	}
 }
 
 void
 schedule_moveresize_req (FunctionCode func, send_signed_data_type val1,
-												 send_signed_data_type val2, Window client,
-												 Bool immediate)
+		send_signed_data_type val2, Window client, Bool immediate)
 {
 	if (PagerMoveResizeReq.pending) {
 		if (PagerMoveResizeReq.client != client
@@ -2231,20 +2254,20 @@ void apply_client_move (struct ASMoveResizeData *data)
 	int real_x = 0, real_y = 0;
 	ASPagerDesk *d =
 			translate_client_pos_main (PagerState.main_canvas->root_x +
-																 data->curr.x,
-																 PagerState.main_canvas->root_y +
-																 data->curr.y,
-																 data->curr.width, data->curr.height,
-																 wd->desk, &real_x, &real_y);
+					data->curr.x,
+					PagerState.main_canvas->root_y +
+					data->curr.y,
+					data->curr.width, data->curr.height,
+					wd->desk, &real_x, &real_y);
 	if (d && d->desk != wd->desk) {
 		move_client_to_desk (wd, d->desk);
 		set_moveresize_aspect (data, PagerState.vscreen_width,
-													 d->background->width, PagerState.vscreen_height,
-													 d->background->height, d->background->root_x,
-													 d->background->root_y);
+				d->background->width, PagerState.vscreen_height,
+				d->background->height, d->background->root_x,
+				d->background->root_y);
 	}
 	LOCAL_DEBUG_OUT ("d(%p)->curr(%+d%+d)->real(%+d%+d)", d, data->curr.x,
-									 data->curr.y, real_x, real_y);
+			data->curr.y, real_x, real_y);
 	schedule_moveresize_req (F_MOVE, real_x, real_y, wd->client, False);
 }
 
@@ -2259,20 +2282,19 @@ void complete_client_move (struct ASMoveResizeData *data, Bool cancelled)
 		rect = &(data->start);
 
 	d = translate_client_pos_main (rect->x + PagerState.main_canvas->root_x,
-																 rect->y + PagerState.main_canvas->root_y,
-																 rect->width,
-																 rect->height, wd->desk, &real_x, &real_y);
+			rect->y + PagerState.main_canvas->root_y,
+			rect->width, rect->height, wd->desk, &real_x, &real_y);
 
 	if (d && d->desk != wd->desk) {
 		move_client_to_desk (wd, d->desk);
 		set_moveresize_aspect (data, PagerState.vscreen_width,
-													 d->background->width, PagerState.vscreen_height,
-													 d->background->height, d->background->root_x,
-													 d->background->root_y);
+				d->background->width, PagerState.vscreen_height,
+				d->background->height, d->background->root_x,
+				d->background->root_y);
 	}
 	LOCAL_DEBUG_OUT ("d(%p)->start(%+d%+d)->curr(%+d%+d)->real(%+d%+d)", d,
-									 data->start.x, data->start.y, data->curr.x,
-									 data->curr.y, real_x, real_y);
+			data->start.x, data->start.y, data->curr.x,
+			data->curr.y, real_x, real_y);
 	schedule_moveresize_req (F_MOVE, real_x, real_y, wd->client, True);
 	Scr.moveresize_in_progress = NULL;
 }
@@ -2282,11 +2304,11 @@ void apply_client_resize (struct ASMoveResizeData *data)
 	ASWindowData *wd = fetch_client (AS_WIDGET_WINDOW (data->mr));
 	unsigned int real_width = 1, real_height = 1;
 	LOCAL_DEBUG_OUT ("desk(%p)->size(%dx%d)", PagerState.resize_desk,
-									 data->curr.width, data->curr.height);
+			data->curr.width, data->curr.height);
 	translate_client_size (data->curr.width, data->curr.height, &real_width,
-												 &real_height);
+			&real_height);
 	schedule_moveresize_req (F_RESIZE, real_width, real_height, wd->client,
-													 False);
+			False);
 }
 
 void complete_client_resize (struct ASMoveResizeData *data, Bool cancelled)
@@ -2296,17 +2318,17 @@ void complete_client_resize (struct ASMoveResizeData *data, Bool cancelled)
 
 	if (cancelled) {
 		LOCAL_DEBUG_OUT ("%dx%d%+d%+d", data->start.x, data->start.y,
-										 data->start.width, data->start.height);
+				data->start.width, data->start.height);
 		translate_client_size (data->start.width, data->start.height,
-													 &real_width, &real_height);
+				&real_width, &real_height);
 	} else {
 		LOCAL_DEBUG_OUT ("%dx%d%+d%+d", data->curr.x, data->curr.y,
-										 data->curr.width, data->curr.height);
+				data->curr.width, data->curr.height);
 		translate_client_size (data->curr.width, data->curr.height,
-													 &real_width, &real_height);
+				&real_width, &real_height);
 	}
 	schedule_moveresize_req (F_RESIZE, real_width, real_height, wd->client,
-													 True);
+			True);
 	PagerState.resize_desk = NULL;
 	Scr.moveresize_in_progress = NULL;
 }
@@ -2322,19 +2344,19 @@ ASGrid *make_pager_grid ()
 
 	for (i = 0; i < PagerState.desks_num; ++i) {
 		ASPagerDesk *d = &(PagerState.desks[i]);
-		int k = d->clients_num;
+		int k = d->clients_num_real;
 		ASWindowData *wd;
 		ASTBarData *bb = d->background;
 
 		add_gridline (grid, bb->root_y, bb->root_x, bb->root_x + bb->width,
-									resist, attract, ASGL_Absolute);
+				resist, attract, ASGL_Absolute);
 		add_gridline (grid, bb->root_y + bb->height, bb->root_x,
-									bb->root_x + bb->width, resist, attract, ASGL_Absolute);
+				bb->root_x + bb->width, resist, attract, ASGL_Absolute);
 		add_gridline (grid, bb->root_x, bb->root_y, bb->root_y + bb->height,
-									resist, attract, ASGL_Absolute | ASGL_Vertical);
+				resist, attract, ASGL_Absolute | ASGL_Vertical);
 		add_gridline (grid, bb->root_x + bb->width, bb->root_y,
-									bb->root_y + bb->height, resist, attract,
-									ASGL_Absolute | ASGL_Vertical);
+				bb->root_y + bb->height, resist, attract,
+				ASGL_Absolute | ASGL_Vertical);
 
 		if (!get_flags (d->flags, ASP_DeskShaded)) {	/* add all the grid separation windows : */
 			register int p = PagerState.page_columns - 1;
@@ -2345,7 +2367,7 @@ ASGrid *make_pager_grid ()
 			/* vertical bars : */
 			while (--p >= 0) {
 				add_gridline (grid, pos, pos2, pos2 + size, resist, attract,
-											ASGL_Absolute | ASGL_Vertical);
+						ASGL_Absolute | ASGL_Vertical);
 				pos -= pos_inc;
 			}
 			/* horizontal bars */
@@ -2356,7 +2378,7 @@ ASGrid *make_pager_grid ()
 			size = bb->width;
 			while (--p >= 0) {
 				add_gridline (grid, pos, pos2, pos2 + size, resist, attract,
-											ASGL_Absolute);
+						ASGL_Absolute);
 				pos -= pos_inc;
 			}
 		}
@@ -2369,7 +2391,7 @@ ASGrid *make_pager_grid ()
 
 				if (inner_gravity != 0)
 					add_canvas_grid (grid, wd->canvas, outer_gravity, inner_gravity,
-													 ASGL_Absolute);
+							ASGL_Absolute);
 			}
 	}
 	/* add all the window edges for this desktop : */
@@ -2382,7 +2404,6 @@ ASGrid *make_pager_grid ()
 	return grid;
 }
 
-
 void
 start_moveresize_client (ASWindowData * wd, Bool move, ASEvent * event)
 {
@@ -2394,14 +2415,12 @@ start_moveresize_client (ASWindowData * wd, Bool move, ASEvent * event)
 	if (Scr.moveresize_in_progress)
 		return;
 
-
 	if (move) {
 		Scr.Look.MSWindow[BACK_FOCUSED] =
 				mystyle_find_or_default ("focused_window_style");
 		mvrdata =
 				move_widget_interactively (PagerState.main_canvas, wd->canvas,
-																	 event, apply_client_move,
-																	 complete_client_move);
+						event, apply_client_move, complete_client_move);
 	} else if (d != NULL) {
 		if (get_flags (wd->state_flags, AS_Shaded)) {
 			XBell (dpy, Scr.screen);
@@ -2412,10 +2431,10 @@ start_moveresize_client (ASWindowData * wd, Bool move, ASEvent * event)
 				mystyle_find_or_default ("focused_window_style");
 		PagerState.resize_desk = d;
 		mvrdata = resize_widget_interactively (d->desk_canvas,
-																					 wd->canvas,
-																					 event,
-																					 apply_client_resize,
-																					 complete_client_resize, FR_SE);
+				wd->canvas,
+				event,
+				apply_client_resize,
+				complete_client_resize, FR_SE);
 	}
 	Scr.Look.MSWindow[BACK_FOCUSED] = pager_focused_style;
 
@@ -2423,10 +2442,10 @@ start_moveresize_client (ASWindowData * wd, Bool move, ASEvent * event)
 	if (mvrdata) {
 		if (d)
 			set_moveresize_aspect (mvrdata, PagerState.vscreen_width,
-														 d->background->width,
-														 PagerState.vscreen_height,
-														 d->background->height, d->background->root_x,
-														 d->background->root_y);
+					d->background->width,
+					PagerState.vscreen_height,
+					d->background->height, d->background->root_x,
+					d->background->root_y);
 
 		mvrdata->grid = make_pager_grid ();
 		Scr.moveresize_in_progress = mvrdata;
@@ -2503,7 +2522,7 @@ void process_message (send_data_type type, send_data_type * body)
 		case M_NEW_DESKVIEWPORT:
 			{
 				LOCAL_DEBUG_OUT ("M_NEW_DESKVIEWPORT(desk = %ld,Vx=%ld,Vy=%ld)",
-												 body[2], body[0], body[1]);
+						body[2], body[0], body[1]);
 				switch_deskviewport (body[2], body[0], body[1]);
 				update_pager_shape ();
 			}
@@ -2511,7 +2530,7 @@ void process_message (send_data_type type, send_data_type * body)
 		case M_STACKING_ORDER:
 			{
 				LOCAL_DEBUG_OUT ("M_STACKING_ORDER(desk=%ld, clients_num=%ld)",
-												 body[0], body[1]);
+						body[0], body[1]);
 				change_desk_stacking (body[0], body[1], (Window *) & (body[2]));
 			}
 			break;
@@ -2537,8 +2556,8 @@ void DispatchEvent (ASEvent * event)
 	SHOW_EVENT_TRACE (event);
 
 	LOCAL_DEBUG_OUT ("mvrdata(%p)->main_canvas(%p)->widget(%p)",
-									 Scr.moveresize_in_progress, PagerState.main_canvas,
-									 event->widget);
+			Scr.moveresize_in_progress, PagerState.main_canvas,
+			event->widget);
 	if (Scr.moveresize_in_progress) {
 		event->widget =
 				PagerState.resize_desk ? PagerState.resize_desk->
@@ -2568,8 +2587,8 @@ void DispatchEvent (ASEvent * event)
 				event->widget = ((ASWindowData *) (event->client))->canvas;
 				if ((event->eclass & ASE_POINTER_EVENTS) != 0) {
 					on_astbar_pointer_action (((ASWindowData *) (event->client))->
-																		bar, 0, (event->x.type == LeaveNotify),
-																		root_pointer_moved);
+							bar, 0, (event->x.type == LeaveNotify),
+							root_pointer_moved);
 					root_pointer_moved = False;
 				}
 			}
@@ -2680,6 +2699,7 @@ void DispatchEvent (ASEvent * event)
 									&& clients[i]->frame_rect.y < ScrYmax
 									&& clients[i]->res_class
 									&& strcmp (clients[i]->res_class, "ASModule")) {
+								/* JWT:CLIENT MUST BE IN CURRENT VIEWPORT & NOT AN AS-MODULE!: */
 								char command[64];
 								sprintf (command, "Focus");
 								SendInfo (command, clients[i]->client);
@@ -2744,11 +2764,10 @@ void DispatchEvent (ASEvent * event)
 				&& event->x.xclient.data.l[0] == _XA_WM_DELETE_WINDOW) {
 			DeadPipe (0);
 		} else if (event->x.xclient.format == 32 &&
-							 event->x.xclient.message_type == _AS_BACKGROUND
-							 && event->x.xclient.data.l[1] != None) {
+				event->x.xclient.message_type == _AS_BACKGROUND
+				&& event->x.xclient.data.l[1] != None) {
 			set_desktop_pixmap (event->x.xclient.data.l[0] -
-													PagerState.start_desk,
-													event->x.xclient.data.l[1]);
+					PagerState.start_desk, event->x.xclient.data.l[1]);
 		}
 
 		return;
@@ -2765,9 +2784,9 @@ void DispatchEvent (ASEvent * event)
 			Scr.RootImage = NULL;
 			while (--i >= 0) {
 				update_astbar_transparency (PagerState.desks[i].title,
-																		PagerState.desks[i].desk_canvas, True);
+						PagerState.desks[i].desk_canvas, True);
 				update_astbar_transparency (PagerState.desks[i].background,
-																		PagerState.desks[i].desk_canvas, True);
+						PagerState.desks[i].desk_canvas, True);
 				render_desk (&(PagerState.desks[i]), False);
 			}
 		} else if (event->x.xproperty.atom == _AS_STYLE) {
@@ -2804,7 +2823,7 @@ void DispatchEvent (ASEvent * event)
 				 Scr.ShmCompletionEventType, event->x.type);
 		if (event->x.type == Scr.ShmCompletionEventType)
 			handle_ShmCompletion (event);
-#endif													/* SHAPE */
+#endif					/* SHAPE */
 		return;
 	}
 	update_pager_shape ();
@@ -2901,8 +2920,7 @@ void on_pager_window_moveresize (void *client, Window w, int x, int y,
 				for (i = 0; i < PagerState.desks_num; ++i)
 					on_desk_moveresize (&(PagerState.desks[i]));
 			}
-		} else {										/* then its one of our desk subwindows : */
-
+		} else {		  /* then its one of our desk subwindows : */
 			for (i = 0; i < PagerState.desks_num; ++i) {
 				if (PagerState.desks[i].desk_canvas->w == w) {
 					on_desk_moveresize (&(PagerState.desks[i]));
@@ -2920,9 +2938,9 @@ void on_desk_pressure_changed (ASPagerDesk * d, ASEvent * event)
 /*    int state = event->x.xbutton.state ; */
 	int context = check_astbar_point (d->title, root_x, root_y);
 	LOCAL_DEBUG_OUT ("root_pos(%+d%+d)->title_root_pos(%+d%+d)->context(%s)",
-									 root_x, root_y, d->title ? d->title->root_x : 0,
-									 d->title ? d->title->root_y : 0,
-									 context2text (context));
+			root_x, root_y, d->title ? d->title->root_x : 0,
+			d->title ? d->title->root_y : 0,
+			context2text (context));
 	if (context != C_NO_CONTEXT && d->title) {
 		set_astbar_btn_pressed (d->title, context);	/* must go before next call to properly redraw :  */
 		set_astbar_pressed (d->title, d->desk_canvas, context & C_TITLE);
@@ -2938,8 +2956,8 @@ void on_desk_pressure_changed (ASPagerDesk * d, ASEvent * event)
 	PagerState.pressed_button = event->x.xbutton.button;
 
 	LOCAL_DEBUG_OUT ("canvas(%p)->bar(%p)->context(%X)",
-									 PagerState.pressed_canvas, PagerState.pressed_bar,
-									 context);
+			PagerState.pressed_canvas, PagerState.pressed_bar,
+			context);
 
 	if (is_canvas_dirty (d->desk_canvas))
 		update_canvas_display (d->desk_canvas);
@@ -2981,8 +2999,8 @@ void on_scroll_viewport (ASEvent * event)
 				int sx = (px * PagerState.vscreen_width) / d->background->width;
 				int sy = (py * PagerState.vscreen_height) / d->background->height;
 
-				sprintf (command, "GotoDeskViewport %d%+d%+d\n", (int)d->desk, sx,
-								 sy);
+				sprintf (command, "GotoDeskViewport %d%+d%+d\n", (int)d->desk,
+						sx, sy);
 				SendInfo (command, 0);
 				++PagerState.wait_as_response;
 			}
@@ -3006,13 +3024,13 @@ void release_pressure (ASEvent * event)
 {
 	if (PagerState.pressed_canvas && PagerState.pressed_bar) {
 		LOCAL_DEBUG_OUT ("canvas(%p)->bar(%p)->context(%s)",
-										 PagerState.pressed_canvas, PagerState.pressed_bar,
-										 context2text (PagerState.pressed_context));
+				PagerState.pressed_canvas, PagerState.pressed_bar,
+				context2text (PagerState.pressed_context));
 		LOCAL_DEBUG_OUT ("main_geometry(%dx%d%+d%+d)",
-										 PagerState.main_canvas->width,
-										 PagerState.main_canvas->height,
-										 PagerState.main_canvas->root_x,
-										 PagerState.main_canvas->root_y);
+				PagerState.main_canvas->width,
+				PagerState.main_canvas->height,
+				PagerState.main_canvas->root_x,
+				PagerState.main_canvas->root_y);
 		if (PagerState.pressed_desk) {
 			ASPagerDesk *d = PagerState.pressed_desk;
 			if (PagerState.pressed_context == C_TButton0) {
@@ -3069,7 +3087,7 @@ void release_pressure (ASEvent * event)
 		}
 		set_astbar_btn_pressed (PagerState.pressed_bar, 0);	/* must go before next call to properly redraw :  */
 		set_astbar_pressed (PagerState.pressed_bar, PagerState.pressed_canvas,
-												False);
+				False);
 		if (is_canvas_dirty (PagerState.pressed_canvas))
 			update_canvas_display (PagerState.pressed_canvas);
 	}
@@ -3100,9 +3118,9 @@ Bool GrabEm (ScreenInfo * scr, Cursor cursor)
 			PointerMotionMask | EnterWindowMask | LeaveWindowMask |
 			KeyPressMask | KeyReleaseMask;
 	while ((res =
-					XGrabPointer (dpy, PagerState.main_canvas->w, True, mask,
-												GrabModeAsync, GrabModeAsync, scr->Root, cursor,
-												CurrentTime)) != GrabSuccess) {
+			XGrabPointer (dpy, PagerState.main_canvas->w, True, mask,
+			GrabModeAsync, GrabModeAsync, scr->Root, cursor,
+			CurrentTime)) != GrabSuccess) {
 		if (i++ >= 1000) {
 #define MAX_GRAB_ERROR 4
 			static char *_as_grab_error_code[MAX_GRAB_ERROR + 1 + 1] = {
