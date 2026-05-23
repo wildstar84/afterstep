@@ -85,11 +85,14 @@ dib_data_to_scanline( ASScanline *buf,
 		case 16 :
 			for( x = 0 ; x < (int)bmp_info->biWidth ; ++x )
 			{
-				CARD8 c1 = data[x] ;
-				CARD8 c2 = data[++x];
-				buf->blue[x] =    c1&0x1F;
-				buf->green[x] = ((c1>>5)&0x07)|((c2<<3)&0x18);
-				buf->red[x] =   ((c2>>2)&0x1F);
+				CARD8 c1 = data[2 * x];
+				CARD8 c2 = data[2 * x + 1];
+				// Assumed RGB555, ie R.G.B.A.X 5.5.5.0.1
+				const CARD32 bufmax = 0xFF;
+				const CARD32 chmax = 0x1F;
+				buf->blue[x] = ((c1 & 0x1F) * bufmax) / chmax;
+				buf->green[x] = ((((c1 >> 5) & 0x07) | ((c2 << 3) & 0x18)) * bufmax) / chmax;
+				buf->red[x] = ((((c2 >> 2) & 0x1F)) * bufmax) / chmax;
 			}
 			break ;
 		default:
